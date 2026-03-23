@@ -1,0 +1,156 @@
+========================================================
+  BRIDGETOBRILLIANCE — SETUP TO-DO LIST
+  Follow these steps to make the site fully functional
+========================================================
+
+STEP 1: SET UP SUPABASE (Free Database & Auth)
+-----------------------------------------------
+[ ] 1. Go to https://supabase.com and sign up (free)
+[ ] 2. Click "New Project" — give it a name like "bridgetobrilliance"
+[ ] 3. Choose a strong database password (save it somewhere!)
+[ ] 4. Select the closest region to you
+[ ] 5. Wait for the project to finish creating (~2 minutes)
+
+STEP 2: CREATE THE DATABASE TABLES
+------------------------------------
+[ ] 1. In your Supabase dashboard, click "SQL Editor" in the left sidebar
+[ ] 2. Click "New Query"
+[ ] 3. Open the file: supabase/migration.sql (in your project folder)
+[ ] 4. Copy ALL the contents and paste it into the SQL Editor
+[ ] 5. Click "Run" (the green play button)
+[ ] 6. You should see "Success. No rows returned" — that means it worked!
+[ ] 7. Click "Table Editor" in the sidebar — you should see 8 tables
+
+STEP 3: GET YOUR SUPABASE API KEYS
+-------------------------------------
+[ ] 1. In Supabase dashboard, go to Settings → API
+[ ] 2. Copy "Project URL" (looks like: https://xxxxx.supabase.co)
+[ ] 3. Copy "anon public" key (the long string under "Project API keys")
+
+STEP 4: SET UP CLOUDINARY (Free Video Hosting)
+-------------------------------------------------
+[ ] 1. Go to https://cloudinary.com and sign up (free)
+[ ] 2. After login, you'll see your "Cloud Name" on the dashboard
+[ ] 3. Go to Settings (gear icon) → Upload
+[ ] 4. Scroll down to "Upload presets"
+[ ] 5. Click "Add upload preset"
+[ ] 6. Set "Signing Mode" to "Unsigned"
+[ ] 7. Give it a name like "btb_videos"
+[ ] 8. Click "Save"
+[ ] 9. Note down your Cloud Name and Upload Preset Name
+
+STEP 5: CONFIGURE YOUR ENVIRONMENT
+-------------------------------------
+[ ] 1. In your project folder (d:\BTB SITE), find the file ".env.example"
+[ ] 2. Make a COPY of it and rename the copy to ".env.local"
+[ ] 3. Open ".env.local" and fill in your values:
+
+       NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+       NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+       NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your-cloud-name
+       NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=btb_videos
+
+STEP 6: CONFIGURE SUPABASE AUTH (Email Verification)
+------------------------------------------------------
+[ ] 1. In Supabase dashboard → Authentication → Providers
+[ ] 2. Make sure "Email" provider is enabled
+[ ] 3. Optional: Under Authentication → Settings:
+       - You can disable "Confirm email" for testing (easier to test)
+       - Or keep it on for production use
+[ ] 4. Under Authentication → URL Configuration:
+       - Set "Site URL" to: http://localhost:3000
+       - Add "Redirect URLs": http://localhost:3000/**
+
+STEP 7: START THE APP
+-----------------------
+[ ] 1. Open terminal/command prompt in the project folder
+[ ] 2. Run: npm run dev
+[ ] 3. Open browser to: http://localhost:3000
+[ ] 4. You should see the landing page!
+
+STEP 8: CREATE YOUR TEST USERS
+----------------------------------
+[ ] 1. Go to your app's register page: http://localhost:3000/register
+[ ] 2. Create these EXACT accounts (the seed script looks for these emails):
+       - Name: Admin User | Email: admin@btb.org | Role: Student (we will change this)
+       - Name: Teacher 1 | Email: teacher1@btb.org | Role: Teacher
+       - Name: Teacher 2 | Email: teacher2@btb.org | Role: Teacher
+       - Name: Student 1 | Email: student1@btb.org | Role: Student
+       - Name: Student 2 | Email: student2@btb.org | Role: Student
+       - Name: Student 3 | Email: student3@btb.org | Role: Student
+[ ] 3. Pick any password (e.g., password123)
+[ ] 4. If email verification is on, check your email and verify each one
+
+STEP 9: SET UP ADMIN & RUN SEED
+-------------------------------
+[ ] 1. To make the admin user an actual admin, go to Supabase Dashboard 
+       → Table Editor → profiles table
+       → Find admin@btb.org and change "role" to "admin"
+[ ] 2. Now run the SEED SQL to populate sample data:
+       → Go to Supabase "SQL Editor"
+       → Open the file: supabase/seed.sql
+       → Run it! It will automatically link content to the users you just created.
+
+STEP 10: TEST THE PLATFORM
+-----------------------------
+[ ] 1. As TEACHER:
+       - Log in with teacher account
+       - Click "Create Subject" — fill in title, description, icon
+       - Click on your created subject
+       - Add lessons (upload video files)
+       - Schedule a class
+       - Post an announcement
+[ ] 2. As STUDENT:
+       - Log in with student account
+       - On the dashboard, you'll see available subjects
+       - Click "Enroll" on a subject
+       - Go to the subject page
+       - Watch lessons (progress will be tracked)
+       - Check announcements and upcoming classes
+[ ] 3. As ADMIN:
+       - Log in with admin account
+       - See all users and change roles
+       - View platform stats
+       - Post global announcements
+
+========================================================
+  TROUBLESHOOTING
+========================================================
+
+PROBLEM: "Cannot connect to Supabase"
+  → Check that .env.local has the correct URL and key
+  → Make sure you saved the file and restarted the dev server
+
+PROBLEM: "No tables found" or "relation does not exist"
+  → You need to run migration.sql in Supabase SQL Editor
+  → Make sure the entire query ran successfully
+
+PROBLEM: "Video upload fails"
+  → Check Cloudinary cloud name and upload preset in .env.local
+  → Make sure the upload preset is set to "Unsigned"
+  → Check that you haven't exceeded Cloudinary free tier limits
+
+PROBLEM: "Login doesn't redirect properly"
+  → Check Supabase Auth → URL Configuration → Site URL is correct
+  → Clear browser cookies and try again
+
+PROBLEM: "User role not working"
+  → Check the profiles table in Supabase — make sure role is correct
+  → The trigger auto-creates profiles on signup with the selected role
+
+========================================================
+  DEPLOYING TO PRODUCTION (Optional)
+========================================================
+
+[ ] 1. Push your code to GitHub
+[ ] 2. Go to https://vercel.com and import your repo
+[ ] 3. Add your environment variables in Vercel settings
+[ ] 4. Update Supabase Auth → URL Configuration:
+       - Site URL → your Vercel URL
+       - Redirect URLs → your Vercel URL/**
+[ ] 5. Deploy!
+
+========================================================
+  That's it! Your BridgeToBrilliance platform is ready.
+  Happy teaching! 🎓
+========================================================

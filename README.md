@@ -1,36 +1,115 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌉 BridgeToBrilliance
 
-## Getting Started
+A nonprofit ManageBac-style learning management system built with **Next.js 14**, **Supabase**, and **Cloudinary**. All free-tier services.
 
-First, run the development server:
+## ✨ Features
+
+- **Public Landing Page** — Animated hero with floating 3D bridge, mission section, features, team flip cards
+- **Auth System** — Email/password register & login, role selection (Student/Teacher), password reset
+- **Student Dashboard** — Enrolled subjects with progress bars, upcoming classes, announcements, grades, Recharts analytics
+- **Teacher Dashboard** — Create subjects, upload video lessons (Cloudinary), schedule classes, post announcements, manage gradebook
+- **Admin Dashboard** — User management, stats overview, global announcements
+- **Subject Pages** — Tabbed interface with video player, announcements, classes, grades
+- **Design System** — Royal blue/gold luxury nonprofit theme, Framer Motion animations throughout, glassmorphism
+
+## 🛠️ Tech Stack
+
+- **Framework:** Next.js 14 (App Router)
+- **Auth & Database:** Supabase (PostgreSQL + Auth)
+- **Video Hosting:** Cloudinary (free tier, unsigned uploads)
+- **Animations:** Framer Motion
+- **Charts:** Recharts
+- **Forms:** react-hook-form + zod
+- **Styling:** Tailwind CSS + Custom CSS design tokens
+- **Icons:** Lucide React
+
+## 🚀 Quick Start
+
+### 1. Clone & Install
+
+```bash
+git clone <your-repo>
+cd btb-site
+npm install
+```
+
+### 2. Set Up Supabase
+
+1. Create a free project at [supabase.com](https://supabase.com)
+2. Go to **SQL Editor** → run `supabase/migration.sql`
+3. Copy your **Project URL** and **Anon Key** from Settings → API
+
+### 3. Set Up Cloudinary
+
+1. Create a free account at [cloudinary.com](https://cloudinary.com)
+2. Go to **Settings → Upload** → Create an **unsigned upload preset**
+3. Copy your **Cloud Name** and **Upload Preset Name**
+
+### 4. Configure Environment
+
+```bash
+cp .env.example .env.local
+```
+
+Fill in your keys:
+```
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your-cloud-name
+NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=your-upload-preset
+```
+
+### 5. Create Test Users
+
+Register users through the app at `/register`:
+- Create student accounts (select "Student" role)
+- Create teacher accounts (select "Teacher" role)
+- For admin: create a user, then in Supabase dashboard, update their `role` in the `profiles` table to `admin`
+
+### 6. Run Dev Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📁 Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+├── app/
+│   ├── page.tsx                    # Landing page
+│   ├── login/page.tsx              # Login
+│   ├── register/page.tsx           # Register with role selection
+│   ├── forgot-password/page.tsx    # Password reset
+│   ├── dashboard/
+│   │   ├── layout.tsx              # Protected layout with sidebar
+│   │   ├── student/page.tsx        # Student dashboard
+│   │   ├── teacher/page.tsx        # Teacher dashboard
+│   │   └── admin/page.tsx          # Admin dashboard
+│   └── subjects/[id]/page.tsx      # Subject detail page
+├── components/
+│   └── landing/                    # Landing page sections
+├── lib/
+│   ├── supabase/                   # Supabase clients
+│   ├── cloudinary.ts               # Upload helper
+│   └── utils.ts                    # Utility functions
+├── types/
+│   └── database.types.ts           # TypeScript types
+├── supabase/
+│   ├── migration.sql               # Database schema + RLS
+│   └── seed.sql                    # Sample data template
+└── middleware.ts                   # Route protection
+```
 
-## Learn More
+## 🔒 Security
 
-To learn more about Next.js, take a look at the following resources:
+- **Row Level Security (RLS)** on all tables
+- **Middleware** protects `/dashboard/*` and `/subjects/*` routes
+- Students can only view enrolled subjects
+- Teachers can only manage their own subjects/lessons
+- Admin has full access
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📄 License
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This is a nonprofit educational project. Free to use and modify.
