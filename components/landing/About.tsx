@@ -197,7 +197,9 @@ export default function About() {
                   ease: 'linear',
                   delay: i * 0.5,
                 }}
-              />
+              >
+                {emoji}
+              </motion.div>
             ))}
           </div>
         </motion.div>

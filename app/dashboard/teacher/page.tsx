@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { useProfile } from '../layout'
-import { uploadToCloudinary } from '@/lib/cloudinary'
-import type { Subject, Lesson, Enrollment, Grade } from '@/types/database.types'
+import type { Subject, Lesson, Grade } from '@/types/database.types'
 
 export default function TeacherDashboard() {
   const profile = useProfile()
@@ -20,7 +19,7 @@ export default function TeacherDashboard() {
 
   // Form states
   const [subjectForm, setSubjectForm] = useState({ title: '', description: '', color: '#4169E1', icon: '📚' })
-  const [lessonForm, setLessonForm] = useState({ title: '', description: '', video: null as File | null })
+  const [lessonForm, setLessonForm] = useState({ title: '', description: '', youtube_url: '' })
   const [classForm, setClassForm] = useState({ title: '', scheduled_at: '', meeting_link: '', description: '' })
   const [announcementForm, setAnnouncementForm] = useState({ title: '', body: '' })
   const [gradeForm, setGradeForm] = useState({ student_id: '', assignment_title: '', score: '', max_score: '', feedback: '' })
@@ -83,25 +82,39 @@ export default function TeacherDashboard() {
     setFormLoading(false)
   }
 
+  const extractYouTubeID = (url: string) => {
+    const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[7].length == 11) ? match[7] : null;
+  }
+
   const handleAddLesson = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!selectedSubject || !lessonForm.video) return
+    if (!selectedSubject || !lessonForm.youtube_url) return
     setUploading(true)
     try {
-      const { secure_url, thumbnail_url } = await uploadToCloudinary(lessonForm.video)
+      const ytId = extractYouTubeID(lessonForm.youtube_url);
+      if (!ytId) {
+        alert("Invalid YouTube URL. Please provide a valid link.");
+        setUploading(false);
+        return;
+      }
+      const thumbnailUrl = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+      const embedUrl = `https://www.youtube.com/embed/${ytId}`;
+
       await supabase.from('lessons').insert({
         subject_id: selectedSubject.id,
         title: lessonForm.title,
         description: lessonForm.description,
-        video_url: secure_url,
-        thumbnail_url: thumbnail_url,
+        video_url: embedUrl,
+        thumbnail_url: thumbnailUrl,
         order_index: lessons.length,
       })
-      setLessonForm({ title: '', description: '', video: null })
+      setLessonForm({ title: '', description: '', youtube_url: '' })
       setActiveModal(null)
       await fetchSubjectDetails(selectedSubject)
     } catch (err) {
-      alert('Video upload failed. Check your Cloudinary settings.')
+      alert('Failed to save lesson.')
     }
     setUploading(false)
   }
@@ -365,12 +378,12 @@ export default function TeacherDashboard() {
               <textarea value={lessonForm.description} onChange={e => setLessonForm({...lessonForm, description: e.target.value})} style={{...inputStyle, minHeight: '60px', resize: 'vertical'}} />
             </div>
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', marginBottom: '6px' }}>Video File</label>
-              <input type="file" accept="video/*" onChange={e => setLessonForm({...lessonForm, video: e.target.files?.[0] || null})} required
+              <label style={{ display: 'block', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', marginBottom: '6px' }}>YouTube Link</label>
+              <input type="text" placeholder="https://youtube.com/watch?v=..." value={lessonForm.youtube_url} onChange={e => setLessonForm({...lessonForm, youtube_url: e.target.value})} required
                 style={{...inputStyle, padding: '8px'}} />
             </div>
             <button type="submit" disabled={uploading} className="btn-gold" style={{ width: '100%', padding: '12px' }}>
-              {uploading ? 'Uploading video...' : 'Add Lesson'}
+              {uploading ? 'Parsing...' : 'Add Lesson'}
             </button>
           </form>
         </Modal>

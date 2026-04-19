@@ -27,17 +27,9 @@ STEP 3: GET YOUR SUPABASE API KEYS
 [ ] 2. Copy "Project URL" (looks like: https://xxxxx.supabase.co)
 [ ] 3. Copy "anon public" key (the long string under "Project API keys")
 
-STEP 4: SET UP CLOUDINARY (Free Video Hosting)
+STEP 4: (SKIPPED) CLOUDINARY IS NO LONGER NEEDED
 -------------------------------------------------
-[ ] 1. Go to https://cloudinary.com and sign up (free)
-[ ] 2. After login, you'll see your "Cloud Name" on the dashboard
-[ ] 3. Go to Settings (gear icon) → Upload
-[ ] 4. Scroll down to "Upload presets"
-[ ] 5. Click "Add upload preset"
-[ ] 6. Set "Signing Mode" to "Unsigned"
-[ ] 7. Give it a name like "btb_videos"
-[ ] 8. Click "Save"
-[ ] 9. Note down your Cloud Name and Upload Preset Name
+Videos are now handled via YouTube Embeds to save money and bandwidth for the non-profit platform.
 
 STEP 5: CONFIGURE YOUR ENVIRONMENT
 -------------------------------------
@@ -47,8 +39,6 @@ STEP 5: CONFIGURE YOUR ENVIRONMENT
 
        NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
        NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
-       NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your-cloud-name
-       NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=btb_videos
 
 STEP 6: CONFIGURE SUPABASE AUTH (Email Verification)
 ------------------------------------------------------
@@ -125,10 +115,8 @@ PROBLEM: "No tables found" or "relation does not exist"
   → You need to run migration.sql in Supabase SQL Editor
   → Make sure the entire query ran successfully
 
-PROBLEM: "Video upload fails"
-  → Check Cloudinary cloud name and upload preset in .env.local
-  → Make sure the upload preset is set to "Unsigned"
-  → Check that you haven't exceeded Cloudinary free tier limits
+PROBLEM: "Video embedding implies invalid URL"
+  → Ensure you are inserting standard YouTube URLs (e.g. https://www.youtube.com/watch?v=...) when adding lessons.
 
 PROBLEM: "Login doesn't redirect properly"
   → Check Supabase Auth → URL Configuration → Site URL is correct

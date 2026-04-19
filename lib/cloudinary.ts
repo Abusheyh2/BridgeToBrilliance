@@ -1,5 +1,5 @@
-export const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || ''
-export const CLOUDINARY_UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || ''
+export const CLOUDINARY_CLOUD_NAME = process.env['NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME'] || ''
+export const CLOUDINARY_UPLOAD_PRESET = process.env['NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET'] || ''
 
 export async function uploadToCloudinary(file: File): Promise<{ secure_url: string; thumbnail_url: string }> {
   const formData = new FormData()

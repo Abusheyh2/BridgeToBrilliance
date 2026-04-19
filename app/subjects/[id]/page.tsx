@@ -10,7 +10,7 @@ export default function SubjectPage() {
   const params = useParams()
   const router = useRouter()
   const supabase = createClient()
-  const subjectId = params.id as string
+  const subjectId = params['id'] as string
 
   const [subject, setSubject] = useState<Subject & { teacher: Profile } | null>(null)
   const [lessons, setLessons] = useState<Lesson[]>([])
@@ -213,14 +213,24 @@ export default function SubjectPage() {
           {activeLesson && (
             <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
               style={{ marginBottom: '32px' }}>
-              <div className="video-container" style={{ marginBottom: '16px' }}>
-                <video
-                  controls
-                  src={activeLesson.video_url}
-                  poster={activeLesson.thumbnail_url}
-                  onPlay={() => markAsWatched(activeLesson.id)}
-                  style={{ width: '100%', maxHeight: '500px' }}
-                />
+              <div className="video-container" style={{ marginBottom: '16px', position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '12px' }}>
+                {activeLesson.video_url?.includes('youtube.com') ? (
+                  <iframe 
+                    src={activeLesson.video_url} 
+                    style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowFullScreen
+                    onLoad={() => markAsWatched(activeLesson.id)}
+                  />
+                ) : (
+                  <video
+                    controls
+                    src={activeLesson.video_url}
+                    poster={activeLesson.thumbnail_url}
+                    onPlay={() => markAsWatched(activeLesson.id)}
+                    style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, objectFit: 'contain' }}
+                  />
+                )}
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>

@@ -3,18 +3,21 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --hostname 0.0.0.0 --port 3000",
     "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+    "start": "next start --hostname 0.0.0.0",
+    "prod": "NODE_ENV=production npm start",
+    "lint": "eslint",
+    "analyze": "next build --analyze"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
-    "@supabase/ssr": "^0.9.0",
+    "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.99.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.37.0",
+    "lightningcss-linux-x64-gnu": "^1.32.0",
     "lucide-react": "^0.577.0",
     "next": "16.1.6",
     "react": "19.2.3",

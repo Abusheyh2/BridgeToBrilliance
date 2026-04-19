@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { Inter } from 'next/font/google';
 import "./globals.css";
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-body' });
 
 export const metadata: Metadata = {
   title: "BridgeToBrilliance — Empowering Education for All",
@@ -14,7 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
+      <body className={inter.variable}>
         {children}
       </body>
     </html>

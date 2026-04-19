@@ -19,64 +19,73 @@ export default function StudentDashboard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!profile) return
-    const fetchData = async () => {
-      // Fetch enrollments with subjects
-      const { data: enrollmentData } = await supabase
-        .from('enrollments')
-        .select('*, subject:subjects(*, teacher:profiles!subjects_teacher_id_fkey(full_name))')
-        .eq('student_id', profile.id)
-
-      if (enrollmentData) {
-        const enriched = await Promise.all(
-          enrollmentData.map(async (e: any) => {
-            const { count: lessonCount } = await supabase
-              .from('lessons')
-              .select('*', { count: 'exact', head: true })
-              .eq('subject_id', e.subject_id)
-            const { count: watchedCount } = await supabase
-              .from('progress')
-              .select('*', { count: 'exact', head: true })
-              .eq('student_id', profile.id)
-              .eq('watched', true)
-            return { ...e, lesson_count: lessonCount || 0, watched_count: watchedCount || 0 }
-          })
-        )
-        setEnrollments(enriched as any)
-      }
-
-      // Fetch announcements
-      const { data: annData } = await supabase
-        .from('announcements')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(5)
-      if (annData) setAnnouncements(annData)
-
-      // Fetch upcoming classes
-      const { data: classData } = await supabase
-        .from('classes')
-        .select('*, subject:subjects(title)')
-        .gte('scheduled_at', new Date().toISOString())
-        .order('scheduled_at', { ascending: true })
-        .limit(5)
-      if (classData) setUpcomingClasses(classData as any)
-
-      // Fetch grades
-      const { data: gradeData } = await supabase
-        .from('grades')
-        .select('*, subject:subjects(title)')
-        .eq('student_id', profile.id)
-        .order('created_at', { ascending: false })
-      if (gradeData) setGrades(gradeData as any)
-
-      // Fetch all subjects for enrollment
-      const { data: subData } = await supabase
-        .from('subjects')
-        .select('*, teacher:profiles!subjects_teacher_id_fkey(full_name)')
-      if (subData) setAllSubjects(subData as any)
-
+    if (!profile) {
       setLoading(false)
+      return
+    }
+    
+    const fetchData = async () => {
+      try {
+        // Fetch enrollments with subjects
+        const { data: enrollmentData } = await supabase
+          .from('enrollments')
+          .select('*, subject:subjects(*, teacher:profiles!subjects_teacher_id_fkey(full_name))')
+          .eq('student_id', profile.id)
+
+        if (enrollmentData) {
+          const enriched = await Promise.all(
+            enrollmentData.map(async (e: any) => {
+              const { count: lessonCount } = await supabase
+                .from('lessons')
+                .select('*', { count: 'exact', head: true })
+                .eq('subject_id', e.subject_id)
+              const { count: watchedCount } = await supabase
+                .from('progress')
+                .select('*', { count: 'exact', head: true })
+                .eq('student_id', profile.id)
+                .eq('watched', true)
+              return { ...e, lesson_count: lessonCount || 0, watched_count: watchedCount || 0 }
+            })
+          )
+          setEnrollments(enriched as any)
+        }
+
+        // Fetch announcements
+        const { data: annData } = await supabase
+          .from('announcements')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(5)
+        if (annData) setAnnouncements(annData)
+
+        // Fetch upcoming classes
+        const { data: classData } = await supabase
+          .from('classes')
+          .select('*, subject:subjects(title)')
+          .gte('scheduled_at', new Date().toISOString())
+          .order('scheduled_at', { ascending: true })
+          .limit(5)
+        if (classData) setUpcomingClasses(classData as any)
+
+        // Fetch grades
+        const { data: gradeData } = await supabase
+          .from('grades')
+          .select('*, subject:subjects(title)')
+          .eq('student_id', profile.id)
+          .order('created_at', { ascending: false })
+        if (gradeData) setGrades(gradeData as any)
+
+        // Fetch all subjects for enrollment
+        const { data: subData } = await supabase
+          .from('subjects')
+          .select('*, teacher:profiles!subjects_teacher_id_fkey(full_name)')
+        if (subData) setAllSubjects(subData as any)
+
+      } catch (err) {
+        console.error("Dashboard fetch error:", err)
+      } finally {
+        setLoading(false)
+      }
     }
     fetchData()
   }, [profile, supabase])
