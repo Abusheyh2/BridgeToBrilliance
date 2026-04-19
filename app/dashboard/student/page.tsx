@@ -88,12 +88,41 @@ export default function StudentDashboard() {
       }
     }
     fetchData()
-  }, [profile, supabase])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile])
 
   const handleEnroll = async (subjectId: string) => {
     if (!profile) return
-    await supabase.from('enrollments').insert({ student_id: profile.id, subject_id: subjectId })
-    window.location.reload()
+    const { error } = await supabase.from('enrollments').insert({ student_id: profile.id, subject_id: subjectId })
+    if (error) {
+      alert('Failed to enroll: ' + error.message)
+      return
+    }
+    // Refresh data without page reload
+    setLoading(true)
+    const fetchData = async () => {
+      const { data: enrollmentData } = await supabase
+        .from('enrollments')
+        .select('*, subject:subjects(*, teacher:profiles!subjects_teacher_id_fkey(full_name))')
+        .eq('student_id', profile.id)
+      if (enrollmentData) {
+        const enriched = await Promise.all(
+          enrollmentData.map(async (e: any) => {
+            const { count: lessonCount } = await supabase
+              .from('lessons').select('*', { count: 'exact', head: true }).eq('subject_id', e.subject_id)
+            const { count: watchedCount } = await supabase
+              .from('progress').select('*', { count: 'exact', head: true }).eq('student_id', profile.id).eq('watched', true)
+            return { ...e, lesson_count: lessonCount || 0, watched_count: watchedCount || 0 }
+          })
+        )
+        setEnrollments(enriched as any)
+      }
+      const { data: subData } = await supabase
+        .from('subjects').select('*, teacher:profiles!subjects_teacher_id_fkey(full_name)')
+      if (subData) setAllSubjects(subData as any)
+      setLoading(false)
+    }
+    fetchData()
   }
 
   if (loading) {
