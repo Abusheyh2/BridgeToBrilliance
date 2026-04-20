@@ -31,8 +31,8 @@ export default function AdminDashboard() {
       setUsers(userData as Profile[])
       setStats(prev => ({
         ...prev,
-        students: userData.filter(u => u.role === 'student').length,
-        teachers: userData.filter(u => u.role === 'teacher').length,
+        students: userData.filter((u: Profile) => u.role === 'student').length,
+        teachers: userData.filter((u: Profile) => u.role === 'teacher').length,
       }))
     }
 
