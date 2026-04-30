@@ -13,8 +13,15 @@ export const useProfile = () => useContext(ProfileContext)
 const navItems = {
   student: [
     { href: '/dashboard/student', label: 'Dashboard', icon: '📊' },
-    { href: '/dashboard/student#subjects', label: 'My Subjects', icon: '📚' },
-    { href: '/dashboard/student#grades', label: 'My Grades', icon: '📝' },
+    { href: '/dashboard/student/study', label: 'Study Hub', icon: '🎯' },
+    { href: '/dashboard/student/study/groups', label: 'Study Groups', icon: '👥' },
+    { href: '/dashboard/student/study/flashcards', label: 'Flashcards', icon: '🃏' },
+    { href: '/dashboard/student/study/notes', label: 'My Notes', icon: '📝' },
+    { href: '/dashboard/student/study/timer', label: 'Timer', icon: '⏱️' },
+    { href: '/dashboard/student/study/quizzes', label: 'Quizzes', icon: '💡' },
+    { href: '/dashboard/student/study/bookmarks', label: 'Bookmarks', icon: '🔖' },
+    { href: '/dashboard/student/study/plans', label: 'Study Plans', icon: '📋' },
+    { href: '/dashboard/student/study/achievements', label: 'Achievements', icon: '🏆' },
   ],
   teacher: [
     { href: '/dashboard/teacher', label: 'Dashboard', icon: '📊' },
@@ -23,7 +30,9 @@ const navItems = {
   ],
   admin: [
     { href: '/dashboard/admin', label: 'Dashboard', icon: '📊' },
-    { href: '/dashboard/admin#users', label: 'Users', icon: '👥' },
+    { href: '/dashboard/admin/users', label: 'Users', icon: '👥' },
+    { href: '/dashboard/admin/teachers', label: 'Teachers', icon: '👨‍🏫' },
+    { href: '/dashboard/admin/security', label: 'Security', icon: '🛡️' },
     { href: '/dashboard/admin#subjects', label: 'Subjects', icon: '📚' },
     { href: '/dashboard/admin#announcements', label: 'Announcements', icon: '📢' },
   ],
@@ -36,6 +45,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [showAdminLogin, setShowAdminLogin] = useState(false)
+  const [adminPassword, setAdminPassword] = useState('')
+  const [adminError, setAdminError] = useState('')
+  const [adminLoading, setAdminLoading] = useState(false)
 
   useEffect(() => {
     const getProfile = async () => {
@@ -64,6 +77,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     await supabase.auth.signOut()
     router.push('/login')
     router.refresh()
+  }
+
+  const handleAdminLogin = async () => {
+    setAdminLoading(true)
+    setAdminError('')
+    const { error } = await supabase.auth.signInWithPassword({
+      email: 'admin@bridgetobrilliance.com',
+      password: adminPassword,
+    })
+    setAdminLoading(false)
+    if (error) {
+      setAdminError('Invalid password')
+      return
+    }
+    setShowAdminLogin(false)
+    setAdminPassword('')
+    router.push('/dashboard/admin')
   }
 
   if (loading) {
@@ -120,12 +150,30 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             padding: '24px 24px 20px',
             borderBottom: '1px solid rgba(255,255,255,0.06)',
           }}>
-            <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px', position: 'relative' }}>
               <div style={{
                 width: '32px', height: '32px', borderRadius: '8px',
                 background: 'linear-gradient(135deg, #4169E1, #FFB300)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px',
-              }}>🌉</div>
+                position: 'relative',
+              }}>🌉
+                <button
+                  onClick={() => setShowAdminLogin(true)}
+                  aria-label="Admin Access"
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    right: 0,
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    background: 'rgba(255,255,255,0.08)',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: 0,
+                  }}
+                />
+              </div>
               <span style={{
                 fontFamily: 'var(--font-heading)', fontSize: '1.1rem',
                 fontWeight: 700, color: '#FFB300',
@@ -269,6 +317,107 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </AnimatePresence>
         </main>
       </div>
+
+      {/* Admin Login Modal */}
+      <AnimatePresence>
+        {showAdminLogin && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => { setShowAdminLogin(false); setAdminError(''); setAdminPassword('') }}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0,0,0,0.8)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 200,
+              padding: '20px',
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: '#0d1b3e',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '20px',
+                padding: '32px',
+                width: '100%',
+                maxWidth: '400px',
+              }}
+            >
+              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', color: 'white', marginBottom: '8px' }}>
+                Admin Access
+              </h2>
+              <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', marginBottom: '24px' }}>
+                Enter admin password to continue
+              </p>
+              <input
+                type="password"
+                value={adminPassword}
+                onChange={(e) => { setAdminPassword(e.target.value); setAdminError('') }}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleAdminLogin() }}
+                placeholder="Password"
+                autoFocus
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: '10px',
+                  background: 'rgba(255,255,255,0.05)',
+                  border: `1px solid ${adminError ? '#dc3545' : 'rgba(255,255,255,0.1)'}`,
+                  color: 'white',
+                  fontSize: '0.9rem',
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                  marginBottom: adminError ? '8px' : '16px',
+                }}
+              />
+              {adminError && (
+                <p style={{ fontSize: '0.8rem', color: '#dc3545', marginBottom: '12px' }}>{adminError}</p>
+              )}
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  onClick={() => { setShowAdminLogin(false); setAdminError(''); setAdminPassword('') }}
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    borderRadius: '10px',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    color: 'rgba(255,255,255,0.7)',
+                    fontSize: '0.9rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAdminLogin}
+                  disabled={adminLoading || !adminPassword}
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    borderRadius: '10px',
+                    border: 'none',
+                    background: adminPassword ? 'linear-gradient(135deg, #4169E1, #2D4FC8)' : 'rgba(255,255,255,0.05)',
+                    color: adminPassword ? 'white' : 'rgba(255,255,255,0.3)',
+                    fontSize: '0.9rem',
+                    fontWeight: 600,
+                    cursor: adminPassword ? 'pointer' : 'default',
+                  }}
+                >
+                  {adminLoading ? 'Signing in...' : 'Sign In'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </ProfileContext.Provider>
   )
 }

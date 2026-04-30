@@ -48,7 +48,7 @@ export async function verifyAuth(req: NextRequest) {
  */
 export async function parseRequestBody<T>(
   req: NextRequest,
-  schema: (data: any) => T | Promise<T>
+  schema: (data: unknown) => T | Promise<T>
 ): Promise<T> {
   try {
     const body = await req.json()

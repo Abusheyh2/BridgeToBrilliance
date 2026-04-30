@@ -12,7 +12,7 @@ interface LogEntry {
   level: LogLevel
   message: string
   timestamp: string
-  context?: Record<string, any>
+  context?: Record<string, unknown>
   stack?: string
 }
 
@@ -22,28 +22,28 @@ class Logger {
   /**
    * Log debug message
    */
-  debug(message: string, context?: Record<string, any>): void {
+  debug(message: string, context?: Record<string, unknown>): void {
     this.log(LogLevel.DEBUG, message, context)
   }
 
   /**
    * Log info message
    */
-  info(message: string, context?: Record<string, any>): void {
+  info(message: string, context?: Record<string, unknown>): void {
     this.log(LogLevel.INFO, message, context)
   }
 
   /**
    * Log warning message
    */
-  warn(message: string, context?: Record<string, any>): void {
+  warn(message: string, context?: Record<string, unknown>): void {
     this.log(LogLevel.WARN, message, context)
   }
 
   /**
    * Log error message
    */
-  error(message: string, error?: Error | unknown, context?: Record<string, any>): void {
+  error(message: string, error?: Error | unknown, context?: Record<string, unknown>): void {
     const errorContext = {
       ...context,
       error: error instanceof Error ? error.message : String(error),
@@ -55,7 +55,7 @@ class Logger {
   /**
    * Core logging method
    */
-  private log(level: LogLevel, message: string, context?: Record<string, any>): void {
+  private log(level: LogLevel, message: string, context?: Record<string, unknown>): void {
     const entry: LogEntry = {
       level,
       message,

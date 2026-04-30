@@ -1,7 +1,7 @@
 // hooks/useProfile.ts
 // Custom hook for user profile
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { profileService, type UserProfile } from '@/services/profile.service'
 
 export interface UseProfileReturn {
@@ -16,7 +16,7 @@ export function useProfile(userId: string | null): UseProfileReturn {
   const [loading, setLoading] = useState(!!userId)
   const [error, setError] = useState<Error | null>(null)
 
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     if (!userId) {
       setProfile(null)
       setLoading(false)
@@ -33,11 +33,11 @@ export function useProfile(userId: string | null): UseProfileReturn {
     } finally {
       setLoading(false)
     }
-  }
+  }, [userId])
 
   useEffect(() => {
     fetchProfile()
-  }, [userId])
+  }, [fetchProfile])
 
   return {
     profile,

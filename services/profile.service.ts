@@ -4,6 +4,18 @@
 import { createClient } from '@/lib/supabase/client'
 import { NotFoundError, ValidationError } from '@/lib/api/errors'
 
+interface ProfileRow {
+  id: string
+  user_id: string
+  full_name: string
+  email: string
+  role: 'student' | 'teacher' | 'admin'
+  avatar_url: string | null
+  bio: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface UserProfile {
   id: string
   userId: string
@@ -79,15 +91,15 @@ class ProfileService {
   /**
    * Map database profile to application model
    */
-  private mapProfileData(data: any): UserProfile {
+  private mapProfileData(data: ProfileRow): UserProfile {
     return {
       id: data.id,
       userId: data.user_id,
       fullName: data.full_name,
       email: data.email,
       role: data.role,
-      avatar: data.avatar,
-      bio: data.bio,
+      avatar: data.avatar_url ?? undefined,
+      bio: data.bio ?? undefined,
       createdAt: data.created_at,
       updatedAt: data.updated_at,
     }

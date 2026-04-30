@@ -2,9 +2,11 @@
 // Custom hook for authentication
 
 import { useEffect, useState } from 'react'
-import type { User } from '@supabase/supabase-js'
-import { createClient } from '@/lib/supabase/client'
+import type { User, AuthChangeEvent, Session } from '@supabase/supabase-js'
 import { authService } from '@/services/auth.service'
+import { createClient } from '@/lib/supabase/client'
+
+const supabase = createClient()
 
 export interface UseAuthReturn {
   user: User | null
@@ -18,7 +20,6 @@ export function useAuth(): UseAuthReturn {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
-  const supabase = createClient()
 
   useEffect(() => {
     // Check current user
@@ -37,8 +38,8 @@ export function useAuth(): UseAuthReturn {
 
     // Subscribe to auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setUser(session?.user ?? null)
+      (_event: AuthChangeEvent, _session: Session) => {
+        setUser(_session?.user ?? null)
         setError(null)
       }
     )

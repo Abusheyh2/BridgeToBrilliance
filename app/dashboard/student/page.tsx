@@ -6,16 +6,34 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { useProfile } from '../layout'
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import type { Subject, Announcement, Class as ClassType, Grade, Enrollment } from '@/types/database.types'
+import type { Subject, Announcement, Class as ClassType, Grade, Enrollment, Profile } from '@/types/database.types'
+
+type EnrollmentWithDetails = Enrollment & {
+  subject: Subject & { teacher: Pick<Profile, 'full_name'> | null } | null
+  lesson_count: number
+  watched_count: number
+}
+
+type ClassWithSubject = ClassType & {
+  subject: Pick<Subject, 'title'> | null
+}
+
+type GradeWithSubject = Grade & {
+  subject: Pick<Subject, 'title'> | null
+}
+
+type SubjectWithTeacher = Subject & {
+  teacher: Pick<Profile, 'full_name'> | null
+}
 
 export default function StudentDashboard() {
   const profile = useProfile()
   const supabase = createClient()
-  const [enrollments, setEnrollments] = useState<(Enrollment & { subject: Subject & { teacher: { full_name: string } }; lesson_count: number; watched_count: number })[]>([])
+  const [enrollments, setEnrollments] = useState<EnrollmentWithDetails[]>([])
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
-  const [upcomingClasses, setUpcomingClasses] = useState<(ClassType & { subject: { title: string } })[]>([])
-  const [grades, setGrades] = useState<(Grade & { subject: { title: string } })[]>([])
-  const [allSubjects, setAllSubjects] = useState<(Subject & { teacher: { full_name: string } })[]>([])
+  const [upcomingClasses, setUpcomingClasses] = useState<ClassWithSubject[]>([])
+  const [grades, setGrades] = useState<GradeWithSubject[]>([])
+  const [allSubjects, setAllSubjects] = useState<SubjectWithTeacher[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -23,73 +41,68 @@ export default function StudentDashboard() {
       setLoading(false)
       return
     }
-    
+
+    let cancelled = false
     const fetchData = async () => {
       try {
-        // Fetch enrollments with subjects
         const { data: enrollmentData } = await supabase
           .from('enrollments')
           .select('*, subject:subjects(*, teacher:profiles!subjects_teacher_id_fkey(full_name))')
           .eq('student_id', profile.id)
 
-        if (enrollmentData) {
-          const enriched = await Promise.all(
-            enrollmentData.map(async (e: any) => {
-              const { count: lessonCount } = await supabase
-                .from('lessons')
-                .select('*', { count: 'exact', head: true })
-                .eq('subject_id', e.subject_id)
-              const { count: watchedCount } = await supabase
-                .from('progress')
-                .select('*', { count: 'exact', head: true })
-                .eq('student_id', profile.id)
-                .eq('watched', true)
-              return { ...e, lesson_count: lessonCount || 0, watched_count: watchedCount || 0 }
-            })
-          )
-          setEnrollments(enriched as any)
+        if (enrollmentData && !cancelled) {
+          const enriched: EnrollmentWithDetails[] = []
+          for (const e of enrollmentData) {
+            const { count: lessonCount } = await supabase
+              .from('lessons')
+              .select('*', { count: 'exact', head: true })
+              .eq('subject_id', e.subject_id)
+            const { count: watchedCount } = await supabase
+              .from('progress')
+              .select('*', { count: 'exact', head: true })
+              .eq('student_id', profile.id)
+              .eq('watched', true)
+            enriched.push({ ...(e as EnrollmentWithDetails), lesson_count: lessonCount || 0, watched_count: watchedCount || 0 })
+          }
+          setEnrollments(enriched)
         }
 
-        // Fetch announcements
         const { data: annData } = await supabase
           .from('announcements')
           .select('*')
           .order('created_at', { ascending: false })
           .limit(5)
-        if (annData) setAnnouncements(annData)
+        if (annData && !cancelled) setAnnouncements(annData)
 
-        // Fetch upcoming classes
         const { data: classData } = await supabase
           .from('classes')
           .select('*, subject:subjects(title)')
           .gte('scheduled_at', new Date().toISOString())
           .order('scheduled_at', { ascending: true })
           .limit(5)
-        if (classData) setUpcomingClasses(classData as any)
+        if (classData && !cancelled) setUpcomingClasses(classData as ClassWithSubject[])
 
-        // Fetch grades
         const { data: gradeData } = await supabase
           .from('grades')
           .select('*, subject:subjects(title)')
           .eq('student_id', profile.id)
           .order('created_at', { ascending: false })
-        if (gradeData) setGrades(gradeData as any)
+        if (gradeData && !cancelled) setGrades(gradeData as GradeWithSubject[])
 
-        // Fetch all subjects for enrollment
         const { data: subData } = await supabase
           .from('subjects')
           .select('*, teacher:profiles!subjects_teacher_id_fkey(full_name)')
-        if (subData) setAllSubjects(subData as any)
+        if (subData && !cancelled) setAllSubjects(subData as SubjectWithTeacher[])
 
       } catch (err) {
-        console.error("Dashboard fetch error:", err)
+        console.error('Dashboard fetch error:', err)
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
     fetchData()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile])
+    return () => { cancelled = true }
+  }, [profile, supabase])
 
   const handleEnroll = async (subjectId: string) => {
     if (!profile) return
@@ -98,31 +111,26 @@ export default function StudentDashboard() {
       alert('Failed to enroll: ' + error.message)
       return
     }
-    // Refresh data without page reload
     setLoading(true)
-    const fetchData = async () => {
-      const { data: enrollmentData } = await supabase
-        .from('enrollments')
-        .select('*, subject:subjects(*, teacher:profiles!subjects_teacher_id_fkey(full_name))')
-        .eq('student_id', profile.id)
-      if (enrollmentData) {
-        const enriched = await Promise.all(
-          enrollmentData.map(async (e: any) => {
-            const { count: lessonCount } = await supabase
-              .from('lessons').select('*', { count: 'exact', head: true }).eq('subject_id', e.subject_id)
-            const { count: watchedCount } = await supabase
-              .from('progress').select('*', { count: 'exact', head: true }).eq('student_id', profile.id).eq('watched', true)
-            return { ...e, lesson_count: lessonCount || 0, watched_count: watchedCount || 0 }
-          })
-        )
-        setEnrollments(enriched as any)
+    const { data: enrollmentData } = await supabase
+      .from('enrollments')
+      .select('*, subject:subjects(*, teacher:profiles!subjects_teacher_id_fkey(full_name))')
+      .eq('student_id', profile.id)
+    if (enrollmentData) {
+      const enriched: EnrollmentWithDetails[] = []
+      for (const e of enrollmentData) {
+        const { count: lessonCount } = await supabase
+          .from('lessons').select('*', { count: 'exact', head: true }).eq('subject_id', e.subject_id)
+        const { count: watchedCount } = await supabase
+          .from('progress').select('*', { count: 'exact', head: true }).eq('student_id', profile.id).eq('watched', true)
+        enriched.push({ ...(e as EnrollmentWithDetails), lesson_count: lessonCount || 0, watched_count: watchedCount || 0 })
       }
-      const { data: subData } = await supabase
-        .from('subjects').select('*, teacher:profiles!subjects_teacher_id_fkey(full_name)')
-      if (subData) setAllSubjects(subData as any)
-      setLoading(false)
+      setEnrollments(enriched)
     }
-    fetchData()
+    const { data: subData } = await supabase
+      .from('subjects').select('*, teacher:profiles!subjects_teacher_id_fkey(full_name)')
+    if (subData) setAllSubjects(subData as SubjectWithTeacher[])
+    setLoading(false)
   }
 
   if (loading) {
@@ -141,7 +149,7 @@ export default function StudentDashboard() {
   ]
 
   const subjectProgress = enrollments.map(e => ({
-    name: (e as any).subject?.title?.slice(0, 12) || 'Subject',
+    name: e.subject?.title?.slice(0, 12) || 'Subject',
     progress: e.lesson_count > 0 ? Math.round((e.watched_count / e.lesson_count) * 100) : 0,
   }))
 
@@ -181,7 +189,7 @@ export default function StudentDashboard() {
                   style={{ padding: '16px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', minWidth: '200px' }}>
                   <span style={{ fontSize: '1.5rem' }}>{s.icon}</span>
                   <h4 style={{ color: 'white', fontSize: '0.95rem', margin: '8px 0 4px' }}>{s.title}</h4>
-                  <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', marginBottom: '12px' }}>by {(s as any).teacher?.full_name}</p>
+                  <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', marginBottom: '12px' }}>by {s.teacher?.full_name}</p>
                   <button onClick={() => handleEnroll(s.id)} className="btn-primary" style={{ padding: '8px 16px', fontSize: '0.8rem' }}>Enroll</button>
                 </motion.div>
               ))}
@@ -190,7 +198,7 @@ export default function StudentDashboard() {
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
             {enrollments.map((enrollment, i) => {
-              const subject = (enrollment as any).subject
+              const subject = enrollment.subject
               const progress = enrollment.lesson_count > 0 ? Math.round((enrollment.watched_count / enrollment.lesson_count) * 100) : 0
               return (
                 <motion.div key={enrollment.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
@@ -242,7 +250,7 @@ export default function StudentDashboard() {
                   <div>
                     <h4 style={{ color: 'white', fontSize: '0.9rem', marginBottom: '4px' }}>{cls.title}</h4>
                     <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem' }}>
-                      {(cls as any).subject?.title} · {new Date(cls.scheduled_at).toLocaleDateString()} at {new Date(cls.scheduled_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {cls.subject?.title} &middot; {new Date(cls.scheduled_at).toLocaleDateString()} at {new Date(cls.scheduled_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
                   {cls.meeting_link && (
@@ -306,7 +314,7 @@ export default function StudentDashboard() {
               ) : (
                 grades.map((g) => (
                   <tr key={g.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                    <td style={{ padding: '12px 16px', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem' }}>{(g as any).subject?.title}</td>
+                    <td style={{ padding: '12px 16px', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem' }}>{g.subject?.title}</td>
                     <td style={{ padding: '12px 16px', color: 'white', fontSize: '0.85rem' }}>{g.assignment_title}</td>
                     <td style={{ padding: '12px 16px' }}>
                       <span style={{

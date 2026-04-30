@@ -7,7 +7,7 @@ export interface ApiResponse<T = unknown> {
   error?: {
     code: string
     message: string
-    details?: Record<string, any>
+    details?: Record<string, unknown>
   }
   meta?: {
     timestamp: string
@@ -26,7 +26,7 @@ export interface PaginatedResponse<T> {
 /**
  * Create a successful API response
  */
-export function success<T>(data: T, meta?: Record<string, any>): ApiResponse<T> {
+export function success<T>(data: T, meta?: Record<string, unknown>): ApiResponse<T> {
   return {
     success: true,
     data,
@@ -44,7 +44,7 @@ export function success<T>(data: T, meta?: Record<string, any>): ApiResponse<T> 
 export function error(
   code: string,
   message: string,
-  details?: Record<string, any>
+  details?: Record<string, unknown>
 ): ApiResponse {
   return {
     success: false,
@@ -76,4 +76,8 @@ export function paginated<T>(
     pageSize,
     hasMore: page * pageSize < total,
   }
+}
+
+export function successResponse<T>(data: T): { success: true; data: T } {
+  return { success: true, data }
 }

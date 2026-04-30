@@ -1,10 +1,45 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { useProfile } from '../layout'
-import type { Subject, Lesson, Grade } from '@/types/database.types'
+import type { Subject, Lesson, Grade, Profile } from '@/types/database.types'
+
+interface EnrollmentWithStudent {
+  student_id: string
+  student?: Pick<Profile, 'full_name'> | null
+}
+
+type GradeWithStudent = Grade & {
+  student?: Pick<Profile, 'full_name'> | null
+}
+
+function Modal({ title, children, onClose }: { title: string; children: React.ReactNode; onClose: () => void }) {
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 200,
+      background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px',
+    }} onClick={onClose}>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: '#132347', border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: '16px', padding: '32px', width: '100%', maxWidth: '480px', maxHeight: '90vh', overflow: 'auto',
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
+          <h3 style={{ fontFamily: 'var(--font-heading)', color: 'white', fontSize: '1.2rem' }}>{title}</h3>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
+        </div>
+        {children}
+      </motion.div>
+    </div>
+  )
+}
 
 export default function TeacherDashboard() {
   const profile = useProfile()
@@ -13,11 +48,10 @@ export default function TeacherDashboard() {
   const [loading, setLoading] = useState(true)
   const [activeModal, setActiveModal] = useState<string | null>(null)
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null)
-  const [enrolledStudents, setEnrolledStudents] = useState<any[]>([])
+  const [enrolledStudents, setEnrolledStudents] = useState<EnrollmentWithStudent[]>([])
   const [lessons, setLessons] = useState<Lesson[]>([])
-  const [grades, setGrades] = useState<Grade[]>([])
+  const [grades, setGrades] = useState<GradeWithStudent[]>([])
 
-  // Form states
   const [subjectForm, setSubjectForm] = useState({ title: '', description: '', color: '#4169E1', icon: '📚' })
   const [lessonForm, setLessonForm] = useState({ title: '', description: '', youtube_url: '' })
   const [classForm, setClassForm] = useState({ title: '', scheduled_at: '', meeting_link: '', description: '' })
@@ -26,32 +60,48 @@ export default function TeacherDashboard() {
   const [uploading, setUploading] = useState(false)
   const [formLoading, setFormLoading] = useState(false)
 
-  useEffect(() => {
-    if (!profile) return
-    fetchSubjects()
-  }, [profile])
+  const mountedRef = useRef(true)
 
-  const fetchSubjects = async () => {
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
+
+  const fetchSubjects = useCallback(async () => {
     if (!profile) return
     const { data } = await supabase
       .from('subjects')
       .select('*')
       .eq('teacher_id', profile.id)
       .order('created_at', { ascending: false })
-    if (data) setSubjects(data)
-    setLoading(false)
-  }
+    if (data && mountedRef.current) setSubjects(data)
+    if (mountedRef.current) setLoading(false)
+  }, [profile, supabase])
 
-  const fetchSubjectDetails = async (subject: Subject) => {
+  useEffect(() => {
+    if (!profile) return
+    let cancelled = false
+    const run = async () => {
+      const { data } = await supabase
+        .from('subjects')
+        .select('*')
+        .eq('teacher_id', profile.id)
+        .order('created_at', { ascending: false })
+      if (data && !cancelled) setSubjects(data)
+      if (!cancelled) setLoading(false)
+    }
+    run()
+    return () => { cancelled = true }
+  }, [profile, supabase])
+
+  const fetchSubjectDetails = useCallback(async (subject: Subject) => {
     setSelectedSubject(subject)
-    // Fetch enrolled students
     const { data: enrollData } = await supabase
       .from('enrollments')
-      .select('*, student:profiles!enrollments_student_id_fkey(*)')
+      .select('*, student:profiles!enrollments_student_id_fkey(full_name)')
       .eq('subject_id', subject.id)
-    if (enrollData) setEnrolledStudents(enrollData)
+    if (enrollData) setEnrolledStudents(enrollData as EnrollmentWithStudent[])
 
-    // Fetch lessons
     const { data: lessonData } = await supabase
       .from('lessons')
       .select('*')
@@ -59,14 +109,13 @@ export default function TeacherDashboard() {
       .order('order_index')
     if (lessonData) setLessons(lessonData)
 
-    // Fetch grades
     const { data: gradeData } = await supabase
       .from('grades')
       .select('*, student:profiles!grades_student_id_fkey(full_name)')
       .eq('subject_id', subject.id)
       .order('created_at', { ascending: false })
-    if (gradeData) setGrades(gradeData as any)
-  }
+    if (gradeData) setGrades(gradeData as GradeWithStudent[])
+  }, [supabase])
 
   const handleCreateSubject = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -82,10 +131,10 @@ export default function TeacherDashboard() {
     setFormLoading(false)
   }
 
-  const extractYouTubeID = (url: string) => {
-    const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[7].length == 11) ? match[7] : null;
+  const extractYouTubeID = (url: string): string | null => {
+    const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/
+    const match = url.match(regExp)
+    return (match && match[7].length === 11) ? match[7] : null
   }
 
   const handleAddLesson = async (e: React.FormEvent) => {
@@ -93,14 +142,14 @@ export default function TeacherDashboard() {
     if (!selectedSubject || !lessonForm.youtube_url) return
     setUploading(true)
     try {
-      const ytId = extractYouTubeID(lessonForm.youtube_url);
+      const ytId = extractYouTubeID(lessonForm.youtube_url)
       if (!ytId) {
-        alert("Invalid YouTube URL. Please provide a valid link.");
-        setUploading(false);
-        return;
+        alert('Invalid YouTube URL. Please provide a valid link.')
+        setUploading(false)
+        return
       }
-      const thumbnailUrl = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
-      const embedUrl = `https://www.youtube.com/embed/${ytId}`;
+      const thumbnailUrl = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`
+      const embedUrl = `https://www.youtube.com/embed/${ytId}`
 
       await supabase.from('lessons').insert({
         subject_id: selectedSubject.id,
@@ -113,7 +162,7 @@ export default function TeacherDashboard() {
       setLessonForm({ title: '', description: '', youtube_url: '' })
       setActiveModal(null)
       await fetchSubjectDetails(selectedSubject)
-    } catch (err) {
+    } catch {
       alert('Failed to save lesson.')
     }
     setUploading(false)
@@ -171,30 +220,6 @@ export default function TeacherDashboard() {
     color: 'white', fontSize: '0.9rem', outline: 'none', fontFamily: 'var(--font-body)', boxSizing: 'border-box',
   }
 
-  const Modal = ({ title, children, onClose }: { title: string; children: React.ReactNode; onClose: () => void }) => (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 200,
-      background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px',
-    }} onClick={onClose}>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          background: '#132347', border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: '16px', padding: '32px', width: '100%', maxWidth: '480px', maxHeight: '90vh', overflow: 'auto',
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
-          <h3 style={{ fontFamily: 'var(--font-heading)', color: 'white', fontSize: '1.2rem' }}>{title}</h3>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
-        </div>
-        {children}
-      </motion.div>
-    </div>
-  )
-
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '60px' }}>
@@ -206,24 +231,22 @@ export default function TeacherDashboard() {
 
   return (
     <div>
-      {/* Welcome Banner */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
         style={{
           background: 'linear-gradient(135deg, rgba(65, 105, 225, 0.2), rgba(255, 179, 0, 0.1))',
           border: '1px solid rgba(65, 105, 225, 0.2)', borderRadius: '16px', padding: '32px', marginBottom: '32px',
         }}>
         <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.8rem', fontWeight: 700, color: 'white', marginBottom: '8px' }}>
-          Teacher Dashboard 👨‍🏫
+          Teacher Dashboard
         </h1>
         <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.95rem' }}>
           You&apos;re teaching {subjects.length} subject{subjects.length !== 1 ? 's' : ''}.
         </p>
       </motion.div>
 
-      {/* Subjects Grid */}
       <div id="subjects" style={{ marginBottom: '40px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: 'white' }}>📚 My Subjects</h2>
+          <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: 'white' }}>My Subjects</h2>
           <button onClick={() => setActiveModal('create-subject')} className="btn-gold" style={{ padding: '8px 20px', fontSize: '0.85rem' }}>
             + Create Subject
           </button>
@@ -251,9 +274,8 @@ export default function TeacherDashboard() {
         </div>
       </div>
 
-      {/* Selected Subject Details */}
       {selectedSubject && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} 
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           style={{ marginBottom: '40px' }}>
           <div style={{
             background: `linear-gradient(135deg, ${selectedSubject.color}20, rgba(255,179,0,0.05))`,
@@ -266,18 +288,17 @@ export default function TeacherDashboard() {
                   {selectedSubject.icon} {selectedSubject.title}
                 </h2>
                 <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', marginTop: '4px' }}>
-                  {enrolledStudents.length} students enrolled · {lessons.length} lessons
+                  {enrolledStudents.length} students enrolled &middot; {lessons.length} lessons
                 </p>
               </div>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                <button onClick={() => setActiveModal('add-lesson')} className="btn-primary" style={{ padding: '8px 16px', fontSize: '0.8rem' }}>📹 Add Lesson</button>
-                <button onClick={() => setActiveModal('schedule-class')} className="btn-primary" style={{ padding: '8px 16px', fontSize: '0.8rem' }}>📅 Schedule Class</button>
-                <button onClick={() => setActiveModal('post-announcement')} className="btn-primary" style={{ padding: '8px 16px', fontSize: '0.8rem' }}>📢 Announcement</button>
+                <button onClick={() => setActiveModal('add-lesson')} className="btn-primary" style={{ padding: '8px 16px', fontSize: '0.8rem' }}>Add Lesson</button>
+                <button onClick={() => setActiveModal('schedule-class')} className="btn-primary" style={{ padding: '8px 16px', fontSize: '0.8rem' }}>Schedule Class</button>
+                <button onClick={() => setActiveModal('post-announcement')} className="btn-primary" style={{ padding: '8px 16px', fontSize: '0.8rem' }}>Announcement</button>
               </div>
             </div>
           </div>
 
-          {/* Lessons */}
           <h3 style={{ color: 'white', fontSize: '1rem', fontWeight: 600, marginBottom: '12px' }}>Video Lessons</h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '16px', marginBottom: '32px' }}>
             {lessons.map((lesson, i) => (
@@ -296,10 +317,9 @@ export default function TeacherDashboard() {
             ))}
           </div>
 
-          {/* Gradebook */}
           <div id="gradebook">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-              <h3 style={{ color: 'white', fontSize: '1rem', fontWeight: 600 }}>📝 Gradebook</h3>
+              <h3 style={{ color: 'white', fontSize: '1rem', fontWeight: 600 }}>Gradebook</h3>
               <button onClick={() => setActiveModal('add-grade')} className="btn-primary" style={{ padding: '6px 14px', fontSize: '0.8rem' }}>+ Add Grade</button>
             </div>
             <div style={{ overflowX: 'auto' }}>
@@ -315,7 +335,7 @@ export default function TeacherDashboard() {
                   {grades.length === 0 ? (
                     <tr><td colSpan={5} style={{ padding: '16px', color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}>No grades yet.</td></tr>
                   ) : (
-                    grades.map((g: any) => (
+                    grades.map((g) => (
                       <tr key={g.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                         <td style={{ padding: '10px 14px', color: 'white', fontSize: '0.85rem' }}>{g.student?.full_name}</td>
                         <td style={{ padding: '10px 14px', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem' }}>{g.assignment_title}</td>
@@ -337,7 +357,6 @@ export default function TeacherDashboard() {
         </motion.div>
       )}
 
-      {/* Modals */}
       {activeModal === 'create-subject' && (
         <Modal title="Create Subject" onClose={() => setActiveModal(null)}>
           <form onSubmit={handleCreateSubject}>
@@ -397,7 +416,7 @@ export default function TeacherDashboard() {
               <input value={classForm.title} onChange={e => setClassForm({...classForm, title: e.target.value})} required style={inputStyle} />
             </div>
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', marginBottom: '6px' }}>Date & Time</label>
+              <label style={{ display: 'block', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', marginBottom: '6px' }}>Date &amp; Time</label>
               <input type="datetime-local" value={classForm.scheduled_at} onChange={e => setClassForm({...classForm, scheduled_at: e.target.value})} required style={inputStyle} />
             </div>
             <div style={{ marginBottom: '16px' }}>
@@ -440,7 +459,7 @@ export default function TeacherDashboard() {
               <label style={{ display: 'block', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', marginBottom: '6px' }}>Student</label>
               <select value={gradeForm.student_id} onChange={e => setGradeForm({...gradeForm, student_id: e.target.value})} required style={inputStyle}>
                 <option value="">Select student...</option>
-                {enrolledStudents.map((e: any) => (
+                {enrolledStudents.map((e) => (
                   <option key={e.student_id} value={e.student_id}>{e.student?.full_name}</option>
                 ))}
               </select>

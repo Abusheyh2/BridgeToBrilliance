@@ -15,9 +15,13 @@ CREATE TABLE profiles (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL UNIQUE,
   full_name TEXT NOT NULL,
+  email TEXT NOT NULL DEFAULT '',
   role user_role NOT NULL DEFAULT 'student',
   avatar_url TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  bio TEXT,
+  is_banned BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
@@ -289,13 +293,521 @@ CREATE POLICY "Teachers can update grades" ON grades
 -- ============================================
 -- 9. AUTO-CREATE PROFILE TRIGGER
 -- ============================================
+-- ============================================
+-- 10. STUDY GROUPS
+-- ============================================
+CREATE TABLE study_groups (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  icon TEXT DEFAULT '📖',
+  color TEXT DEFAULT '#4169E1',
+  created_by UUID REFERENCES profiles(id) ON DELETE SET NULL NOT NULL,
+  subject_id UUID REFERENCES subjects(id) ON DELETE CASCADE,
+  is_public BOOLEAN DEFAULT true,
+  max_members INTEGER DEFAULT 50,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE study_groups ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Study groups viewable by all" ON study_groups FOR SELECT USING (true);
+CREATE POLICY "Students/teachers can create groups" ON study_groups FOR INSERT WITH CHECK (
+  EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role IN ('student', 'teacher', 'admin'))
+);
+CREATE POLICY "Creators can update their groups" ON study_groups FOR UPDATE USING (
+  created_by = (SELECT id FROM profiles WHERE user_id = auth.uid())
+  OR EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+);
+CREATE POLICY "Creators can delete their groups" ON study_groups FOR DELETE USING (
+  created_by = (SELECT id FROM profiles WHERE user_id = auth.uid())
+  OR EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+);
+
+-- ============================================
+-- 11. STUDY GROUP MEMBERS
+-- ============================================
+CREATE TABLE study_group_members (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  group_id UUID REFERENCES study_groups(id) ON DELETE CASCADE NOT NULL,
+  student_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  role TEXT DEFAULT 'member',
+  joined_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(group_id, student_id)
+);
+
+ALTER TABLE study_group_members ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Members can view group members" ON study_group_members FOR SELECT USING (
+  student_id = (SELECT id FROM profiles WHERE user_id = auth.uid())
+  OR EXISTS (SELECT 1 FROM study_group_members WHERE student_id = (SELECT id FROM profiles WHERE user_id = auth.uid()) AND group_id = study_group_members.group_id)
+);
+CREATE POLICY "Members can join groups" ON study_group_members FOR INSERT WITH CHECK (
+  student_id = (SELECT id FROM profiles WHERE user_id = auth.uid())
+);
+CREATE POLICY "Members can leave groups" ON study_group_members FOR DELETE USING (
+  student_id = (SELECT id FROM profiles WHERE user_id = auth.uid())
+  OR EXISTS (SELECT 1 FROM study_groups WHERE id = study_group_members.group_id AND created_by = (SELECT id FROM profiles WHERE user_id = auth.uid()))
+);
+
+-- ============================================
+-- 12. GROUP CHAT MESSAGES
+-- ============================================
+CREATE TABLE chat_messages (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  group_id UUID REFERENCES study_groups(id) ON DELETE CASCADE NOT NULL,
+  sender_id UUID REFERENCES profiles(id) ON DELETE SET NULL NOT NULL,
+  content TEXT,
+  attachment_url TEXT,
+  attachment_type TEXT,
+  reply_to UUID REFERENCES chat_messages(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Chat messages viewable by group members" ON chat_messages FOR SELECT USING (
+  EXISTS (SELECT 1 FROM study_group_members WHERE student_id = (SELECT id FROM profiles WHERE user_id = auth.uid()) AND group_id = chat_messages.group_id)
+);
+CREATE POLICY "Group members can send messages" ON chat_messages FOR INSERT WITH CHECK (
+  EXISTS (SELECT 1 FROM study_group_members WHERE student_id = (SELECT id FROM profiles WHERE user_id = auth.uid()) AND group_id = chat_messages.group_id)
+);
+CREATE POLICY "Senders can delete their messages" ON chat_messages FOR DELETE USING (
+  sender_id = (SELECT id FROM profiles WHERE user_id = auth.uid())
+  OR EXISTS (SELECT 1 FROM study_groups WHERE id = chat_messages.group_id AND created_by = (SELECT id FROM profiles WHERE user_id = auth.uid()))
+);
+
+-- ============================================
+-- 13. FLASHCARD DECKS
+-- ============================================
+CREATE TABLE flashcard_decks (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT,
+  subject_id UUID REFERENCES subjects(id) ON DELETE CASCADE,
+  created_by UUID REFERENCES profiles(id) ON DELETE SET NULL NOT NULL,
+  is_public BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE flashcard_decks ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Flashcard decks viewable by all" ON flashcard_decks FOR SELECT USING (true);
+CREATE POLICY "Students/teachers can create decks" ON flashcard_decks FOR INSERT WITH CHECK (
+  EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role IN ('student', 'teacher', 'admin'))
+);
+CREATE POLICY "Creators can update their decks" ON flashcard_decks FOR UPDATE USING (
+  created_by = (SELECT id FROM profiles WHERE user_id = auth.uid())
+  OR EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+);
+CREATE POLICY "Creators can delete their decks" ON flashcard_decks FOR DELETE USING (
+  created_by = (SELECT id FROM profiles WHERE user_id = auth.uid())
+  OR EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+);
+
+-- ============================================
+-- 14. FLASHCARDS
+-- ============================================
+CREATE TABLE flashcards (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  deck_id UUID REFERENCES flashcard_decks(id) ON DELETE CASCADE NOT NULL,
+  front TEXT NOT NULL,
+  back TEXT NOT NULL,
+  order_index INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE flashcards ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Flashcards viewable by all" ON flashcards FOR SELECT USING (true);
+CREATE POLICY "Deck creators can manage flashcards" ON flashcards FOR ALL USING (
+  EXISTS (SELECT 1 FROM flashcard_decks WHERE id = flashcards.deck_id AND created_by = (SELECT id FROM profiles WHERE user_id = auth.uid()))
+  OR EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+);
+
+-- ============================================
+-- 15. FLASHCARD PROGRESS
+-- ============================================
+CREATE TABLE flashcard_progress (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  student_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  flashcard_id UUID REFERENCES flashcards(id) ON DELETE CASCADE NOT NULL,
+  mastery_level INTEGER DEFAULT 0,
+  last_reviewed TIMESTAMPTZ,
+  next_review TIMESTAMPTZ,
+  review_count INTEGER DEFAULT 0,
+  UNIQUE(student_id, flashcard_id)
+);
+
+ALTER TABLE flashcard_progress ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Students can view own flashcard progress" ON flashcard_progress FOR SELECT USING (
+  student_id = (SELECT id FROM profiles WHERE user_id = auth.uid())
+);
+CREATE POLICY "Students can update own progress" ON flashcard_progress FOR ALL USING (
+  student_id = (SELECT id FROM profiles WHERE user_id = auth.uid())
+);
+
+-- ============================================
+-- 16. STUDY NOTES
+-- ============================================
+CREATE TABLE study_notes (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  student_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  subject_id UUID REFERENCES subjects(id) ON DELETE CASCADE,
+  lesson_id UUID REFERENCES lessons(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  tags TEXT[] DEFAULT '{}',
+  color TEXT DEFAULT '#4169E1',
+  is_pinned BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE study_notes ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Students can view own notes" ON study_notes FOR SELECT USING (
+  student_id = (SELECT id FROM profiles WHERE user_id = auth.uid())
+);
+CREATE POLICY "Students can manage own notes" ON study_notes FOR ALL USING (
+  student_id = (SELECT id FROM profiles WHERE user_id = auth.uid())
+);
+
+-- ============================================
+-- 17. STUDY TIMER SESSIONS
+-- ============================================
+CREATE TABLE study_sessions (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  student_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  subject_id UUID REFERENCES subjects(id) ON DELETE SET NULL,
+  duration_seconds INTEGER NOT NULL,
+  session_type TEXT DEFAULT 'pomodoro',
+  completed BOOLEAN DEFAULT true,
+  notes TEXT,
+  started_at TIMESTAMPTZ DEFAULT NOW(),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE study_sessions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Students can view own sessions" ON study_sessions FOR SELECT USING (
+  student_id = (SELECT id FROM profiles WHERE user_id = auth.uid())
+);
+CREATE POLICY "Students can create own sessions" ON study_sessions FOR ALL USING (
+  student_id = (SELECT id FROM profiles WHERE user_id = auth.uid())
+);
+
+-- ============================================
+-- 18. QUIZZES
+-- ============================================
+CREATE TABLE quizzes (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT,
+  subject_id UUID REFERENCES subjects(id) ON DELETE CASCADE,
+  created_by UUID REFERENCES profiles(id) ON DELETE SET NULL NOT NULL,
+  time_limit_seconds INTEGER,
+  passing_score INTEGER DEFAULT 70,
+  is_public BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE quizzes ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Quizzes viewable by all" ON quizzes FOR SELECT USING (true);
+CREATE POLICY "Students/teachers can create quizzes" ON quizzes FOR INSERT WITH CHECK (
+  EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role IN ('student', 'teacher', 'admin'))
+);
+CREATE POLICY "Creators can update their quizzes" ON quizzes FOR UPDATE USING (
+  created_by = (SELECT id FROM profiles WHERE user_id = auth.uid())
+  OR EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+);
+CREATE POLICY "Creators can delete their quizzes" ON quizzes FOR DELETE USING (
+  created_by = (SELECT id FROM profiles WHERE user_id = auth.uid())
+  OR EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+);
+
+-- ============================================
+-- 19. QUIZ QUESTIONS
+-- ============================================
+CREATE TABLE quiz_questions (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  quiz_id UUID REFERENCES quizzes(id) ON DELETE CASCADE NOT NULL,
+  question TEXT NOT NULL,
+  question_type TEXT DEFAULT 'multiple_choice',
+  options JSONB,
+  correct_answer TEXT NOT NULL,
+  explanation TEXT,
+  points INTEGER DEFAULT 1,
+  order_index INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE quiz_questions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Quiz questions viewable by all" ON quiz_questions FOR SELECT USING (true);
+CREATE POLICY "Quiz creators can manage questions" ON quiz_questions FOR ALL USING (
+  EXISTS (SELECT 1 FROM quizzes WHERE id = quiz_questions.quiz_id AND created_by = (SELECT id FROM profiles WHERE user_id = auth.uid()))
+  OR EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+);
+
+-- ============================================
+-- 20. QUIZ ATTEMPTS
+-- ============================================
+CREATE TABLE quiz_attempts (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  quiz_id UUID REFERENCES quizzes(id) ON DELETE CASCADE NOT NULL,
+  student_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  score INTEGER DEFAULT 0,
+  total_points INTEGER DEFAULT 0,
+  answers JSONB,
+  started_at TIMESTAMPTZ DEFAULT NOW(),
+  completed_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE quiz_attempts ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Students can view own attempts" ON quiz_attempts FOR SELECT USING (
+  student_id = (SELECT id FROM profiles WHERE user_id = auth.uid())
+  OR EXISTS (SELECT 1 FROM quizzes WHERE id = quiz_attempts.quiz_id AND created_by = (SELECT id FROM profiles WHERE user_id = auth.uid()))
+);
+CREATE POLICY "Students can create own attempts" ON quiz_attempts FOR ALL USING (
+  student_id = (SELECT id FROM profiles WHERE user_id = auth.uid())
+);
+
+-- ============================================
+-- 21. BOOKMARKS
+-- ============================================
+CREATE TABLE bookmarks (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  student_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  lesson_id UUID REFERENCES lessons(id) ON DELETE CASCADE,
+  subject_id UUID REFERENCES subjects(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  url TEXT,
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(student_id, lesson_id)
+);
+
+ALTER TABLE bookmarks ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Students can view own bookmarks" ON bookmarks FOR SELECT USING (
+  student_id = (SELECT id FROM profiles WHERE user_id = auth.uid())
+);
+CREATE POLICY "Students can manage own bookmarks" ON bookmarks FOR ALL USING (
+  student_id = (SELECT id FROM profiles WHERE user_id = auth.uid())
+);
+
+-- ============================================
+-- 22. STUDY PLANS
+-- ============================================
+CREATE TABLE study_plans (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  student_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT,
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL,
+  goals TEXT[] DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE study_plans ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Students can view own plans" ON study_plans FOR SELECT USING (
+  student_id = (SELECT id FROM profiles WHERE user_id = auth.uid())
+);
+CREATE POLICY "Students can manage own plans" ON study_plans FOR ALL USING (
+  student_id = (SELECT id FROM profiles WHERE user_id = auth.uid())
+);
+
+-- ============================================
+-- 23. STUDY PLAN TASKS
+-- ============================================
+CREATE TABLE study_plan_tasks (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  plan_id UUID REFERENCES study_plans(id) ON DELETE CASCADE NOT NULL,
+  subject_id UUID REFERENCES subjects(id) ON DELETE SET NULL,
+  title TEXT NOT NULL,
+  description TEXT,
+  due_date DATE,
+  is_completed BOOLEAN DEFAULT false,
+  priority TEXT DEFAULT 'medium',
+  order_index INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE study_plan_tasks ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Students can view own plan tasks" ON study_plan_tasks FOR SELECT USING (
+  EXISTS (SELECT 1 FROM study_plans WHERE id = study_plan_tasks.plan_id AND student_id = (SELECT id FROM profiles WHERE user_id = auth.uid()))
+);
+CREATE POLICY "Students can manage own plan tasks" ON study_plan_tasks FOR ALL USING (
+  EXISTS (SELECT 1 FROM study_plans WHERE id = study_plan_tasks.plan_id AND student_id = (SELECT id FROM profiles WHERE user_id = auth.uid()))
+);
+
+-- ============================================
+-- 24. ACHIEVEMENTS
+-- ============================================
+CREATE TABLE achievements (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE,
+  description TEXT NOT NULL,
+  icon TEXT DEFAULT '🏆',
+  category TEXT DEFAULT 'general',
+  requirement JSONB
+);
+
+ALTER TABLE achievements ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Achievements viewable by all" ON achievements FOR SELECT USING (true);
+
+-- ============================================
+-- 25. USER ACHIEVEMENTS
+-- ============================================
+CREATE TABLE user_achievements (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  student_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  achievement_id UUID REFERENCES achievements(id) ON DELETE CASCADE NOT NULL,
+  unlocked_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(student_id, achievement_id)
+);
+
+ALTER TABLE user_achievements ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own achievements" ON user_achievements FOR SELECT USING (
+  student_id = (SELECT id FROM profiles WHERE user_id = auth.uid())
+);
+CREATE POLICY "Users can view others achievements" ON user_achievements FOR SELECT USING (true);
+
+-- ============================================
+-- 26. SEED ACHIEVEMENTS
+-- ============================================
+INSERT INTO achievements (name, description, icon, category, requirement) VALUES
+  ('First Steps', 'Enroll in your first subject', '🎓', 'getting_started', '{"action": "enroll", "count": 1}'),
+  ('Bookworm', 'Complete 10 lessons', '📚', 'lessons', '{"action": "watch_lessons", "count": 10}'),
+  ('Scholar', 'Complete 50 lessons', '🎯', 'lessons', '{"action": "watch_lessons", "count": 50}'),
+  ('Note Taker', 'Create your first study note', '📝', 'notes', '{"action": "create_notes", "count": 1}'),
+  ('Quiz Master', 'Score 100% on any quiz', '💯', 'quizzes', '{"action": "perfect_quiz", "count": 1}'),
+  ('Study Streak', 'Study for 7 consecutive days', '🔥', 'streaks', '{"action": "streak_days", "count": 7}'),
+  ('Group Leader', 'Create a study group', '👥', 'social', '{"action": "create_group", "count": 1}'),
+  ('Flashcard Fan', 'Review 100 flashcards', '🃏', 'flashcards', '{"action": "review_flashcards", "count": 100}'),
+  ('Time Master', 'Complete 10 study timer sessions', '⏱️', 'timer', '{"action": "timer_sessions", "count": 10}'),
+  ('Plan Ahead', 'Create your first study plan', '📋', 'planning', '{"action": "create_plan", "count": 1}');
+
+-- ============================================
+-- 27. IP BANS
+-- ============================================
+CREATE TABLE ip_bans (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  ip_address TEXT NOT NULL UNIQUE,
+  reason TEXT,
+  banned_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  expires_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE ip_bans ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Admins can manage IP bans" ON ip_bans FOR ALL USING (
+  EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+);
+CREATE POLICY "IP bans viewable by admins" ON ip_bans FOR SELECT USING (
+  EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+);
+
+-- ============================================
+-- 28. RATE LIMITS
+-- ============================================
+CREATE TABLE rate_limits (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  ip_address TEXT NOT NULL,
+  endpoint TEXT NOT NULL,
+  request_count INTEGER DEFAULT 1,
+  window_start TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(ip_address, endpoint)
+);
+
+ALTER TABLE rate_limits ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Admins can view rate limits" ON rate_limits FOR SELECT USING (
+  EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+);
+CREATE POLICY "System can manage rate limits" ON rate_limits FOR ALL USING (true);
+
+-- ============================================
+-- 29. SECURITY AUDIT LOGS
+-- ============================================
+CREATE TABLE security_logs (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  action TEXT NOT NULL,
+  ip_address TEXT,
+  user_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  details JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE security_logs ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Admins can view security logs" ON security_logs FOR SELECT USING (
+  EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+);
+CREATE POLICY "System can create security logs" ON security_logs FOR INSERT WITH CHECK (true);
+
+-- ============================================
+-- 30. SECURITY SETTINGS
+-- ============================================
+CREATE TABLE security_settings (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  key TEXT NOT NULL UNIQUE,
+  value JSONB NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE security_settings ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Admins can manage security settings" ON security_settings FOR ALL USING (
+  EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+);
+
+-- ============================================
+-- 31. SEED SECURITY SETTINGS
+-- ============================================
+INSERT INTO security_settings (key, value) VALUES
+  ('ddos_protection', '{"enabled": true, "max_requests_per_minute": 100, "block_duration_seconds": 3600}'),
+  ('rate_limiting', '{"enabled": true, "login_attempts_per_hour": 5, "signup_attempts_per_hour": 3}'),
+  ('bot_protection', '{"enabled": true, "honeypot_field": true, "min_load_time_seconds": 2}');
+
+-- ============================================
+-- 32. TEACHER ASSIGNMENTS (admin assigns teachers to subjects)
+-- ============================================
+CREATE TABLE teacher_assignments (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  teacher_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  subject_id UUID REFERENCES subjects(id) ON DELETE CASCADE NOT NULL,
+  assigned_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  is_primary BOOLEAN DEFAULT false,
+  assigned_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(teacher_id, subject_id)
+);
+
+ALTER TABLE teacher_assignments ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "All can view teacher assignments" ON teacher_assignments FOR SELECT USING (true);
+CREATE POLICY "Admins can manage assignments" ON teacher_assignments FOR ALL USING (
+  EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+);
+
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.profiles (user_id, full_name, role)
+  INSERT INTO public.profiles (user_id, full_name, email, role)
   VALUES (
     NEW.id,
     COALESCE(NEW.raw_user_meta_data->>'full_name', 'New User'),
+    COALESCE(NEW.email, ''),
     COALESCE((NEW.raw_user_meta_data->>'role')::user_role, 'student')
   );
   RETURN NEW;

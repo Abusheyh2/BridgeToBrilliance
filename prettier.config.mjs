@@ -2,7 +2,7 @@
 /**
  * @see https://prettier.io/docs/en/configuration.html
  */
-export default {
+const config = {
   semi: false,
   singleQuote: true,
   trailingComma: 'es5',
@@ -12,3 +12,5 @@ export default {
   arrowParens: 'always',
   bracketSpacing: true,
 }
+
+export default config

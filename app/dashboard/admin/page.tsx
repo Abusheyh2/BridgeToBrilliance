@@ -21,11 +21,42 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!profile) return
-    fetchData()
-  }, [profile])
+    let cancelled = false
+    const run = async () => {
+      const { data: userData } = await supabase.from('profiles').select('*').order('created_at', { ascending: false })
+      if (userData && !cancelled) {
+        setUsers(userData as Profile[])
+        setStats(prev => ({
+          ...prev,
+          students: userData.filter((u: Profile) => u.role === 'student').length,
+          teachers: userData.filter((u: Profile) => u.role === 'teacher').length,
+        }))
+      }
 
-  const fetchData = async () => {
-    // Users
+      const { data: subjectData } = await supabase.from('subjects').select('*')
+      if (subjectData && !cancelled) {
+        setSubjects(subjectData)
+        setStats(prev => ({ ...prev, subjects: subjectData.length }))
+      }
+
+      const { count: lessonCount } = await supabase.from('lessons').select('*', { count: 'exact', head: true })
+      if (!cancelled) setStats(prev => ({ ...prev, lessons: lessonCount || 0 }))
+
+      const { data: annData } = await supabase
+        .from('announcements')
+        .select('*')
+        .is('subject_id', null)
+        .order('created_at', { ascending: false })
+      if (annData && !cancelled) setAnnouncements(annData)
+
+      if (!cancelled) setLoading(false)
+    }
+    run()
+    return () => { cancelled = true }
+  }, [profile, supabase])
+
+  const handleRoleChange = async (userId: string, newRole: string) => {
+    await supabase.from('profiles').update({ role: newRole }).eq('id', userId)
     const { data: userData } = await supabase.from('profiles').select('*').order('created_at', { ascending: false })
     if (userData) {
       setUsers(userData as Profile[])
@@ -35,32 +66,6 @@ export default function AdminDashboard() {
         teachers: userData.filter((u: Profile) => u.role === 'teacher').length,
       }))
     }
-
-    // Subjects
-    const { data: subjectData } = await supabase.from('subjects').select('*')
-    if (subjectData) {
-      setSubjects(subjectData)
-      setStats(prev => ({ ...prev, subjects: subjectData.length }))
-    }
-
-    // Lessons count
-    const { count: lessonCount } = await supabase.from('lessons').select('*', { count: 'exact', head: true })
-    setStats(prev => ({ ...prev, lessons: lessonCount || 0 }))
-
-    // Global announcements
-    const { data: annData } = await supabase
-      .from('announcements')
-      .select('*')
-      .is('subject_id', null)
-      .order('created_at', { ascending: false })
-    if (annData) setAnnouncements(annData)
-
-    setLoading(false)
-  }
-
-  const handleRoleChange = async (userId: string, newRole: string) => {
-    await supabase.from('profiles').update({ role: newRole }).eq('id', userId)
-    await fetchData()
   }
 
   const handlePostAnnouncement = async (e: React.FormEvent) => {
@@ -74,7 +79,12 @@ export default function AdminDashboard() {
     })
     setAnnouncementForm({ title: '', body: '' })
     setShowAnnouncementForm(false)
-    await fetchData()
+    const { data: annData } = await supabase
+      .from('announcements')
+      .select('*')
+      .is('subject_id', null)
+      .order('created_at', { ascending: false })
+    if (annData) setAnnouncements(annData)
     setFormLoading(false)
   }
 
@@ -102,21 +112,19 @@ export default function AdminDashboard() {
 
   return (
     <div>
-      {/* Welcome Banner */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
         style={{
           background: 'linear-gradient(135deg, rgba(65, 105, 225, 0.2), rgba(255, 179, 0, 0.1))',
           border: '1px solid rgba(65, 105, 225, 0.2)', borderRadius: '16px', padding: '32px', marginBottom: '32px',
         }}>
         <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.8rem', fontWeight: 700, color: 'white', marginBottom: '8px' }}>
-          Admin Dashboard 🛡️
+          Admin Dashboard
         </h1>
         <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.95rem' }}>
           Platform overview and management
         </p>
       </motion.div>
 
-      {/* Stats Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '40px' }}>
         {[
           { label: 'Total Students', value: stats.students, icon: '🎓', color: '#4169E1' },
@@ -144,7 +152,6 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      {/* Stats Chart */}
       <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '16px', padding: '24px', border: '1px solid rgba(255,255,255,0.06)', marginBottom: '40px' }}>
         <h3 style={{ color: 'white', fontSize: '1rem', fontWeight: 600, marginBottom: '16px' }}>Platform Overview</h3>
         <ResponsiveContainer width="100%" height={250}>
@@ -158,9 +165,8 @@ export default function AdminDashboard() {
         </ResponsiveContainer>
       </div>
 
-      {/* User Management */}
       <div id="users" style={{ marginBottom: '40px' }}>
-        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: 'white', marginBottom: '20px' }}>👥 User Management</h2>
+        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: 'white', marginBottom: '20px' }}>User Management</h2>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
@@ -221,9 +227,8 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* All Subjects */}
       <div id="subjects" style={{ marginBottom: '40px' }}>
-        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: 'white', marginBottom: '20px' }}>📚 All Subjects</h2>
+        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: 'white', marginBottom: '20px' }}>All Subjects</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '16px' }}>
           {subjects.map((s, i) => (
             <motion.div key={s.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
@@ -239,10 +244,9 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Global Announcements */}
       <div id="announcements" style={{ marginBottom: '40px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: 'white' }}>📢 Platform Announcements</h2>
+          <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: 'white' }}>Platform Announcements</h2>
           <button onClick={() => setShowAnnouncementForm(!showAnnouncementForm)} className="btn-gold" style={{ padding: '8px 20px', fontSize: '0.85rem' }}>
             + New Announcement
           </button>

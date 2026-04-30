@@ -31,7 +31,7 @@ class ApiClient {
   /**
    * POST request
    */
-  async post<T>(endpoint: string, data?: any, options?: RequestInit): Promise<T> {
+  async post<T>(endpoint: string, data?: unknown, options?: RequestInit): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'POST',
       body: data ? JSON.stringify(data) : undefined,
@@ -42,7 +42,7 @@ class ApiClient {
   /**
    * PUT request
    */
-  async put<T>(endpoint: string, data?: any, options?: RequestInit): Promise<T> {
+  async put<T>(endpoint: string, data?: unknown, options?: RequestInit): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'PUT',
       body: data ? JSON.stringify(data) : undefined,
@@ -119,7 +119,8 @@ class ApiClient {
    * Clear auth token
    */
   clearAuthToken(): void {
-    const { Authorization, ...rest } = this.config.headers
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { ['Authorization']: _unused, ...rest } = this.config.headers
     this.config.headers = rest
   }
 }

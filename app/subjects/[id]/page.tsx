@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -24,94 +24,66 @@ export default function SubjectPage() {
   const [loading, setLoading] = useState(true)
   const [enrollmentCount, setEnrollmentCount] = useState(0)
 
-  const fetchData = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { router.push('/login'); return }
-
-    // Get profile
-    const { data: profileData } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('user_id', user.id)
-      .single()
-    if (!profileData) return
-    setProfile(profileData as Profile)
-
-    // Get subject
-    const { data: subjectData } = await supabase
-      .from('subjects')
-      .select('*, teacher:profiles!subjects_teacher_id_fkey(*)')
-      .eq('id', subjectId)
-      .single()
-    if (!subjectData) { router.push('/dashboard/student'); return }
-    setSubject(subjectData as any)
-
-    // Check enrollment (for students)
-    if (profileData.role === 'student') {
-      const { data: enrollment } = await supabase
-        .from('enrollments')
-        .select('*')
-        .eq('student_id', profileData.id)
-        .eq('subject_id', subjectId)
-        .single()
-      if (!enrollment) {
-        router.push('/dashboard/student')
-        return
-      }
-    }
-
-    // Enrollment count
-    const { count } = await supabase.from('enrollments').select('*', { count: 'exact', head: true }).eq('subject_id', subjectId)
-    setEnrollmentCount(count || 0)
-
-    // Lessons
-    const { data: lessonData } = await supabase
-      .from('lessons')
-      .select('*')
-      .eq('subject_id', subjectId)
-      .order('order_index')
-    if (lessonData) setLessons(lessonData)
-
-    // Progress
-    const { data: progressData } = await supabase
-      .from('progress')
-      .select('*')
-      .eq('student_id', profileData.id)
-    if (progressData) setProgress(progressData as Progress[])
-
-    // Announcements
-    const { data: annData } = await supabase
-      .from('announcements')
-      .select('*')
-      .eq('subject_id', subjectId)
-      .order('created_at', { ascending: false })
-    if (annData) setAnnouncements(annData)
-
-    // Classes
-    const { data: classData } = await supabase
-      .from('classes')
-      .select('*')
-      .eq('subject_id', subjectId)
-      .order('scheduled_at', { ascending: true })
-    if (classData) setClasses(classData)
-
-    // Grades (for students)
-    if (profileData.role === 'student') {
-      const { data: gradeData } = await supabase
-        .from('grades')
-        .select('*')
-        .eq('student_id', profileData.id)
-        .eq('subject_id', subjectId)
-        .order('created_at', { ascending: false })
-      if (gradeData) setGrades(gradeData)
-    }
-
-    setLoading(false)
-  }, [subjectId, supabase, router])
-
   useEffect(() => {
-    fetchData()
-  }, [fetchData])
+    let cancelled = false
+    const run = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user || cancelled) { if (!cancelled) router.push('/login'); return }
+
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single()
+      if (!profileData || cancelled) return
+      setProfile(profileData as Profile)
+
+      const { data: subjectData } = await supabase
+        .from('subjects')
+        .select('*, teacher:profiles!subjects_teacher_id_fkey(*)')
+        .eq('id', subjectId)
+        .single()
+      if (!subjectData || cancelled) { if (!cancelled) router.push('/dashboard/student'); return }
+      setSubject(subjectData as Subject & { teacher: Profile })
+
+      if (profileData.role === 'student') {
+        const { data: enrollment } = await supabase
+          .from('enrollments')
+          .select('*')
+          .eq('student_id', profileData.id)
+          .eq('subject_id', subjectId)
+          .single()
+        if (!enrollment) {
+          router.push('/dashboard/student')
+          return
+        }
+      }
+
+      const { count } = await supabase.from('enrollments').select('*', { count: 'exact', head: true }).eq('subject_id', subjectId)
+      setEnrollmentCount(count || 0)
+
+      const { data: lessonData } = await supabase.from('lessons').select('*').eq('subject_id', subjectId).order('order_index')
+      if (lessonData) setLessons(lessonData)
+
+      const { data: progressData } = await supabase.from('progress').select('*').eq('student_id', profileData.id)
+      if (progressData) setProgress(progressData as Progress[])
+
+      const { data: annData } = await supabase.from('announcements').select('*').eq('subject_id', subjectId).order('created_at', { ascending: false })
+      if (annData) setAnnouncements(annData)
+
+      const { data: classData } = await supabase.from('classes').select('*').eq('subject_id', subjectId).order('scheduled_at', { ascending: true })
+      if (classData) setClasses(classData)
+
+      if (profileData.role === 'student') {
+        const { data: gradeData } = await supabase.from('grades').select('*').eq('student_id', profileData.id).eq('subject_id', subjectId).order('created_at', { ascending: false })
+        if (gradeData) setGrades(gradeData)
+      }
+
+      if (!cancelled) setLoading(false)
+    }
+    run()
+    return () => { cancelled = true }
+  }, [subjectId, supabase, router])
 
   const markAsWatched = async (lessonId: string) => {
     if (!profile) return
@@ -174,7 +146,7 @@ export default function SubjectPage() {
                 {subject.title}
               </h1>
               <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem' }}>
-                {(subject as any).teacher?.full_name} · {enrollmentCount} student{enrollmentCount !== 1 ? 's' : ''} · {lessons.length} lesson{lessons.length !== 1 ? 's' : ''}
+                {subject.teacher?.full_name} &middot; {enrollmentCount} student{enrollmentCount !== 1 ? 's' : ''} &middot; {lessons.length} lesson{lessons.length !== 1 ? 's' : ''}
               </p>
             </div>
           </div>

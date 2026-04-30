@@ -162,7 +162,7 @@ export default function RegisterPage() {
             Create Account
           </h1>
           <p style={{ fontSize: '0.9rem', color: 'var(--text-dark-muted)' }}>
-            Join BridgeToBrilliance and start learning
+            All new accounts are created as students
           </p>
         </div>
 
@@ -196,8 +196,6 @@ export default function RegisterPage() {
             />
             {errors.email && <p style={{ fontSize: '0.8rem', color: '#dc3545', marginTop: '4px' }}>{errors.email.message}</p>}
           </div>
-
-
 
           <div style={{ marginBottom: '20px' }}>
             <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-dark)', marginBottom: '8px' }}>
@@ -258,7 +256,7 @@ export default function RegisterPage() {
               opacity: loading ? 0.7 : 1,
             }}
           >
-            {loading ? 'Creating Account...' : 'Create Account'}
+            {loading ? 'Creating Account...' : 'Create Student Account'}
           </button>
         </form>
 

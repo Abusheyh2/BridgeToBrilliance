@@ -3,16 +3,47 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 
 export default function Navbar() {
+  const router = useRouter()
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [showAdminLogin, setShowAdminLogin] = useState(false)
+  const [adminPassword, setAdminPassword] = useState('')
+  const [adminError, setAdminError] = useState('')
+  const [adminLoading, setAdminLoading] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50)
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768) setMobileOpen(false)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  const handleAdminLogin = async () => {
+    setAdminLoading(true)
+    setAdminError('')
+    const supabase = createClient()
+    const { error } = await supabase.auth.signInWithPassword({
+      email: 'admin@bridgetobrilliance.com',
+      password: adminPassword,
+    })
+    setAdminLoading(false)
+    if (error) {
+      setAdminError('Invalid password')
+      return
+    }
+    router.push('/dashboard/admin')
+  }
 
   // Close mobile menu when resizing to desktop
   useEffect(() => {
@@ -51,7 +82,7 @@ export default function Navbar() {
           transition: 'all 0.3s ease',
         }}
       >
-        <Link href="/" style={{ textDecoration: 'none' }}>
+        <Link href="/" style={{ textDecoration: 'none', position: 'relative' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{
               width: '36px',
@@ -62,7 +93,25 @@ export default function Navbar() {
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: '18px',
-            }}>🌉</div>
+              position: 'relative',
+            }}>🌉
+              <button
+                onClick={() => setShowAdminLogin(true)}
+                aria-label="Admin Access"
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  right: 0,
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.08)',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                }}
+              />
+            </div>
             <span style={{
               fontFamily: 'var(--font-heading)',
               fontSize: '1.3rem',
@@ -107,6 +156,107 @@ export default function Navbar() {
           {mobileOpen ? '✕' : '☰'}
         </button>
       </motion.nav>
+
+      {/* Admin Login Modal */}
+      <AnimatePresence>
+        {showAdminLogin && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => { setShowAdminLogin(false); setAdminError(''); setAdminPassword('') }}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0,0,0,0.8)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 200,
+              padding: '20px',
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: '#0d1b3e',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '20px',
+                padding: '32px',
+                width: '100%',
+                maxWidth: '400px',
+              }}
+            >
+              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', color: 'white', marginBottom: '8px' }}>
+                Admin Access
+              </h2>
+              <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', marginBottom: '24px' }}>
+                Enter admin password to continue
+              </p>
+              <input
+                type="password"
+                value={adminPassword}
+                onChange={(e) => { setAdminPassword(e.target.value); setAdminError('') }}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleAdminLogin() }}
+                placeholder="Password"
+                autoFocus
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: '10px',
+                  background: 'rgba(255,255,255,0.05)',
+                  border: `1px solid ${adminError ? '#dc3545' : 'rgba(255,255,255,0.1)'}`,
+                  color: 'white',
+                  fontSize: '0.9rem',
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                  marginBottom: adminError ? '8px' : '16px',
+                }}
+              />
+              {adminError && (
+                <p style={{ fontSize: '0.8rem', color: '#dc3545', marginBottom: '12px' }}>{adminError}</p>
+              )}
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  onClick={() => { setShowAdminLogin(false); setAdminError(''); setAdminPassword('') }}
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    borderRadius: '10px',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    color: 'rgba(255,255,255,0.7)',
+                    fontSize: '0.9rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAdminLogin}
+                  disabled={adminLoading || !adminPassword}
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    borderRadius: '10px',
+                    border: 'none',
+                    background: adminPassword ? 'linear-gradient(135deg, #4169E1, #2D4FC8)' : 'rgba(255,255,255,0.05)',
+                    color: adminPassword ? 'white' : 'rgba(255,255,255,0.3)',
+                    fontSize: '0.9rem',
+                    fontWeight: 600,
+                    cursor: adminPassword ? 'pointer' : 'default',
+                  }}
+                >
+                  {adminLoading ? 'Signing in...' : 'Sign In'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Mobile menu overlay */}
       <AnimatePresence>
