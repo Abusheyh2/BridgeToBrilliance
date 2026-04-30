@@ -3,6 +3,43 @@
 -- Run this in your Supabase SQL Editor
 -- ============================================
 
+-- ============================================
+-- 0. CLEANUP (Run first to allow re-running migration)
+-- ============================================
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+DROP FUNCTION IF EXISTS public.handle_new_user();
+
+DROP TABLE IF EXISTS public.teacher_assignments CASCADE;
+DROP TABLE IF EXISTS public.security_settings CASCADE;
+DROP TABLE IF EXISTS public.security_logs CASCADE;
+DROP TABLE IF EXISTS public.rate_limits CASCADE;
+DROP TABLE IF EXISTS public.ip_bans CASCADE;
+DROP TABLE IF EXISTS public.user_achievements CASCADE;
+DROP TABLE IF EXISTS public.study_plan_tasks CASCADE;
+DROP TABLE IF EXISTS public.study_plans CASCADE;
+DROP TABLE IF EXISTS public.bookmarks CASCADE;
+DROP TABLE IF EXISTS public.quiz_attempts CASCADE;
+DROP TABLE IF EXISTS public.quiz_questions CASCADE;
+DROP TABLE IF EXISTS public.quizzes CASCADE;
+DROP TABLE IF EXISTS public.study_sessions CASCADE;
+DROP TABLE IF EXISTS public.study_notes CASCADE;
+DROP TABLE IF EXISTS public.flashcard_progress CASCADE;
+DROP TABLE IF EXISTS public.flashcards CASCADE;
+DROP TABLE IF EXISTS public.flashcard_decks CASCADE;
+DROP TABLE IF EXISTS public.chat_messages CASCADE;
+DROP TABLE IF EXISTS public.study_group_members CASCADE;
+DROP TABLE IF EXISTS public.study_groups CASCADE;
+DROP TABLE IF EXISTS public.grades CASCADE;
+DROP TABLE IF EXISTS public.progress CASCADE;
+DROP TABLE IF EXISTS public.enrollments CASCADE;
+DROP TABLE IF EXISTS public.classes CASCADE;
+DROP TABLE IF EXISTS public.announcements CASCADE;
+DROP TABLE IF EXISTS public.lessons CASCADE;
+DROP TABLE IF EXISTS public.subjects CASCADE;
+DROP TABLE IF EXISTS public.profiles CASCADE;
+
+DROP TYPE IF EXISTS public.user_role;
+
 -- Enable necessary extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
@@ -26,6 +63,18 @@ CREATE TABLE profiles (
 
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
+-- Helper function to safely check admin status without triggering RLS recursion
+CREATE OR REPLACE FUNCTION public.is_current_user_admin()
+RETURNS boolean
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.profiles WHERE user_id = auth.uid() AND role = 'admin'
+  );
+$$;
+
 -- Everyone can read profiles
 CREATE POLICY "Profiles are viewable by everyone" ON profiles
   FOR SELECT USING (true);
@@ -38,13 +87,9 @@ CREATE POLICY "Users can update own profile" ON profiles
 CREATE POLICY "Users can insert own profile" ON profiles
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
--- Admins can do everything
+-- Admins can do everything (uses SECURITY DEFINER function to prevent recursion)
 CREATE POLICY "Admins have full access to profiles" ON profiles
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin'
-    )
-  );
+  FOR ALL USING (public.is_current_user_admin());
 
 -- ============================================
 -- 2. SUBJECTS TABLE
@@ -77,14 +122,14 @@ CREATE POLICY "Teachers can create subjects" ON subjects
 CREATE POLICY "Teachers can update own subjects" ON subjects
   FOR UPDATE USING (
     teacher_id = (SELECT id FROM profiles WHERE user_id = auth.uid())
-    OR EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+    OR public.is_current_user_admin()
   );
 
 -- Teachers can delete their own subjects
 CREATE POLICY "Teachers can delete own subjects" ON subjects
   FOR DELETE USING (
     teacher_id = (SELECT id FROM profiles WHERE user_id = auth.uid())
-    OR EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+    OR public.is_current_user_admin()
   );
 
 -- ============================================
@@ -115,7 +160,7 @@ CREATE POLICY "Teachers can manage lessons" ON lessons
       JOIN profiles p ON s.teacher_id = p.id
       WHERE s.id = lessons.subject_id AND p.user_id = auth.uid()
     )
-    OR EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+    OR public.is_current_user_admin()
   );
 
 -- ============================================
@@ -148,14 +193,14 @@ CREATE POLICY "Teachers and admins can create announcements" ON announcements
 CREATE POLICY "Authors can update own announcements" ON announcements
   FOR UPDATE USING (
     author_id = (SELECT id FROM profiles WHERE user_id = auth.uid())
-    OR EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+    OR public.is_current_user_admin()
   );
 
 -- Authors can delete their own announcements
 CREATE POLICY "Authors can delete own announcements" ON announcements
   FOR DELETE USING (
     author_id = (SELECT id FROM profiles WHERE user_id = auth.uid())
-    OR EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+    OR public.is_current_user_admin()
   );
 
 -- ============================================
@@ -185,7 +230,7 @@ CREATE POLICY "Teachers can manage classes" ON classes
       JOIN profiles p ON s.teacher_id = p.id
       WHERE s.id = classes.subject_id AND p.user_id = auth.uid()
     )
-    OR EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+    OR public.is_current_user_admin()
   );
 
 -- ============================================
@@ -212,14 +257,14 @@ CREATE POLICY "Students can see own enrollments" ON enrollments
 CREATE POLICY "Students can enroll themselves" ON enrollments
   FOR INSERT WITH CHECK (
     student_id = (SELECT id FROM profiles WHERE user_id = auth.uid())
-    OR EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+    OR public.is_current_user_admin()
   );
 
 -- Students can unenroll themselves, admins can unenroll anyone
 CREATE POLICY "Students can unenroll themselves" ON enrollments
   FOR DELETE USING (
     student_id = (SELECT id FROM profiles WHERE user_id = auth.uid())
-    OR EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+    OR public.is_current_user_admin()
   );
 
 -- ============================================
@@ -317,11 +362,11 @@ CREATE POLICY "Students/teachers can create groups" ON study_groups FOR INSERT W
 );
 CREATE POLICY "Creators can update their groups" ON study_groups FOR UPDATE USING (
   created_by = (SELECT id FROM profiles WHERE user_id = auth.uid())
-  OR EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+  OR public.is_current_user_admin()
 );
 CREATE POLICY "Creators can delete their groups" ON study_groups FOR DELETE USING (
   created_by = (SELECT id FROM profiles WHERE user_id = auth.uid())
-  OR EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+  OR public.is_current_user_admin()
 );
 
 -- ============================================
@@ -398,11 +443,11 @@ CREATE POLICY "Students/teachers can create decks" ON flashcard_decks FOR INSERT
 );
 CREATE POLICY "Creators can update their decks" ON flashcard_decks FOR UPDATE USING (
   created_by = (SELECT id FROM profiles WHERE user_id = auth.uid())
-  OR EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+  OR public.is_current_user_admin()
 );
 CREATE POLICY "Creators can delete their decks" ON flashcard_decks FOR DELETE USING (
   created_by = (SELECT id FROM profiles WHERE user_id = auth.uid())
-  OR EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+  OR public.is_current_user_admin()
 );
 
 -- ============================================
@@ -422,7 +467,7 @@ ALTER TABLE flashcards ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Flashcards viewable by all" ON flashcards FOR SELECT USING (true);
 CREATE POLICY "Deck creators can manage flashcards" ON flashcards FOR ALL USING (
   EXISTS (SELECT 1 FROM flashcard_decks WHERE id = flashcards.deck_id AND created_by = (SELECT id FROM profiles WHERE user_id = auth.uid()))
-  OR EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+  OR public.is_current_user_admin()
 );
 
 -- ============================================
@@ -521,11 +566,11 @@ CREATE POLICY "Students/teachers can create quizzes" ON quizzes FOR INSERT WITH 
 );
 CREATE POLICY "Creators can update their quizzes" ON quizzes FOR UPDATE USING (
   created_by = (SELECT id FROM profiles WHERE user_id = auth.uid())
-  OR EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+  OR public.is_current_user_admin()
 );
 CREATE POLICY "Creators can delete their quizzes" ON quizzes FOR DELETE USING (
   created_by = (SELECT id FROM profiles WHERE user_id = auth.uid())
-  OR EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+  OR public.is_current_user_admin()
 );
 
 -- ============================================
@@ -549,7 +594,7 @@ ALTER TABLE quiz_questions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Quiz questions viewable by all" ON quiz_questions FOR SELECT USING (true);
 CREATE POLICY "Quiz creators can manage questions" ON quiz_questions FOR ALL USING (
   EXISTS (SELECT 1 FROM quizzes WHERE id = quiz_questions.quiz_id AND created_by = (SELECT id FROM profiles WHERE user_id = auth.uid()))
-  OR EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+  OR public.is_current_user_admin()
 );
 
 -- ============================================
@@ -712,10 +757,10 @@ CREATE TABLE ip_bans (
 ALTER TABLE ip_bans ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Admins can manage IP bans" ON ip_bans FOR ALL USING (
-  EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+  public.is_current_user_admin()
 );
 CREATE POLICY "IP bans viewable by admins" ON ip_bans FOR SELECT USING (
-  EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+  public.is_current_user_admin()
 );
 
 -- ============================================
@@ -733,7 +778,7 @@ CREATE TABLE rate_limits (
 ALTER TABLE rate_limits ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Admins can view rate limits" ON rate_limits FOR SELECT USING (
-  EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+  public.is_current_user_admin()
 );
 CREATE POLICY "System can manage rate limits" ON rate_limits FOR ALL USING (true);
 
@@ -752,7 +797,7 @@ CREATE TABLE security_logs (
 ALTER TABLE security_logs ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Admins can view security logs" ON security_logs FOR SELECT USING (
-  EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+  public.is_current_user_admin()
 );
 CREATE POLICY "System can create security logs" ON security_logs FOR INSERT WITH CHECK (true);
 
@@ -768,9 +813,8 @@ CREATE TABLE security_settings (
 
 ALTER TABLE security_settings ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Admins can manage security settings" ON security_settings FOR ALL USING (
-  EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
-);
+CREATE POLICY "Admins can manage security settings" ON security_settings FOR ALL USING (public.is_current_user_admin());
+CREATE POLICY "Public can read security settings" ON security_settings FOR SELECT USING (true);
 
 -- ============================================
 -- 31. SEED SECURITY SETTINGS
@@ -797,7 +841,7 @@ ALTER TABLE teacher_assignments ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "All can view teacher assignments" ON teacher_assignments FOR SELECT USING (true);
 CREATE POLICY "Admins can manage assignments" ON teacher_assignments FOR ALL USING (
-  EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND role = 'admin')
+  public.is_current_user_admin()
 );
 
 CREATE OR REPLACE FUNCTION public.handle_new_user()

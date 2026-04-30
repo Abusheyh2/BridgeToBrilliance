@@ -1,0 +1,39 @@
+[❌] Database Connection | infinite recursion detected in policy for relation "profiles"
+[✅] Table: profiles | infinite recursion detected in policy for relation "profiles"
+[✅] Table: subjects | Exists
+[✅] Table: lessons | infinite recursion detected in policy for relation "profiles"
+[✅] Table: announcements | Exists
+[✅] Table: classes | infinite recursion detected in policy for relation "profiles"
+[✅] Table: enrollments | infinite recursion detected in policy for relation "profiles"
+[✅] Table: progress | infinite recursion detected in policy for relation "profiles"
+[✅] Table: grades | infinite recursion detected in policy for relation "profiles"
+[✅] Table: study_groups | Exists
+[✅] Table: study_group_members | infinite recursion detected in policy for relation "profiles"
+[✅] Table: chat_messages | infinite recursion detected in policy for relation "profiles"
+[✅] Table: flashcard_decks | Exists
+[✅] Table: flashcards | infinite recursion detected in policy for relation "profiles"
+[✅] Table: flashcard_progress | infinite recursion detected in policy for relation "profiles"
+[✅] Table: study_notes | infinite recursion detected in policy for relation "profiles"
+[✅] Table: study_sessions | infinite recursion detected in policy for relation "profiles"
+[✅] Table: quizzes | Exists
+[✅] Table: quiz_questions | infinite recursion detected in policy for relation "profiles"
+[✅] Table: quiz_attempts | infinite recursion detected in policy for relation "profiles"
+[✅] Table: bookmarks | infinite recursion detected in policy for relation "profiles"
+[✅] Table: study_plans | infinite recursion detected in policy for relation "profiles"
+[✅] Table: study_plan_tasks | infinite recursion detected in policy for relation "profiles"
+[✅] Table: achievements | Exists
+[✅] Table: user_achievements | infinite recursion detected in policy for relation "profiles"
+[✅] Table: ip_bans | infinite recursion detected in policy for relation "profiles"
+[✅] Table: rate_limits | infinite recursion detected in policy for relation "profiles"
+[✅] Table: security_logs | infinite recursion detected in policy for relation "profiles"
+[✅] Table: security_settings | infinite recursion detected in policy for relation "profiles"
+[✅] Table: teacher_assignments | infinite recursion detected in policy for relation "profiles"
+[❌] RLS Block: ip_bans | Correctly blocked
+[❌] RLS Block: security_settings | Correctly blocked
+[❌] RLS Block: profiles | Correctly blocked
+[✅] Auth Trigger | Function exists in migration (verify manually in Dashboard if needed)
+[✅] Achievements Seed | Found 10 achievements (Expected 10)
+[❌] Security Settings Seed | Found 0 settings (Expected 3)
+[❌] Profile Roles Valid | All roles valid
+[❌] Profiles: is_banned column | infinite recursion detected in policy for relation "profiles"
+[✅] Teacher Assignments table | infinite recursion detected in policy for relation "profiles"
