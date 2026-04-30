@@ -241,8 +241,8 @@ export default function Hero() {
             }}
           >
             {[
-              { num: '1,200+', label: 'Students' },
-              { num: '50+', label: 'Courses' },
+              { num: '4', label: 'Subjects' },
+              { num: '13', label: 'Teachers' },
               { num: '100%', label: 'Free' },
             ].map((stat, i) => (
               <div key={i}>

@@ -7,7 +7,7 @@ const features = [
   {
     icon: '🎥',
     title: 'Video Lessons',
-    description: 'Access structured video content organized by subject with progress tracking. Learn at your own pace, anytime.',
+    description: 'Structured video content organized by subject. Learn at your own pace with progress tracking.',
   },
   {
     icon: '📡',
@@ -17,7 +17,7 @@ const features = [
   {
     icon: '📊',
     title: 'Progress Tracking',
-    description: 'Visual analytics showing your learning journey. Track completed lessons, grades, and growth over time.',
+    description: 'Visual analytics showing learning journeys. Track completed lessons, grades, and growth over time.',
   },
   {
     icon: '📢',
@@ -27,12 +27,42 @@ const features = [
   {
     icon: '📝',
     title: 'Gradebook',
-    description: 'Receive grades and personalized feedback from teachers. Track your performance across all subjects.',
+    description: 'Teachers provide grades and personalized feedback. Track performance across all subjects.',
   },
   {
     icon: '🔐',
     title: 'Role-Based Access',
     description: 'Tailored dashboards for students, teachers, and administrators. Each role gets the tools they need.',
+  },
+  {
+    icon: '🃏',
+    title: 'Flashcards',
+    description: 'Create and review flashcards with spaced repetition for better retention and mastery.',
+  },
+  {
+    icon: '📝',
+    title: 'Study Notes',
+    description: 'Take organized notes with tags and colors. Pin important ones for quick access.',
+  },
+  {
+    icon: '⏱️',
+    title: 'Study Timer',
+    description: 'Pomodoro timer with session tracking. Build focus and measure study time.',
+  },
+  {
+    icon: '💡',
+    title: 'Quizzes',
+    description: 'Take interactive quizzes with instant feedback. Track scores and review mistakes.',
+  },
+  {
+    icon: '🔖',
+    title: 'Bookmarks',
+    description: 'Save important lessons and subjects for quick access. Organize your study materials.',
+  },
+  {
+    icon: '📋',
+    title: 'Study Plans',
+    description: 'Create structured study plans with tasks and deadlines. Stay organized and on track.',
   },
 ]
 
