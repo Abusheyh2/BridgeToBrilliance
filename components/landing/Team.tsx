@@ -1,7 +1,7 @@
 'use client'
 
-import { motion, useInView } from 'framer-motion'
-import { useRef, useState, useEffect } from 'react'
+import { motion, useInView, useAnimationFrame } from 'framer-motion'
+import { useRef, useState } from 'react'
 
 const teamMembers = [
   {
@@ -97,80 +97,81 @@ const teamMembers = [
   },
 ]
 
-function MemberCard({ member, angle, radius, isActive, onClick }: {
-  member: typeof teamMembers[0]
-  angle: number
-  radius: number
-  isActive: boolean
-  onClick: () => void
-}) {
-  const rad = (angle * Math.PI) / 180
-  const x = Math.cos(rad) * radius
-  const y = Math.sin(rad) * radius * 0.4
+const RADIUS_X = 320
+const RADIUS_Y = 140
+const CARD_SIZE = 130
 
-  const scale = isActive ? 1.2 : 0.85
-  const opacity = isActive ? 1 : 0.5
-  const zIndex = isActive ? 10 : 1
+function OrbitCard({ member, index, total, rotation }: {
+  member: typeof teamMembers[0]
+  index: number
+  total: number
+  rotation: number
+}) {
+  const baseAngle = (360 / total) * index
+  const angle = baseAngle + rotation
+  const rad = (angle * Math.PI) / 180
+
+  const x = Math.cos(rad) * RADIUS_X
+  const y = Math.sin(rad) * RADIUS_Y
+
+  const normalizedAngle = ((angle % 360) + 360) % 360
+  const isActive = normalizedAngle > 315 || normalizedAngle < 45
 
   return (
-    <motion.div
-      onClick={onClick}
+    <div
       style={{
         position: 'absolute',
-        top: '50%',
+        width: CARD_SIZE,
+        height: CARD_SIZE,
         left: '50%',
-        width: '140px',
-        height: '140px',
-        marginLeft: '-70px',
-        marginTop: '-70px',
+        top: '50%',
+        marginLeft: -(CARD_SIZE / 2),
+        marginTop: -(CARD_SIZE / 2),
+        transform: `translate(${x}px, ${y}px)`,
         borderRadius: '50%',
         background: isActive
-          ? `linear-gradient(135deg, ${member.color}, ${member.color}99)`
-          : `linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))`,
-        border: `2px solid ${isActive ? member.color : 'rgba(255,255,255,0.1)'}`,
+          ? `linear-gradient(135deg, ${member.color}, ${member.color}88)`
+          : 'rgba(255,255,255,0.04)',
+        border: `2px solid ${isActive ? member.color : 'rgba(255,255,255,0.08)'}`,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
+        transition: 'background 0.3s, border-color 0.3s, box-shadow 0.3s',
+        boxShadow: isActive ? `0 0 30px ${member.color}40` : 'none',
+        zIndex: isActive ? 10 : 1,
         cursor: 'pointer',
-        zIndex,
-        transition: 'border-color 0.3s, background 0.3s',
-        transform: `translate(${x}px, ${y}px)`,
+        opacity: isActive ? 1 : 0.55,
+        scale: isActive ? 1.15 : 0.9,
       }}
-      animate={{
-        scale,
-        opacity,
-      }}
-      transition={{ duration: 0.5, ease: 'easeInOut' }}
     >
       <div style={{
-        fontSize: '1.4rem',
+        fontSize: '1.3rem',
         fontWeight: 700,
-        color: isActive ? 'white' : 'rgba(255,255,255,0.6)',
+        color: isActive ? 'white' : 'rgba(255,255,255,0.5)',
         fontFamily: 'var(--font-heading)',
         marginBottom: '4px',
       }}>
         {member.initials}
       </div>
       <div style={{
-        fontSize: '0.65rem',
+        fontSize: '0.6rem',
         fontWeight: 600,
-        color: isActive ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.4)',
+        color: isActive ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.35)',
         textAlign: 'center',
-        padding: '0 8px',
+        padding: '0 6px',
         lineHeight: 1.2,
       }}>
         {member.name.split(' ').pop()}
       </div>
       <div style={{
-        fontSize: '0.55rem',
-        color: isActive ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.3)',
-        textAlign: 'center',
+        fontSize: '0.5rem',
+        color: isActive ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.25)',
         marginTop: '2px',
       }}>
         {member.role}
       </div>
-    </motion.div>
+    </div>
   )
 }
 
@@ -178,39 +179,22 @@ export default function Team() {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
   const [isPaused, setIsPaused] = useState(false)
-  const [rotation, setRotation] = useState(0)
-  const animFrame = useRef<number>(0)
+  const rotationRef = useRef(0)
+  const [, setTick] = useState(0)
 
-  const radius = 280
-  const speed = 0.15
+  useAnimationFrame((_, delta) => {
+    if (!isInView || isPaused) return
+    const speed = 0.012
+    rotationRef.current += delta * speed
+    if (rotationRef.current > 360) rotationRef.current -= 360
+    setTick(t => t + 1)
+  })
 
-  useEffect(() => {
-    if (!isInView) return
-
-    let cancelled = false
-    const animate = () => {
-      if (!cancelled && !isPaused) {
-        setRotation(prev => prev + speed)
-      }
-      animFrame.current = requestAnimationFrame(animate)
-    }
-    animFrame.current = requestAnimationFrame(animate)
-
-    return () => {
-      cancelled = true
-      if (animFrame.current) cancelAnimationFrame(animFrame.current)
-    }
-  }, [isInView, isPaused])
-
-  const handleCardClick = (_index: number) => {
-    setIsPaused(true)
-    setTimeout(() => setIsPaused(false), 3000)
-  }
-
-  // Compute which card is closest to the front (angle 0)
-  const frontAngle = ((-rotation % 360) + 360) % 360
+  const rotation = rotationRef.current
   const segmentAngle = 360 / teamMembers.length
-  const computedActive = Math.round(frontAngle / segmentAngle) % teamMembers.length
+  const frontAngle = ((360 - rotation) % 360 + 360) % 360
+  const activeIndex = Math.round(frontAngle / segmentAngle) % teamMembers.length
+  const activeMember = teamMembers[activeIndex]
 
   return (
     <section
@@ -225,7 +209,7 @@ export default function Team() {
     >
       <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
         <motion.div
-          style={{ textAlign: 'center', marginBottom: '64px' }}
+          style={{ textAlign: 'center', marginBottom: '48px' }}
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8 }}
@@ -264,110 +248,100 @@ export default function Team() {
           </h2>
 
           <p style={{
-            fontSize: '1rem',
-            color: 'rgba(255,255,255,0.5)',
-            maxWidth: '500px',
-            margin: '0 auto',
+            fontSize: '0.9rem',
+            color: 'rgba(255,255,255,0.4)',
           }}>
-            Hover to pause • Click a card to focus
+            Hover to pause the orbit
           </p>
         </motion.div>
 
-        {/* Carousel container */}
+        {/* Carousel */}
         <div
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
           style={{
             position: 'relative',
             width: '100%',
-            height: '600px',
+            height: '400px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
           }}
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
         >
           {/* Orbit ring */}
           <div style={{
             position: 'absolute',
-            width: radius * 2 + 140,
-            height: (radius * 0.4 * 2) + 140,
+            width: RADIUS_X * 2,
+            height: RADIUS_Y * 2,
             borderRadius: '50%',
             border: '1px dashed rgba(255,255,255,0.06)',
           }} />
 
-          {/* Center glow */}
+          {/* Center */}
           <div style={{
             position: 'absolute',
-            width: '120px',
-            height: '120px',
+            width: '80px',
+            height: '80px',
             borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(255,179,0,0.15) 0%, transparent 70%)',
-          }} />
-          <div style={{
-            position: 'absolute',
-            fontSize: '2.5rem',
+            background: 'radial-gradient(circle, rgba(255,179,0,0.1) 0%, transparent 70%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '2rem',
           }}>
             🌉
           </div>
 
           {/* Cards */}
-          {teamMembers.map((member, i) => {
-            const angle = (360 / teamMembers.length) * i + rotation
-            const normalizedAngle = ((angle % 360) + 360) % 360
-            const isActive = normalizedAngle < 45 || normalizedAngle > 315
-
-            return (
-              <MemberCard
-                key={i}
-                member={member}
-                angle={angle}
-                radius={radius}
-                isActive={isActive}
-                onClick={() => handleCardClick(i)}
-              />
-            )
-          })}
+          {teamMembers.map((member, i) => (
+            <OrbitCard
+              key={member.name}
+              member={member}
+              index={i}
+              total={teamMembers.length}
+              rotation={rotation}
+            />
+          ))}
         </div>
 
         {/* Active member detail */}
         <motion.div
-          key={computedActive}
-          initial={{ opacity: 0, y: 20 }}
+          key={activeMember.name}
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
+          transition={{ duration: 0.3 }}
           style={{
-            marginTop: '20px',
-            padding: '24px 32px',
+            padding: '20px 28px',
             borderRadius: '16px',
             background: 'rgba(255,255,255,0.03)',
             border: '1px solid rgba(255,255,255,0.08)',
             textAlign: 'center',
-            maxWidth: '500px',
-            margin: '20px auto 0',
+            maxWidth: '480px',
+            margin: '0 auto',
           }}
         >
           <div style={{
-            fontSize: '1.1rem',
+            fontSize: '1.05rem',
             fontWeight: 700,
-            color: teamMembers[computedActive].color,
+            color: activeMember.color,
             fontFamily: 'var(--font-heading)',
-            marginBottom: '8px',
+            marginBottom: '6px',
           }}>
-            {teamMembers[computedActive].name}
+            {activeMember.name}
           </div>
           <div style={{
-            fontSize: '0.85rem',
+            fontSize: '0.8rem',
             color: 'rgba(255,255,255,0.5)',
-            marginBottom: '12px',
+            marginBottom: '10px',
           }}>
-            {teamMembers[computedActive].role}
+            {activeMember.role}
           </div>
           <p style={{
-            fontSize: '0.9rem',
+            fontSize: '0.85rem',
             color: 'rgba(255,255,255,0.4)',
             lineHeight: 1.6,
           }}>
-            {teamMembers[computedActive].bio}
+            {activeMember.bio}
           </p>
         </motion.div>
       </div>
