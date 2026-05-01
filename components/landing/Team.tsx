@@ -1,200 +1,116 @@
 'use client'
 
-import { motion, useInView, useAnimationFrame } from 'framer-motion'
-import { useRef, useState } from 'react'
+import { motion, useInView } from 'framer-motion'
+import { useRef, useState, useEffect } from 'react'
 
 const teamMembers = [
-  {
-    name: 'Nomozova Nozima',
-    role: 'Math Teacher',
-    bio: 'Dedicated mathematics educator bringing complex concepts to life with clarity and patience.',
-    initials: 'NN',
-    color: '#4169E1',
-  },
-  {
-    name: 'Muhammadjonova Madina',
-    role: 'Math Teacher',
-    bio: 'Passionate about making mathematics accessible and engaging for every student.',
-    initials: 'MM',
-    color: '#27AE60',
-  },
-  {
-    name: 'Qurbonov Jaloliddin',
-    role: 'Coding Teacher',
-    bio: 'Software developer turned educator, teaching the next generation of programmers.',
-    initials: 'QJ',
-    color: '#FFB300',
-  },
-  {
-    name: 'Shonazarov Abdurahmon',
-    role: 'Coding Teacher',
-    bio: 'Expert in modern programming languages with a focus on practical, project-based learning.',
-    initials: 'SA',
-    color: '#E74C3C',
-  },
-  {
-    name: 'Shokirov Aziz',
-    role: 'Physics Teacher',
-    bio: 'Bringing the laws of physics to life through interactive demonstrations and real-world examples.',
-    initials: 'SA',
-    color: '#9B59B6',
-  },
-  {
-    name: 'Nozimov Daler',
-    role: 'Physics Teacher',
-    bio: 'Making physics intuitive and exciting through hands-on experiments and clear explanations.',
-    initials: 'ND',
-    color: '#1ABC9C',
-  },
-  {
-    name: 'Gulmuradova Gulnoza',
-    role: 'English Teacher',
-    bio: 'Experienced language educator focused on building confidence in communication.',
-    initials: 'GG',
-    color: '#E67E22',
-  },
-  {
-    name: 'Mirzayeva Kamila',
-    role: 'English Teacher',
-    bio: 'Creating immersive English learning experiences that inspire fluency and creativity.',
-    initials: 'MK',
-    color: '#3498DB',
-  },
-  {
-    name: 'Akbaraliyev Eldor',
-    role: 'Media Officer',
-    bio: 'Managing all media operations and ensuring clear communication across the platform.',
-    initials: 'AE',
-    color: '#4169E1',
-  },
-  {
-    name: 'Adamboyev Behzod',
-    role: 'Media Team',
-    bio: 'Content creator and media specialist supporting the platform\'s visual identity.',
-    initials: 'AB',
-    color: '#FFB300',
-  },
-  {
-    name: 'Zokirjonov Abdulatif',
-    role: 'Media Team',
-    bio: 'Bringing creative vision to life through engaging multimedia content.',
-    initials: 'ZA',
-    color: '#27AE60',
-  },
-  {
-    name: 'Shodiyona',
-    role: 'Academic Coordinator',
-    bio: 'Overseeing curriculum alignment and ensuring academic excellence across all subjects.',
-    initials: 'SH',
-    color: '#9B59B6',
-  },
-  {
-    name: 'Xolmatova Kamola',
-    role: 'Operation Manager',
-    bio: 'Keeping everything running smoothly behind the scenes with efficient management.',
-    initials: 'XK',
-    color: '#E74C3C',
-  },
+  { name: 'Nomozova Nozima', role: 'Math Teacher', bio: 'Dedicated mathematics educator bringing complex concepts to life with clarity and patience.', initials: 'NN', color: '#4169E1' },
+  { name: 'Muhammadjonova Madina', role: 'Math Teacher', bio: 'Passionate about making mathematics accessible and engaging for every student.', initials: 'MM', color: '#27AE60' },
+  { name: 'Qurbonov Jaloliddin', role: 'Coding Teacher', bio: 'Software developer turned educator, teaching the next generation of programmers.', initials: 'QJ', color: '#FFB300' },
+  { name: 'Shonazarov Abdurahmon', role: 'Coding Teacher', bio: 'Expert in modern programming languages with a focus on practical, project-based learning.', initials: 'SA', color: '#E74C3C' },
+  { name: 'Shokirov Aziz', role: 'Physics Teacher', bio: 'Bringing the laws of physics to life through interactive demonstrations and real-world examples.', initials: 'SA', color: '#9B59B6' },
+  { name: 'Nozimov Daler', role: 'Physics Teacher', bio: 'Making physics intuitive and exciting through hands-on experiments and clear explanations.', initials: 'ND', color: '#1ABC9C' },
+  { name: 'Gulmuradova Gulnoza', role: 'English Teacher', bio: 'Experienced language educator focused on building confidence in communication.', initials: 'GG', color: '#E67E22' },
+  { name: 'Mirzayeva Kamila', role: 'English Teacher', bio: 'Creating immersive English learning experiences that inspire fluency and creativity.', initials: 'MK', color: '#3498DB' },
+  { name: 'Akbaraliyev Eldor', role: 'Media Officer', bio: 'Managing all media operations and ensuring clear communication across the platform.', initials: 'AE', color: '#4169E1' },
+  { name: 'Adamboyev Behzod', role: 'Media Team', bio: 'Content creator and media specialist supporting the platform\'s visual identity.', initials: 'AB', color: '#FFB300' },
+  { name: 'Zokirjonov Abdulatif', role: 'Media Team', bio: 'Bringing creative vision to life through engaging multimedia content.', initials: 'ZA', color: '#27AE60' },
+  { name: 'Shodiyona', role: 'Academic Coordinator', bio: 'Overseeing curriculum alignment and ensuring academic excellence across all subjects.', initials: 'SH', color: '#9B59B6' },
+  { name: 'Xolmatova Kamola', role: 'Operation Manager', bio: 'Keeping everything running smoothly behind the scenes with efficient management.', initials: 'XK', color: '#E74C3C' },
 ]
 
 const RADIUS_X = 320
 const RADIUS_Y = 140
 const CARD_SIZE = 130
-
-function OrbitCard({ member, index, total, rotation }: {
-  member: typeof teamMembers[0]
-  index: number
-  total: number
-  rotation: number
-}) {
-  const baseAngle = (360 / total) * index
-  const angle = baseAngle + rotation
-  const rad = (angle * Math.PI) / 180
-
-  const x = Math.cos(rad) * RADIUS_X
-  const y = Math.sin(rad) * RADIUS_Y
-
-  const normalizedAngle = ((angle % 360) + 360) % 360
-  const isActive = normalizedAngle > 315 || normalizedAngle < 45
-
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        width: CARD_SIZE,
-        height: CARD_SIZE,
-        left: '50%',
-        top: '50%',
-        marginLeft: -(CARD_SIZE / 2),
-        marginTop: -(CARD_SIZE / 2),
-        transform: `translate(${x}px, ${y}px)`,
-        borderRadius: '50%',
-        background: isActive
-          ? `linear-gradient(135deg, ${member.color}, ${member.color}88)`
-          : 'rgba(255,255,255,0.04)',
-        border: `2px solid ${isActive ? member.color : 'rgba(255,255,255,0.08)'}`,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        transition: 'background 0.3s, border-color 0.3s, box-shadow 0.3s',
-        boxShadow: isActive ? `0 0 30px ${member.color}40` : 'none',
-        zIndex: isActive ? 10 : 1,
-        cursor: 'pointer',
-        opacity: isActive ? 1 : 0.55,
-        scale: isActive ? 1.15 : 0.9,
-      }}
-    >
-      <div style={{
-        fontSize: '1.3rem',
-        fontWeight: 700,
-        color: isActive ? 'white' : 'rgba(255,255,255,0.5)',
-        fontFamily: 'var(--font-heading)',
-        marginBottom: '4px',
-      }}>
-        {member.initials}
-      </div>
-      <div style={{
-        fontSize: '0.6rem',
-        fontWeight: 600,
-        color: isActive ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.35)',
-        textAlign: 'center',
-        padding: '0 6px',
-        lineHeight: 1.2,
-      }}>
-        {member.name.split(' ').pop()}
-      </div>
-      <div style={{
-        fontSize: '0.5rem',
-        color: isActive ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.25)',
-        marginTop: '2px',
-      }}>
-        {member.role}
-      </div>
-    </div>
-  )
-}
+const SPEED = 0.008 // degrees per ms
 
 export default function Team() {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
   const [isPaused, setIsPaused] = useState(false)
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([])
   const rotationRef = useRef(0)
-  const [, setTick] = useState(0)
+  const animRef = useRef<number>(0)
+  const lastTimeRef = useRef<number>(0)
+  const activeRef = useRef<HTMLDivElement>(null)
 
-  useAnimationFrame((_, delta) => {
-    if (!isInView || isPaused) return
-    const speed = 0.012
-    rotationRef.current += delta * speed
-    if (rotationRef.current > 360) rotationRef.current -= 360
-    setTick(t => t + 1)
-  })
+  // Direct DOM animation - no React re-renders during orbit
+  useEffect(() => {
+    if (!isInView) return
 
-  const rotation = rotationRef.current
-  const segmentAngle = 360 / teamMembers.length
-  const frontAngle = ((360 - rotation) % 360 + 360) % 360
-  const activeIndex = Math.round(frontAngle / segmentAngle) % teamMembers.length
-  const activeMember = teamMembers[activeIndex]
+    const animate = (time: number) => {
+      if (!lastTimeRef.current) lastTimeRef.current = time
+      const delta = time - lastTimeRef.current
+
+      if (!isPaused) {
+        rotationRef.current = (rotationRef.current + delta * SPEED) % 360
+      }
+      lastTimeRef.current = time
+
+      const rot = rotationRef.current
+      const total = teamMembers.length
+      const seg = 360 / total
+      let closestDist = Infinity
+      let closestIdx = 0
+
+      for (let i = 0; i < total; i++) {
+        const baseAngle = seg * i
+        const angle = ((baseAngle + rot) % 360 + 360) % 360
+        const rad = (angle * Math.PI) / 180
+        const x = Math.cos(rad) * RADIUS_X
+        const y = Math.sin(rad) * RADIUS_Y
+
+        const el = cardRefs.current[i]
+        if (el) {
+          el.style.transform = `translate(${x}px, ${y}px)`
+          const distTo0 = Math.min(angle, 360 - angle)
+          const isActive = distTo0 < seg * 1.5
+          const scale = isActive ? 1.15 : 0.9
+          const opacity = isActive ? 1 : 0.5
+          const zIndex = isActive ? 10 : 1
+          el.style.scale = String(scale)
+          el.style.opacity = String(opacity)
+          el.style.zIndex = String(zIndex)
+
+          if (isActive) {
+            el.style.background = `linear-gradient(135deg, ${teamMembers[i].color}, ${teamMembers[i].color}88)`
+            el.style.borderColor = teamMembers[i].color
+            el.style.boxShadow = `0 0 30px ${teamMembers[i].color}40`
+          } else {
+            el.style.background = 'rgba(255,255,255,0.04)'
+            el.style.borderColor = 'rgba(255,255,255,0.08)'
+            el.style.boxShadow = 'none'
+          }
+
+          if (distTo0 < closestDist) {
+            closestDist = distTo0
+            closestIdx = i
+          }
+        }
+      }
+
+      // Update description without full re-render
+      if (activeRef.current) {
+        const m = teamMembers[closestIdx]
+        const colorEl = activeRef.current.querySelector('[data-field="color"]') as HTMLElement
+        const nameEl = activeRef.current.querySelector('[data-field="name"]') as HTMLElement
+        const roleEl = activeRef.current.querySelector('[data-field="role"]') as HTMLElement
+        const bioEl = activeRef.current.querySelector('[data-field="bio"]') as HTMLElement
+        if (colorEl) colorEl.style.color = m.color
+        if (nameEl) nameEl.textContent = m.name
+        if (roleEl) roleEl.textContent = m.role
+        if (bioEl) bioEl.textContent = m.bio
+      }
+
+      animRef.current = requestAnimationFrame(animate)
+    }
+
+    animRef.current = requestAnimationFrame(animate)
+    return () => {
+      cancelAnimationFrame(animRef.current)
+      lastTimeRef.current = 0
+    }
+  }, [isInView, isPaused])
 
   return (
     <section
@@ -247,10 +163,7 @@ export default function Team() {
             </span>
           </h2>
 
-          <p style={{
-            fontSize: '0.9rem',
-            color: 'rgba(255,255,255,0.4)',
-          }}>
+          <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.4)' }}>
             Hover to pause the orbit
           </p>
         </motion.div>
@@ -280,13 +193,10 @@ export default function Team() {
           {/* Center */}
           <div style={{
             position: 'absolute',
-            width: '80px',
-            height: '80px',
+            width: '80px', height: '80px',
             borderRadius: '50%',
             background: 'radial-gradient(circle, rgba(255,179,0,0.1) 0%, transparent 70%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: '2rem',
           }}>
             🌉
@@ -294,22 +204,52 @@ export default function Team() {
 
           {/* Cards */}
           {teamMembers.map((member, i) => (
-            <OrbitCard
+            <div
               key={member.name}
-              member={member}
-              index={i}
-              total={teamMembers.length}
-              rotation={rotation}
-            />
+              ref={el => { cardRefs.current[i] = el }}
+              style={{
+                position: 'absolute',
+                width: CARD_SIZE, height: CARD_SIZE,
+                left: '50%', top: '50%',
+                marginLeft: -(CARD_SIZE / 2), marginTop: -(CARD_SIZE / 2),
+                borderRadius: '50%',
+                background: 'rgba(255,255,255,0.04)',
+                border: '2px solid rgba(255,255,255,0.08)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                transition: 'background 0.3s, border-color 0.3s, box-shadow 0.3s, scale 0.3s, opacity 0.3s',
+                willChange: 'transform',
+              }}
+            >
+              <div style={{
+                fontSize: '1.3rem', fontWeight: 700,
+                color: 'rgba(255,255,255,0.5)',
+                fontFamily: 'var(--font-heading)', marginBottom: '4px',
+              }}>
+                {member.initials}
+              </div>
+              <div style={{
+                fontSize: '0.6rem', fontWeight: 600,
+                color: 'rgba(255,255,255,0.35)', textAlign: 'center',
+                padding: '0 6px', lineHeight: 1.2,
+              }}>
+                {member.name.split(' ').pop()}
+              </div>
+              <div style={{
+                fontSize: '0.5rem', color: 'rgba(255,255,255,0.25)', marginTop: '2px',
+              }}>
+                {member.role}
+              </div>
+            </div>
           ))}
         </div>
 
         {/* Active member detail */}
-        <motion.div
-          key={activeMember.name}
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
+        <div
+          ref={activeRef}
           style={{
             padding: '20px 28px',
             borderRadius: '16px',
@@ -318,32 +258,27 @@ export default function Team() {
             textAlign: 'center',
             maxWidth: '480px',
             margin: '0 auto',
+            minHeight: '110px',
           }}
         >
-          <div style={{
-            fontSize: '1.05rem',
-            fontWeight: 700,
-            color: activeMember.color,
-            fontFamily: 'var(--font-heading)',
-            marginBottom: '6px',
+          <div data-field="color" style={{
+            fontSize: '1.05rem', fontWeight: 700,
+            fontFamily: 'var(--font-heading)', marginBottom: '6px',
+            color: '#FFB300',
           }}>
-            {activeMember.name}
+            <span data-field="name">{teamMembers[0].name}</span>
           </div>
-          <div style={{
-            fontSize: '0.8rem',
-            color: 'rgba(255,255,255,0.5)',
-            marginBottom: '10px',
+          <div data-field="role" style={{
+            fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', marginBottom: '10px',
           }}>
-            {activeMember.role}
+            {teamMembers[0].role}
           </div>
-          <p style={{
-            fontSize: '0.85rem',
-            color: 'rgba(255,255,255,0.4)',
-            lineHeight: 1.6,
+          <p data-field="bio" style={{
+            fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.6,
           }}>
-            {activeMember.bio}
+            {teamMembers[0].bio}
           </p>
-        </motion.div>
+        </div>
       </div>
     </section>
   )
