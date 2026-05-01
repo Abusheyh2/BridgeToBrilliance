@@ -93,6 +93,23 @@ function BridgeSVG() {
           <stop offset="0%" stopColor="#FFB300" />
           <stop offset="100%" stopColor="#CC8800" />
         </linearGradient>
+        <radialGradient id="sunGlow">
+          <stop offset="0%" stopColor="rgba(255, 200, 80, 0.9)" />
+          <stop offset="40%" stopColor="rgba(255, 179, 0, 0.4)" />
+          <stop offset="100%" stopColor="rgba(255, 179, 0, 0)" />
+        </radialGradient>
+        <radialGradient id="sunHalo">
+          <stop offset="0%" stopColor="rgba(255, 220, 130, 0.6)" />
+          <stop offset="100%" stopColor="rgba(255, 179, 0, 0)" />
+        </radialGradient>
+        <filter id="sunBloom">
+          <feGaussianBlur stdDeviation="4" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
         <filter id="glow">
           <feGaussianBlur stdDeviation="2" result="coloredBlur" />
           <feMerge>
@@ -101,6 +118,37 @@ function BridgeSVG() {
           </feMerge>
         </filter>
       </defs>
+
+      {/* ===== SUN (behind everything) ===== */}
+      {/* Sun halo */}
+      <motion.circle cx="300" cy={deckY - 10} r="80" fill="url(#sunHalo)"
+        animate={{ r: [80, 90, 80], opacity: [0.5, 0.8, 0.5] }}
+        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }} />
+      {/* Sun glow */}
+      <motion.circle cx="300" cy={deckY - 10} r="45" fill="url(#sunGlow)"
+        animate={{ r: [45, 50, 45], opacity: [0.8, 1, 0.8] }}
+        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }} />
+      {/* Sun core */}
+      <motion.circle cx="300" cy={deckY - 10} r="18" fill="#FFE4A0" filter="url(#sunBloom)"
+        animate={{ r: [18, 20, 18] }}
+        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }} />
+      {/* Sun inner bright spot */}
+      <motion.circle cx="300" cy={deckY - 10} r="8" fill="white" opacity="0.9"
+        animate={{ opacity: [0.9, 1, 0.9] }} transition={{ duration: 3, repeat: Infinity }} />
+      {/* Sun rays */}
+      {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((angle, i) => (
+        <motion.line key={`ray-${i}`}
+          x1="300" y1={deckY - 10}
+          x2={300 + Math.cos((angle * Math.PI) / 180) * 65}
+          y2={(deckY - 10) + Math.sin((angle * Math.PI) / 180) * 65}
+          stroke="rgba(255, 210, 100, 0.15)" strokeWidth="2" strokeLinecap="round"
+          animate={{ opacity: [0.1, 0.25, 0.1], strokeWidth: [2, 2.5, 2] }}
+          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: i * 0.15 }}
+        />
+      ))}
+
+      {/* Horizon glow (behind bridge, at deck level) */}
+      <motion.ellipse cx="300" cy={deckY} rx="250" ry="15" fill="rgba(255,179,0,0.06)" />
 
       {/* Water */}
       <motion.rect x="0" y={deckY + 20} width="600" height="100" fill="url(#waterGrad)" rx="4" />
@@ -199,12 +247,13 @@ function BridgeSVG() {
       <rect x="15" y={deckY - 8} width="12" height="16" rx="2" fill="rgba(255,179,0,0.4)" />
       <rect x="573" y={deckY - 8} width="12" height="16" rx="2" fill="rgba(255,179,0,0.4)" />
 
-      {/* Glowing light on bridge */}
-      <motion.circle cx="300" cy={deckY} r="6" fill="#FFB300" filter="url(#glow)"
-        animate={{ r: [6, 10, 6], opacity: [0.6, 1, 0.6] }}
+      {/* Sun reflection on water */}
+      <motion.ellipse cx="300" cy={deckY + 35} rx="40" ry="6" fill="rgba(255,200,80,0.15)"
+        animate={{ rx: [40, 50, 40], opacity: [0.15, 0.25, 0.15] }}
         transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }} />
-      <motion.circle cx="300" cy={deckY} r="2" fill="white"
-        animate={{ opacity: [0.8, 1, 0.8] }} transition={{ duration: 3, repeat: Infinity }} />
+      <motion.ellipse cx="300" cy={deckY + 50} rx="25" ry="3" fill="rgba(255,200,80,0.08)"
+        animate={{ rx: [25, 35, 25], opacity: [0.08, 0.15, 0.08] }}
+        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }} />
     </motion.svg>
   )
 }
