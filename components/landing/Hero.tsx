@@ -38,28 +38,42 @@ function BridgeSVG() {
   const towerTop = 40
   const towerBottom = 250
   const deckY = 200
-  const cableSag = 60
+  const anchorX1 = 30
+  const anchorX2 = 570
 
-  const catenaryPath = `M30 ${deckY} Q${(30 + towerX1) / 2} ${towerTop + cableSag}, ${towerX1} ${towerTop} Q${(towerX1 + towerX2) / 2} ${towerTop + cableSag * 1.5}, ${towerX2} ${towerTop} Q${(towerX2 + 570) / 2} ${towerTop + cableSag}, 570 ${deckY}`
+  // Quadratic bezier Y at parameter t
+  const quadY = (y0: number, y1: number, y2: number, t: number) =>
+    (1 - t) * (1 - t) * y0 + 2 * (1 - t) * t * y1 + t * t * y2
 
+  // Control points for the 3 bezier segments
+  const mid1X = (anchorX1 + towerX1) / 2
+  const mid2X = (towerX1 + towerX2) / 2
+  const mid3X = (towerX2 + anchorX2) / 2
+  const sag1 = towerTop + 70
+  const sag2 = towerTop + 95
+  const sag3 = towerTop + 70
+
+  // Compute hangers that match the exact bezier curves
   const hangers = []
-  for (let x = 50; x < 550; x += 25) {
+  for (let x = 55; x < 550; x += 22) {
     let cableY: number
-    if (x < towerX1) {
-      const t = (x - 30) / (towerX1 - 30)
-      cableY = towerTop + cableSag * (1 - 4 * t * (1 - t))
-    } else if (x < towerX2) {
+    if (x <= towerX1) {
+      const t = (x - anchorX1) / (towerX1 - anchorX1)
+      cableY = quadY(deckY, sag1, towerTop, t)
+    } else if (x <= towerX2) {
       const t = (x - towerX1) / (towerX2 - towerX1)
-      cableY = towerTop + cableSag * 1.5 * (1 - 4 * t * (1 - t))
+      cableY = quadY(towerTop, sag2, towerTop, t)
     } else {
-      const t = (x - towerX2) / (570 - towerX2)
-      cableY = towerTop + cableSag * (1 - 4 * t * (1 - t))
+      const t = (x - towerX2) / (anchorX2 - towerX2)
+      cableY = quadY(towerTop, sag3, deckY, t)
     }
-
-    if (cableY < deckY - 10) {
+    // Only draw hangers where cable is above deck
+    if (cableY < deckY - 12) {
       hangers.push({ x, y: cableY })
     }
   }
+
+  const catenaryPath = `M${anchorX1} ${deckY} Q${mid1X} ${sag1}, ${towerX1} ${towerTop} Q${mid2X} ${sag2}, ${towerX2} ${towerTop} Q${mid3X} ${sag3}, ${anchorX2} ${deckY}`
 
   return (
     <motion.svg
@@ -151,8 +165,8 @@ function BridgeSVG() {
       />
       {/* Second cable (parallel, slightly below) */}
       <motion.path
-        d={`M30 ${deckY + 4} Q${(30 + towerX1) / 2} ${towerTop + cableSag + 4}, ${towerX1} ${towerTop + 4} Q${(towerX1 + towerX2) / 2} ${towerTop + cableSag * 1.5 + 4}, ${towerX2} ${towerTop + 4} Q${(towerX2 + 570) / 2} ${towerTop + cableSag + 4}, 570 ${deckY + 4}`}
-        stroke="rgba(255,179,0,0.4)" strokeWidth="1" fill="none" strokeLinecap="round"
+        d={`M${anchorX1} ${deckY + 4} Q${mid1X} ${sag1 + 4}, ${towerX1} ${towerTop + 4} Q${mid2X} ${sag2 + 4}, ${towerX2} ${towerTop + 4} Q${mid3X} ${sag3 + 4}, ${anchorX2} ${deckY + 4}`}
+        stroke="rgba(255,179,0,0.3)" strokeWidth="1" fill="none" strokeLinecap="round"
         initial={{ pathLength: 0, opacity: 0 }}
         animate={{ pathLength: 1, opacity: 1 }}
         transition={{ duration: 1.5, delay: 0.9 }}
