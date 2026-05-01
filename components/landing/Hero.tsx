@@ -33,74 +33,164 @@ function FloatingOrb({ size, x, y, delay, duration, color }: { size: number; x: 
 }
 
 function BridgeSVG() {
+  const towerX1 = 140
+  const towerX2 = 460
+  const towerTop = 40
+  const towerBottom = 250
+  const deckY = 200
+  const cableSag = 60
+
+  const catenaryPath = `M30 ${deckY} Q${(30 + towerX1) / 2} ${towerTop + cableSag}, ${towerX1} ${towerTop} Q${(towerX1 + towerX2) / 2} ${towerTop + cableSag * 1.5}, ${towerX2} ${towerTop} Q${(towerX2 + 570) / 2} ${towerTop + cableSag}, 570 ${deckY}`
+
+  const hangers = []
+  for (let x = 50; x < 550; x += 25) {
+    let cableY: number
+    if (x < towerX1) {
+      const t = (x - 30) / (towerX1 - 30)
+      cableY = towerTop + cableSag * (1 - 4 * t * (1 - t))
+    } else if (x < towerX2) {
+      const t = (x - towerX1) / (towerX2 - towerX1)
+      cableY = towerTop + cableSag * 1.5 * (1 - 4 * t * (1 - t))
+    } else {
+      const t = (x - towerX2) / (570 - towerX2)
+      cableY = towerTop + cableSag * (1 - 4 * t * (1 - t))
+    }
+
+    if (cableY < deckY - 10) {
+      hangers.push({ x, y: cableY })
+    }
+  }
+
   return (
     <motion.svg
       viewBox="0 0 600 300"
-      style={{ width: '100%', maxWidth: '500px', height: 'auto' }}
+      style={{ width: '100%', maxWidth: '520px', height: 'auto' }}
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 1.2, delay: 0.4 }}
     >
-      {/* Water reflection */}
-      <motion.ellipse cx="300" cy="280" rx="280" ry="15" fill="rgba(65, 105, 225, 0.15)"
-        animate={{ rx: [280, 290, 280], opacity: [0.15, 0.25, 0.15] }}
-        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-      />
-      
-      {/* Bridge pillars */}
-      <motion.rect x="120" y="120" width="16" height="150" rx="4" fill="#FFB300"
-        initial={{ height: 0, y: 270 }} animate={{ height: 150, y: 120 }}
-        transition={{ duration: 0.8, delay: 0.6 }} />
-      <motion.rect x="464" y="120" width="16" height="150" rx="4" fill="#FFB300"
-        initial={{ height: 0, y: 270 }} animate={{ height: 150, y: 120 }}
-        transition={{ duration: 0.8, delay: 0.7 }} />
-      
-      {/* Bridge towers */}
-      <motion.rect x="112" y="60" width="32" height="80" rx="6" fill="#4169E1"
-        initial={{ height: 0, y: 140 }} animate={{ height: 80, y: 60 }}
-        transition={{ duration: 0.8, delay: 0.9 }} />
-      <motion.rect x="456" y="60" width="32" height="80" rx="6" fill="#4169E1"
-        initial={{ height: 0, y: 140 }} animate={{ height: 80, y: 60 }}
-        transition={{ duration: 0.8, delay: 1.0 }} />
-      
-      {/* Tower tops */}
-      <motion.polygon points="108,60 148,60 128,30" fill="#FFB300"
-        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 1.2 }} />
-      <motion.polygon points="452,60 492,60 472,30" fill="#FFB300"
-        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 1.3 }} />
-      
-      {/* Main bridge deck */}
-      <motion.path
-        d="M60 200 Q128 140, 300 160 Q472 140, 540 200"
-        stroke="#4169E1" strokeWidth="8" fill="none" strokeLinecap="round"
-        initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
-        transition={{ duration: 1.5, delay: 0.8 }} />
-      
-      {/* Bridge cables */}
-      {[0, 1, 2, 3, 4].map((i) => (
-        <motion.line key={`cable-l-${i}`}
-          x1={128} y1={65} x2={80 + i * 25} y2={190 - i * 5}
-          stroke="#FFB300" strokeWidth="1.5" opacity={0.6}
-          initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
-          transition={{ duration: 0.5, delay: 1.4 + i * 0.1 }} />
-      ))}
-      {[0, 1, 2, 3, 4].map((i) => (
-        <motion.line key={`cable-r-${i}`}
-          x1={472} y1={65} x2={520 - i * 25} y2={190 - i * 5}
-          stroke="#FFB300" strokeWidth="1.5" opacity={0.6}
-          initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
-          transition={{ duration: 0.5, delay: 1.4 + i * 0.1 }} />
+      {/* Sky gradient */}
+      <defs>
+        <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="rgba(65, 105, 225, 0.3)" />
+          <stop offset="100%" stopColor="rgba(65, 105, 225, 0.05)" />
+        </linearGradient>
+        <linearGradient id="towerGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#FFB300" />
+          <stop offset="100%" stopColor="#CC8800" />
+        </linearGradient>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+          <feMerge>
+            <feMergeNode in="coloredBlur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+
+      {/* Water */}
+      <motion.rect x="0" y={deckY + 20} width="600" height="100" fill="url(#waterGrad)" rx="4" />
+      <motion.ellipse cx="300" cy={deckY + 25} rx="280" ry="8" fill="rgba(255,179,0,0.05)"
+        animate={{ rx: [280, 290, 280], opacity: [0.05, 0.1, 0.05] }}
+        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }} />
+      {/* Water ripple lines */}
+      {[0, 1, 2].map(i => (
+        <motion.line key={`ripple-${i}`}
+          x1="60" y1={deckY + 40 + i * 15} x2="540" y2={deckY + 40 + i * 15}
+          stroke="rgba(65, 105, 225, 0.15)" strokeWidth="0.5"
+          animate={{ x1: [60, 70, 60], x2: [540, 530, 540] }}
+          transition={{ duration: 3 + i, repeat: Infinity, ease: 'easeInOut' }} />
       ))}
 
-      {/* Glowing star on bridge */}
-      <motion.circle cx="300" cy="155" r="8" fill="#FFB300"
-        animate={{ r: [8, 12, 8], opacity: [0.8, 1, 0.8] }}
-        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }} />
-      <motion.circle cx="300" cy="155" r="16" fill="none" stroke="#FFB300" strokeWidth="1"
-        animate={{ r: [16, 24, 16], opacity: [0.3, 0.1, 0.3] }}
-        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }} />
+      {/* Bridge foundations */}
+      <rect x={towerX1 - 20} y={deckY} width="40" height="30" rx="2" fill="rgba(255,179,0,0.3)" />
+      <rect x={towerX2 - 20} y={deckY} width="40" height="30" rx="2" fill="rgba(255,179,0,0.3)" />
+
+      {/* Towers */}
+      {/* Tower 1 */}
+      <motion.rect x={towerX1 - 8} y={towerTop} width="16" height={towerBottom - towerTop} rx="2" fill="url(#towerGrad)"
+        initial={{ height: 0 }} animate={{ height: towerBottom - towerTop }}
+        transition={{ duration: 0.8, delay: 0.5 }} />
+      <motion.rect x={towerX1 - 12} y={towerTop} width="24" height="8" rx="2" fill="#FFB300"
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9 }} />
+      {/* Tower 1 cross beams */}
+      <rect x={towerX1 - 6} y={towerTop + 50} width="12" height="3" rx="1" fill="rgba(204,136,0,0.8)" />
+      <rect x={towerX1 - 6} y={towerTop + 100} width="12" height="3" rx="1" fill="rgba(204,136,0,0.8)" />
+      <rect x={towerX1 - 6} y={towerTop + 150} width="12" height="3" rx="1" fill="rgba(204,136,0,0.8)" />
+      {/* Tower 1 top cap */}
+      <motion.path d={`M${towerX1 - 14} ${towerTop} L${towerX1} ${towerTop - 15} L${towerX1 + 14} ${towerTop}`} fill="#FFB300"
+        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.0 }} />
+      {/* Tower 1 beacon */}
+      <motion.circle cx={towerX1} cy={towerTop - 12} r="3" fill="#FFB300" filter="url(#glow)"
+        animate={{ opacity: [1, 0.5, 1] }} transition={{ duration: 2, repeat: Infinity }} />
+
+      {/* Tower 2 */}
+      <motion.rect x={towerX2 - 8} y={towerTop} width="16" height={towerBottom - towerTop} rx="2" fill="url(#towerGrad)"
+        initial={{ height: 0 }} animate={{ height: towerBottom - towerTop }}
+        transition={{ duration: 0.8, delay: 0.6 }} />
+      <motion.rect x={towerX2 - 12} y={towerTop} width="24" height="8" rx="2" fill="#FFB300"
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.0 }} />
+      {/* Tower 2 cross beams */}
+      <rect x={towerX2 - 6} y={towerTop + 50} width="12" height="3" rx="1" fill="rgba(204,136,0,0.8)" />
+      <rect x={towerX2 - 6} y={towerTop + 100} width="12" height="3" rx="1" fill="rgba(204,136,0,0.8)" />
+      <rect x={towerX2 - 6} y={towerTop + 150} width="12" height="3" rx="1" fill="rgba(204,136,0,0.8)" />
+      {/* Tower 2 top cap */}
+      <motion.path d={`M${towerX2 - 14} ${towerTop} L${towerX2} ${towerTop - 15} L${towerX2 + 14} ${towerTop}`} fill="#FFB300"
+        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1 }} />
+      {/* Tower 2 beacon */}
+      <motion.circle cx={towerX2} cy={towerTop - 12} r="3" fill="#FFB300" filter="url(#glow)"
+        animate={{ opacity: [1, 0.5, 1] }} transition={{ duration: 2, repeat: Infinity, delay: 1 }} />
+
+      {/* Main suspension cables */}
+      <motion.path
+        d={catenaryPath}
+        stroke="#FFB300" strokeWidth="2.5" fill="none" strokeLinecap="round"
+        initial={{ pathLength: 0, opacity: 0 }}
+        animate={{ pathLength: 1, opacity: 1 }}
+        transition={{ duration: 1.5, delay: 0.8 }}
+      />
+      {/* Second cable (parallel, slightly below) */}
+      <motion.path
+        d={`M30 ${deckY + 4} Q${(30 + towerX1) / 2} ${towerTop + cableSag + 4}, ${towerX1} ${towerTop + 4} Q${(towerX1 + towerX2) / 2} ${towerTop + cableSag * 1.5 + 4}, ${towerX2} ${towerTop + 4} Q${(towerX2 + 570) / 2} ${towerTop + cableSag + 4}, 570 ${deckY + 4}`}
+        stroke="rgba(255,179,0,0.4)" strokeWidth="1" fill="none" strokeLinecap="round"
+        initial={{ pathLength: 0, opacity: 0 }}
+        animate={{ pathLength: 1, opacity: 1 }}
+        transition={{ duration: 1.5, delay: 0.9 }}
+      />
+
+      {/* Vertical hanger cables */}
+      {hangers.map((h, i) => (
+        <motion.line key={`hanger-${i}`}
+          x1={h.x} y1={h.y} x2={h.x} y2={deckY}
+          stroke="rgba(255,179,0,0.3)" strokeWidth="0.8"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 0.3, delay: 1.2 + i * 0.02 }}
+        />
+      ))}
+
+      {/* Bridge deck */}
+      <motion.rect x="20" y={deckY - 4} width="560" height="8" rx="2" fill="#4169E1"
+        initial={{ width: 0 }} animate={{ width: 560 }}
+        transition={{ duration: 1.2, delay: 0.7 }} />
+      {/* Deck road markings */}
+      {Array.from({ length: 20 }, (_, i) => i * 28 + 30).map((x, i) => (
+        <rect key={`mark-${i}`} x={x} y={deckY} width="14" height="1" rx="0.5" fill="rgba(255,255,255,0.3)" />
+      ))}
+      {/* Deck edge lines */}
+      <line x1="20" y1={deckY - 3} x2="580" y2={deckY - 3} stroke="rgba(255,255,255,0.15)" strokeWidth="0.5" />
+      <line x1="20" y1={deckY + 3} x2="580" y2={deckY + 3} stroke="rgba(255,255,255,0.15)" strokeWidth="0.5" />
+
+      {/* Anchors at ends */}
+      <rect x="15" y={deckY - 8} width="12" height="16" rx="2" fill="rgba(255,179,0,0.4)" />
+      <rect x="573" y={deckY - 8} width="12" height="16" rx="2" fill="rgba(255,179,0,0.4)" />
+
+      {/* Glowing light on bridge */}
+      <motion.circle cx="300" cy={deckY} r="6" fill="#FFB300" filter="url(#glow)"
+        animate={{ r: [6, 10, 6], opacity: [0.6, 1, 0.6] }}
+        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }} />
+      <motion.circle cx="300" cy={deckY} r="2" fill="white"
+        animate={{ opacity: [0.8, 1, 0.8] }} transition={{ duration: 3, repeat: Infinity }} />
     </motion.svg>
   )
 }
