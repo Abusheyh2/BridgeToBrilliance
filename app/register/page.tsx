@@ -34,7 +34,7 @@ export default function RegisterPage() {
     setLoading(true)
     setError('')
 
-    const { error: signUpError } = await supabase.auth.signUp({
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
       options: {
@@ -46,9 +46,33 @@ export default function RegisterPage() {
     })
 
     if (signUpError) {
-      setError(signUpError.message)
+      if (signUpError.message.includes('Database error saving new user')) {
+        setError(
+          'Database schema not set up. Make sure you ran the migration.sql in Supabase SQL Editor. ' +
+          'If the problem persists, contact support.'
+        )
+      } else {
+        setError(signUpError.message)
+      }
       setLoading(false)
       return
+    }
+
+    if (signUpData.user) {
+      try {
+        await fetch('/api/create-profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: signUpData.user.id,
+            fullName: data.full_name,
+            email: data.email,
+            role: 'student',
+          }),
+        })
+      } catch {
+        // Profile created by trigger; this is a fallback
+      }
     }
 
     setSuccess(true)
