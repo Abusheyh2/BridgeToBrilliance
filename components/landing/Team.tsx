@@ -29,6 +29,7 @@ export default function Team() {
   const [isPaused, setIsPaused] = useState(false)
   const intervalRef = useRef<number>(0)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([])
 
   useEffect(() => {
     if (!isInView || isPaused) {
@@ -42,10 +43,10 @@ export default function Team() {
   }, [isInView, isPaused])
 
   useEffect(() => {
-    if (!scrollRef.current) return
-    const el = scrollRef.current
-    const targetScroll = activeIndex * (CARD_WIDTH + GAP) - (el.clientWidth - CARD_WIDTH) / 2
-    el.scrollTo({ left: targetScroll, behavior: 'smooth' })
+    const card = cardRefs.current[activeIndex]
+    if (card) {
+      card.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+    }
   }, [activeIndex])
 
   const goTo = (index: number) => {
@@ -112,6 +113,7 @@ export default function Team() {
             return (
               <div
                 key={member.name}
+                ref={el => { cardRefs.current[i] = el }}
                 onClick={() => goTo(i)}
                 style={{
                   minWidth: `${CARD_WIDTH}px`,
