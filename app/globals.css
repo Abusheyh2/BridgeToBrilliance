@@ -310,6 +310,16 @@ h1, h2, h3, h4, h5, h6 {
   background: rgba(255, 255, 255, 0.06);
 }
 
+/* Carousel track - hide scrollbar */
+.carousel-track {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.carousel-track::-webkit-scrollbar {
+  display: none;
+}
+
 /* Enroll card hover */
 .enroll-card {
   transition: all 0.2s ease;

@@ -99,8 +99,10 @@ export default function Team() {
           ref={scrollRef}
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
+          className="carousel-track"
           style={{
-            display: 'flex', gap: `${GAP}px`, overflow: 'hidden',
+            display: 'flex', gap: `${GAP}px`,
+            overflowX: 'auto', overflowY: 'hidden',
             padding: '20px 0', scrollBehavior: 'smooth',
             scrollSnapType: 'x mandatory',
           }}
