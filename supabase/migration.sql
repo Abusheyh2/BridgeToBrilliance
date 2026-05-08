@@ -18,6 +18,7 @@ DROP TABLE IF EXISTS public.security_settings CASCADE;
 DROP TABLE IF EXISTS public.security_logs CASCADE;
 DROP TABLE IF EXISTS public.rate_limits CASCADE;
 DROP TABLE IF EXISTS public.ip_bans CASCADE;
+DROP TABLE IF EXISTS public.achievements CASCADE;
 DROP TABLE IF EXISTS public.user_achievements CASCADE;
 DROP TABLE IF EXISTS public.study_plan_tasks CASCADE;
 DROP TABLE IF EXISTS public.study_plans CASCADE;
