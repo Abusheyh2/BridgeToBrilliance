@@ -37,7 +37,7 @@ export default function Team() {
     }
     intervalRef.current = window.setInterval(() => {
       setActiveIndex(prev => (prev + 1) % teamMembers.length)
-    }, 3000)
+    }, 3500)
     return () => clearInterval(intervalRef.current)
   }, [isInView, isPaused])
 
