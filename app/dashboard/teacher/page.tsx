@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { useProfile } from '../layout'
@@ -60,24 +60,6 @@ export default function TeacherDashboard() {
   const [uploading, setUploading] = useState(false)
   const [formLoading, setFormLoading] = useState(false)
 
-  const mountedRef = useRef(true)
-
-  useEffect(() => {
-    mountedRef.current = true
-    return () => { mountedRef.current = false }
-  }, [])
-
-  const fetchSubjects = useCallback(async () => {
-    if (!profile) return
-    const { data } = await supabase
-      .from('subjects')
-      .select('*')
-      .eq('teacher_id', profile.id)
-      .order('created_at', { ascending: false })
-    if (data && mountedRef.current) setSubjects(data)
-    if (mountedRef.current) setLoading(false)
-  }, [profile, supabase])
-
   useEffect(() => {
     if (!profile) return
     let cancelled = false
@@ -92,30 +74,40 @@ export default function TeacherDashboard() {
     }
     run()
     return () => { cancelled = true }
-  }, [profile, supabase])
+  }, [profile])
 
   const fetchSubjectDetails = useCallback(async (subject: Subject) => {
     setSelectedSubject(subject)
-    const { data: enrollData } = await supabase
-      .from('enrollments')
-      .select('*, student:profiles!enrollments_student_id_fkey(full_name)')
-      .eq('subject_id', subject.id)
-    if (enrollData) setEnrolledStudents(enrollData as EnrollmentWithStudent[])
-
-    const { data: lessonData } = await supabase
-      .from('lessons')
-      .select('*')
-      .eq('subject_id', subject.id)
-      .order('order_index')
-    if (lessonData) setLessons(lessonData)
-
-    const { data: gradeData } = await supabase
-      .from('grades')
-      .select('*, student:profiles!grades_student_id_fkey(full_name)')
-      .eq('subject_id', subject.id)
-      .order('created_at', { ascending: false })
-    if (gradeData) setGrades(gradeData as GradeWithStudent[])
+    const [enrollRes, lessonRes, gradeRes] = await Promise.all([
+      supabase
+        .from('enrollments')
+        .select('*, student:profiles!enrollments_student_id_fkey(full_name)')
+        .eq('subject_id', subject.id),
+      supabase
+        .from('lessons')
+        .select('*')
+        .eq('subject_id', subject.id)
+        .order('order_index'),
+      supabase
+        .from('grades')
+        .select('*, student:profiles!grades_student_id_fkey(full_name)')
+        .eq('subject_id', subject.id)
+        .order('created_at', { ascending: false }),
+    ])
+    if (enrollRes.data) setEnrolledStudents(enrollRes.data as EnrollmentWithStudent[])
+    if (lessonRes.data) setLessons(lessonRes.data)
+    if (gradeRes.data) setGrades(gradeRes.data as GradeWithStudent[])
   }, [supabase])
+
+  const refetchSubjects = useCallback(async () => {
+    if (!profile) return
+    const { data } = await supabase
+      .from('subjects')
+      .select('*')
+      .eq('teacher_id', profile.id)
+      .order('created_at', { ascending: false })
+    if (data) setSubjects(data)
+  }, [profile, supabase])
 
   const handleCreateSubject = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -127,7 +119,7 @@ export default function TeacherDashboard() {
     })
     setSubjectForm({ title: '', description: '', color: '#4169E1', icon: '📚' })
     setActiveModal(null)
-    await fetchSubjects()
+    await refetchSubjects()
     setFormLoading(false)
   }
 
@@ -223,8 +215,7 @@ export default function TeacherDashboard() {
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '60px' }}>
-        <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          style={{ width: '32px', height: '32px', border: '3px solid rgba(255,255,255,0.1)', borderTopColor: '#FFB300', borderRadius: '50%' }} />
+        <div className="spinner" />
       </div>
     )
   }
@@ -253,11 +244,10 @@ export default function TeacherDashboard() {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
           {subjects.map((subject, i) => (
-            <motion.div key={subject.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }} whileHover={{ y: -4 }}
+            <div key={subject.id} style={{ animationDelay: `${i * 0.05}s`, cursor: 'pointer' }} className="fade-in-up"
               onClick={() => fetchSubjectDetails(subject)}
-              style={{ cursor: 'pointer' }}>
-              <div className="glass-card-gold" style={{ padding: '24px' }}>
+              role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && fetchSubjectDetails(subject)}>
+              <div className="glass-card-gold subject-card" style={{ padding: '24px' }}>
                 <span style={{ fontSize: '2rem' }}>{subject.icon}</span>
                 <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', fontWeight: 600, color: 'white', margin: '12px 0 8px' }}>
                   {subject.title}
@@ -269,7 +259,7 @@ export default function TeacherDashboard() {
                   <span style={{ fontSize: '0.7rem', padding: '3px 8px', borderRadius: '6px', background: 'rgba(65,105,225,0.15)', color: '#4169E1' }}>Click to manage</span>
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { useProfile } from '../layout'
@@ -13,8 +13,8 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<Profile[]>([])
   const [subjects, setSubjects] = useState<Subject[]>([])
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
-  const [stats, setStats] = useState({ students: 0, teachers: 0, subjects: 0, lessons: 0 })
   const [loading, setLoading] = useState(true)
+  const [lessonCount, setLessonCount] = useState(0)
   const [announcementForm, setAnnouncementForm] = useState({ title: '', body: '' })
   const [showAnnouncementForm, setShowAnnouncementForm] = useState(false)
   const [formLoading, setFormLoading] = useState(false)
@@ -23,49 +23,46 @@ export default function AdminDashboard() {
     if (!profile) return
     let cancelled = false
     const run = async () => {
-      const { data: userData } = await supabase.from('profiles').select('*').order('created_at', { ascending: false })
-      if (userData && !cancelled) {
-        setUsers(userData as Profile[])
-        setStats(prev => ({
-          ...prev,
-          students: userData.filter((u: Profile) => u.role === 'student').length,
-          teachers: userData.filter((u: Profile) => u.role === 'teacher').length,
-        }))
-      }
+      const [userRes, subjectRes, lessonCountRes, annRes] = await Promise.all([
+        supabase.from('profiles').select('*').order('created_at', { ascending: false }),
+        supabase.from('subjects').select('*'),
+        supabase.from('lessons').select('*', { count: 'exact', head: true }),
+        supabase
+          .from('announcements')
+          .select('*')
+          .is('subject_id', null)
+          .order('created_at', { ascending: false }),
+      ])
 
-      const { data: subjectData } = await supabase.from('subjects').select('*')
-      if (subjectData && !cancelled) {
-        setSubjects(subjectData)
-        setStats(prev => ({ ...prev, subjects: subjectData.length }))
-      }
+      if (cancelled) return
 
-      const { count: lessonCount } = await supabase.from('lessons').select('*', { count: 'exact', head: true })
-      if (!cancelled) setStats(prev => ({ ...prev, lessons: lessonCount || 0 }))
-
-      const { data: annData } = await supabase
-        .from('announcements')
-        .select('*')
-        .is('subject_id', null)
-        .order('created_at', { ascending: false })
-      if (annData && !cancelled) setAnnouncements(annData)
-
-      if (!cancelled) setLoading(false)
+      if (userRes.data) setUsers(userRes.data as Profile[])
+      if (subjectRes.data) setSubjects(subjectRes.data)
+      if (annRes.data) setAnnouncements(annRes.data)
+      setLessonCount(lessonCountRes.count || 0)
+      setLoading(false)
     }
     run()
     return () => { cancelled = true }
-  }, [profile, supabase])
+  }, [profile])
+
+  const stats = useMemo(() => ({
+    students: users.filter(u => u.role === 'student').length,
+    teachers: users.filter(u => u.role === 'teacher').length,
+    subjects: subjects.length,
+    lessons: lessonCount,
+  }), [users, subjects, lessonCount])
+
+  const chartData = useMemo(() => [
+    { name: 'Students', count: stats.students, fill: '#4169E1' },
+    { name: 'Teachers', count: stats.teachers, fill: '#FFB300' },
+    { name: 'Subjects', count: stats.subjects, fill: '#28a745' },
+    { name: 'Lessons', count: stats.lessons, fill: '#6f42c1' },
+  ], [stats])
 
   const handleRoleChange = async (userId: string, newRole: string) => {
+    setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole as Profile['role'] } : u))
     await supabase.from('profiles').update({ role: newRole }).eq('id', userId)
-    const { data: userData } = await supabase.from('profiles').select('*').order('created_at', { ascending: false })
-    if (userData) {
-      setUsers(userData as Profile[])
-      setStats(prev => ({
-        ...prev,
-        students: userData.filter((u: Profile) => u.role === 'student').length,
-        teachers: userData.filter((u: Profile) => u.role === 'teacher').length,
-      }))
-    }
   }
 
   const handlePostAnnouncement = async (e: React.FormEvent) => {
@@ -97,18 +94,10 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '60px' }}>
-        <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          style={{ width: '32px', height: '32px', border: '3px solid rgba(255,255,255,0.1)', borderTopColor: '#FFB300', borderRadius: '50%' }} />
+        <div className="spinner" />
       </div>
     )
   }
-
-  const chartData = [
-    { name: 'Students', count: stats.students, fill: '#4169E1' },
-    { name: 'Teachers', count: stats.teachers, fill: '#FFB300' },
-    { name: 'Subjects', count: stats.subjects, fill: '#28a745' },
-    { name: 'Lessons', count: stats.lessons, fill: '#6f42c1' },
-  ]
 
   return (
     <div>
@@ -132,23 +121,23 @@ export default function AdminDashboard() {
           { label: 'Total Subjects', value: stats.subjects, icon: '📚', color: '#28a745' },
           { label: 'Total Lessons', value: stats.lessons, icon: '🎥', color: '#6f42c1' },
         ].map((stat, i) => (
-          <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-            style={{
+          <div key={i} style={{ animationDelay: `${i * 0.05}s` }} className="fade-in-up">
+            <div style={{
               background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
               borderRadius: '16px', padding: '24px',
             }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div>
-                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', marginBottom: '8px' }}>{stat.label}</p>
-                <p style={{ fontSize: '2rem', fontWeight: 700, color: 'white', fontFamily: 'var(--font-heading)' }}>{stat.value}</p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', marginBottom: '8px' }}>{stat.label}</p>
+                  <p style={{ fontSize: '2rem', fontWeight: 700, color: 'white', fontFamily: 'var(--font-heading)' }}>{stat.value}</p>
+                </div>
+                <span style={{ fontSize: '1.5rem' }}>{stat.icon}</span>
               </div>
-              <span style={{ fontSize: '1.5rem' }}>{stat.icon}</span>
+              <div style={{ marginTop: '12px', height: '3px', borderRadius: '2px', background: `${stat.color}20` }}>
+                <div style={{ height: '100%', width: '60%', borderRadius: '2px', background: stat.color }} />
+              </div>
             </div>
-            <div style={{ marginTop: '12px', height: '3px', borderRadius: '2px', background: `${stat.color}20` }}>
-              <div style={{ height: '100%', width: '60%', borderRadius: '2px', background: stat.color }} />
-            </div>
-          </motion.div>
+          </div>
         ))}
       </div>
 
@@ -231,15 +220,16 @@ export default function AdminDashboard() {
         <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: 'white', marginBottom: '20px' }}>All Subjects</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '16px' }}>
           {subjects.map((s, i) => (
-            <motion.div key={s.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-              style={{
+            <div key={s.id} style={{ animationDelay: `${i * 0.03}s` }} className="fade-in-up">
+              <div style={{
                 padding: '20px', borderRadius: '12px',
                 background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
               }}>
-              <span style={{ fontSize: '1.5rem' }}>{s.icon}</span>
-              <h4 style={{ color: 'white', fontSize: '0.95rem', margin: '8px 0 4px' }}>{s.title}</h4>
-              <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem' }}>{s.description?.slice(0, 60)}</p>
-            </motion.div>
+                <span style={{ fontSize: '1.5rem' }}>{s.icon}</span>
+                <h4 style={{ color: 'white', fontSize: '0.95rem', margin: '8px 0 4px' }}>{s.title}</h4>
+                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem' }}>{s.description?.slice(0, 60)}</p>
+              </div>
+            </div>
           ))}
         </div>
       </div>

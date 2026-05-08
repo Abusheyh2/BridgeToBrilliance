@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
@@ -26,6 +26,42 @@ type SubjectWithTeacher = Subject & {
   teacher: Pick<Profile, 'full_name'> | null
 }
 
+async function enrichEnrollments(supabase: ReturnType<typeof createClient>, studentId: string, enrollmentData: any[]): Promise<EnrollmentWithDetails[]> {
+  if (!enrollmentData || enrollmentData.length === 0) return []
+
+  const subjectIds = enrollmentData.map(e => e.subject_id)
+
+  const [{ data: lessonCounts }, { data: progressData }] = await Promise.all([
+    subjectIds.length > 0
+      ? supabase.from('lessons').select('id, subject_id').in('subject_id', subjectIds)
+      : { data: [] },
+    subjectIds.length > 0
+      ? supabase.from('progress').select('lesson_id').eq('student_id', studentId).eq('watched', true)
+      : { data: [] },
+  ])
+
+  const lessonCountMap: Record<string, number> = {}
+  const lessonSubjectMap: Record<string, string> = {}
+  if (lessonCounts) {
+    for (const l of lessonCounts) {
+      lessonCountMap[l.subject_id] = (lessonCountMap[l.subject_id] || 0) + 1
+      lessonSubjectMap[l.id] = l.subject_id
+    }
+  }
+
+  const watchedSubjectCount: Record<string, number> = {}
+  for (const p of progressData || []) {
+    const subId = lessonSubjectMap[p.lesson_id]
+    if (subId) watchedSubjectCount[subId] = (watchedSubjectCount[subId] || 0) + 1
+  }
+
+  return enrollmentData.map(e => ({
+    ...(e as EnrollmentWithDetails),
+    lesson_count: lessonCountMap[e.subject_id] || 0,
+    watched_count: watchedSubjectCount[e.subject_id] || 0,
+  }))
+}
+
 export default function StudentDashboard() {
   const profile = useProfile()
   const supabase = createClient()
@@ -45,54 +81,48 @@ export default function StudentDashboard() {
     let cancelled = false
     const fetchData = async () => {
       try {
-        const { data: enrollmentData } = await supabase
-          .from('enrollments')
-          .select('*, subject:subjects(*, teacher:profiles!subjects_teacher_id_fkey(full_name))')
-          .eq('student_id', profile.id)
+        const [
+          { data: enrollmentData },
+          { data: annData },
+          { data: classData },
+          { data: gradeData },
+          { data: subData },
+        ] = await Promise.all([
+          supabase
+            .from('enrollments')
+            .select('*, subject:subjects(*, teacher:profiles!subjects_teacher_id_fkey(full_name))')
+            .eq('student_id', profile.id),
+          supabase
+            .from('announcements')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(5),
+          supabase
+            .from('classes')
+            .select('*, subject:subjects(title)')
+            .gte('scheduled_at', new Date().toISOString())
+            .order('scheduled_at', { ascending: true })
+            .limit(5),
+          supabase
+            .from('grades')
+            .select('*, subject:subjects(title)')
+            .eq('student_id', profile.id)
+            .order('created_at', { ascending: false }),
+          supabase
+            .from('subjects')
+            .select('*, teacher:profiles!subjects_teacher_id_fkey(full_name)'),
+        ])
 
-        if (enrollmentData && !cancelled) {
-          const enriched: EnrollmentWithDetails[] = []
-          for (const e of enrollmentData) {
-            const { count: lessonCount } = await supabase
-              .from('lessons')
-              .select('*', { count: 'exact', head: true })
-              .eq('subject_id', e.subject_id)
-            const { count: watchedCount } = await supabase
-              .from('progress')
-              .select('*', { count: 'exact', head: true })
-              .eq('student_id', profile.id)
-              .eq('watched', true)
-            enriched.push({ ...(e as EnrollmentWithDetails), lesson_count: lessonCount || 0, watched_count: watchedCount || 0 })
-          }
+        if (cancelled) return
+
+        if (enrollmentData) {
+          const enriched = await enrichEnrollments(supabase, profile.id, enrollmentData)
           setEnrollments(enriched)
         }
-
-        const { data: annData } = await supabase
-          .from('announcements')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(5)
-        if (annData && !cancelled) setAnnouncements(annData)
-
-        const { data: classData } = await supabase
-          .from('classes')
-          .select('*, subject:subjects(title)')
-          .gte('scheduled_at', new Date().toISOString())
-          .order('scheduled_at', { ascending: true })
-          .limit(5)
-        if (classData && !cancelled) setUpcomingClasses(classData as ClassWithSubject[])
-
-        const { data: gradeData } = await supabase
-          .from('grades')
-          .select('*, subject:subjects(title)')
-          .eq('student_id', profile.id)
-          .order('created_at', { ascending: false })
-        if (gradeData && !cancelled) setGrades(gradeData as GradeWithSubject[])
-
-        const { data: subData } = await supabase
-          .from('subjects')
-          .select('*, teacher:profiles!subjects_teacher_id_fkey(full_name)')
-        if (subData && !cancelled) setAllSubjects(subData as SubjectWithTeacher[])
+        if (annData) setAnnouncements(annData)
+        if (classData) setUpcomingClasses(classData as ClassWithSubject[])
+        if (gradeData) setGrades(gradeData as GradeWithSubject[])
+        if (subData) setAllSubjects(subData as SubjectWithTeacher[])
 
       } catch (err) {
         console.error('Dashboard fetch error:', err)
@@ -102,7 +132,7 @@ export default function StudentDashboard() {
     }
     fetchData()
     return () => { cancelled = true }
-  }, [profile, supabase])
+  }, [profile])
 
   const handleEnroll = async (subjectId: string) => {
     if (!profile) return
@@ -111,51 +141,47 @@ export default function StudentDashboard() {
       alert('Failed to enroll: ' + error.message)
       return
     }
-    setLoading(true)
-    const { data: enrollmentData } = await supabase
-      .from('enrollments')
-      .select('*, subject:subjects(*, teacher:profiles!subjects_teacher_id_fkey(full_name))')
-      .eq('student_id', profile.id)
+
+    const [{ data: enrollmentData }, { data: subData }] = await Promise.all([
+      supabase
+        .from('enrollments')
+        .select('*, subject:subjects(*, teacher:profiles!subjects_teacher_id_fkey(full_name))')
+        .eq('student_id', profile.id),
+      supabase.from('subjects').select('*, teacher:profiles!subjects_teacher_id_fkey(full_name)'),
+    ])
+
     if (enrollmentData) {
-      const enriched: EnrollmentWithDetails[] = []
-      for (const e of enrollmentData) {
-        const { count: lessonCount } = await supabase
-          .from('lessons').select('*', { count: 'exact', head: true }).eq('subject_id', e.subject_id)
-        const { count: watchedCount } = await supabase
-          .from('progress').select('*', { count: 'exact', head: true }).eq('student_id', profile.id).eq('watched', true)
-        enriched.push({ ...(e as EnrollmentWithDetails), lesson_count: lessonCount || 0, watched_count: watchedCount || 0 })
-      }
+      const enriched = await enrichEnrollments(supabase, profile.id, enrollmentData)
       setEnrollments(enriched)
     }
-    const { data: subData } = await supabase
-      .from('subjects').select('*, teacher:profiles!subjects_teacher_id_fkey(full_name)')
     if (subData) setAllSubjects(subData as SubjectWithTeacher[])
-    setLoading(false)
   }
+
+  const progressData = useMemo(() => [
+    { week: 'W1', lessons: 2 }, { week: 'W2', lessons: 5 }, { week: 'W3', lessons: 3 },
+    { week: 'W4', lessons: 7 }, { week: 'W5', lessons: 4 }, { week: 'W6', lessons: 8 },
+  ], [])
+
+  const subjectProgress = useMemo(() =>
+    enrollments.map(e => ({
+      name: e.subject?.title?.slice(0, 12) || 'Subject',
+      progress: e.lesson_count > 0 ? Math.round((e.watched_count / e.lesson_count) * 100) : 0,
+    })),
+    [enrollments]
+  )
 
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '60px' }}>
-        <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          style={{ width: '32px', height: '32px', border: '3px solid rgba(255,255,255,0.1)', borderTopColor: '#FFB300', borderRadius: '50%' }} />
+        <div className="spinner" />
       </div>
     )
   }
 
-  // Mock chart data
-  const progressData = [
-    { week: 'W1', lessons: 2 }, { week: 'W2', lessons: 5 }, { week: 'W3', lessons: 3 },
-    { week: 'W4', lessons: 7 }, { week: 'W5', lessons: 4 }, { week: 'W6', lessons: 8 },
-  ]
-
-  const subjectProgress = enrollments.map(e => ({
-    name: e.subject?.title?.slice(0, 12) || 'Subject',
-    progress: e.lesson_count > 0 ? Math.round((e.watched_count / e.lesson_count) * 100) : 0,
-  }))
+  const firstName = profile?.full_name?.split(' ')[0] || 'Student'
 
   return (
     <div>
-      {/* Welcome Banner */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -168,14 +194,13 @@ export default function StudentDashboard() {
         }}
       >
         <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.8rem', fontWeight: 700, color: 'white', marginBottom: '8px' }}>
-          Welcome back, {profile?.full_name?.split(' ')[0] || 'Student'}! 👋
+          Welcome back, {firstName}! 👋
         </h1>
         <p style={{ fontSize: '0.95rem', color: 'rgba(255,255,255,0.6)' }}>
           You&apos;re enrolled in {enrollments.length} subject{enrollments.length !== 1 ? 's' : ''}. Keep learning!
         </p>
       </motion.div>
 
-      {/* My Subjects */}
       <div id="subjects" style={{ marginBottom: '40px' }}>
         <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: 'white', marginBottom: '20px' }}>
           📚 My Subjects
@@ -185,13 +210,13 @@ export default function StudentDashboard() {
             <p style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '16px' }}>You haven&apos;t enrolled in any subjects yet.</p>
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
               {allSubjects.map((s) => (
-                <motion.div key={s.id} whileHover={{ scale: 1.02 }}
+                <div key={s.id} className="enroll-card"
                   style={{ padding: '16px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', minWidth: '200px' }}>
                   <span style={{ fontSize: '1.5rem' }}>{s.icon}</span>
                   <h4 style={{ color: 'white', fontSize: '0.95rem', margin: '8px 0 4px' }}>{s.title}</h4>
                   <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', marginBottom: '12px' }}>by {s.teacher?.full_name}</p>
                   <button onClick={() => handleEnroll(s.id)} className="btn-primary" style={{ padding: '8px 16px', fontSize: '0.8rem' }}>Enroll</button>
-                </motion.div>
+                </div>
               ))}
             </div>
           </div>
@@ -201,10 +226,9 @@ export default function StudentDashboard() {
               const subject = enrollment.subject
               const progress = enrollment.lesson_count > 0 ? Math.round((enrollment.watched_count / enrollment.lesson_count) * 100) : 0
               return (
-                <motion.div key={enrollment.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }} whileHover={{ y: -4 }}>
+                <div key={enrollment.id} style={{ animationDelay: `${i * 0.05}s` }} className="fade-in-up">
                   <Link href={`/subjects/${enrollment.subject_id}`} style={{ textDecoration: 'none' }}>
-                    <div className="glass-card-gold" style={{ padding: '24px', cursor: 'pointer' }}>
+                    <div className="glass-card-gold subject-card" style={{ padding: '24px', cursor: 'pointer' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                         <span style={{ fontSize: '2rem' }}>{subject?.icon || '📚'}</span>
                         <span style={{ fontSize: '0.75rem', padding: '4px 10px', borderRadius: '12px', background: 'rgba(255,179,0,0.1)', color: '#FFB300', fontWeight: 600 }}>
@@ -222,16 +246,14 @@ export default function StudentDashboard() {
                       </div>
                     </div>
                   </Link>
-                </motion.div>
+                </div>
               )
             })}
           </div>
         )}
       </div>
 
-      {/* Two column: Upcoming Classes + Announcements */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '24px', marginBottom: '40px' }}>
-        {/* Upcoming Classes */}
         <div>
           <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: 'white', marginBottom: '20px' }}>
             📅 Upcoming Classes
@@ -243,7 +265,7 @@ export default function StudentDashboard() {
               </p>
             ) : (
               upcomingClasses.map((cls) => (
-                <motion.div key={cls.id} whileHover={{ x: 4 }} style={{
+                <div key={cls.id} className="list-item" style={{
                   padding: '16px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)',
                   border: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                 }}>
@@ -258,13 +280,12 @@ export default function StudentDashboard() {
                       Join
                     </a>
                   )}
-                </motion.div>
+                </div>
               ))
             )}
           </div>
         </div>
 
-        {/* Announcements */}
         <div>
           <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: 'white', marginBottom: '20px' }}>
             📢 Announcements
@@ -276,7 +297,7 @@ export default function StudentDashboard() {
               </p>
             ) : (
               announcements.map((ann) => (
-                <motion.div key={ann.id} whileHover={{ x: 4 }} style={{
+                <div key={ann.id} className="list-item" style={{
                   padding: '16px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)',
                   border: '1px solid rgba(255,255,255,0.06)',
                 }}>
@@ -287,14 +308,13 @@ export default function StudentDashboard() {
                     </span>
                   </div>
                   <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', lineHeight: 1.5 }}>{ann.body}</p>
-                </motion.div>
+                </div>
               ))
             )}
           </div>
         </div>
       </div>
 
-      {/* Grades */}
       <div id="grades" style={{ marginBottom: '40px' }}>
         <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: 'white', marginBottom: '20px' }}>
           📝 My Grades
@@ -334,7 +354,6 @@ export default function StudentDashboard() {
         </div>
       </div>
 
-      {/* Analytics */}
       <div style={{ marginBottom: '40px' }}>
         <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: 'white', marginBottom: '20px' }}>
           📊 Progress Analytics

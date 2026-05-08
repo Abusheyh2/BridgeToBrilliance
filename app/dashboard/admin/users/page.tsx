@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import * as adminService from '@/services/admin-users.service'
 import type { Profile } from '@/types/database.types'
 
@@ -21,31 +21,35 @@ export default function AdminUsersPage() {
     return () => { cancelled = true }
   }, [])
 
-  const loadUsers = async () => {
-    const res = await adminService.getAllUsers()
-    if (res.success && res.data) setUsers(res.data)
-  }
-
   const handleRoleChange = async (userId: string, role: 'student' | 'teacher' | 'admin') => {
-    const res = await adminService.updateUserRole(userId, role)
-    if (res.success) loadUsers()
+    setUsers(prev => prev.map(u => u.user_id === userId ? { ...u, role } : u))
+    await adminService.updateUserRole(userId, role)
   }
 
   const handleBan = async (userId: string) => {
+    setUsers(prev => prev.map(u => u.user_id === userId ? { ...u, is_banned: true } : u))
     const res = await adminService.banUser(userId)
-    if (res.success) loadUsers()
+    if (!res.success) {
+      setUsers(prev => prev.map(u => u.user_id === userId ? { ...u, is_banned: false } : u))
+    }
   }
 
   const handleUnban = async (userId: string) => {
+    setUsers(prev => prev.map(u => u.user_id === userId ? { ...u, is_banned: false } : u))
     const res = await adminService.unbanUser(userId)
-    if (res.success) loadUsers()
+    if (!res.success) {
+      setUsers(prev => prev.map(u => u.user_id === userId ? { ...u, is_banned: true } : u))
+    }
   }
 
-  const filteredUsers = users.filter(u => {
-    if (filter !== 'all' && u.role !== filter) return false
-    if (search && !u.full_name.toLowerCase().includes(search.toLowerCase()) && !u.email.toLowerCase().includes(search.toLowerCase())) return false
-    return true
-  })
+  const filteredUsers = useMemo(() =>
+    users.filter(u => {
+      if (filter !== 'all' && u.role !== filter) return false
+      if (search && !u.full_name.toLowerCase().includes(search.toLowerCase()) && !u.email.toLowerCase().includes(search.toLowerCase())) return false
+      return true
+    }),
+    [users, filter, search]
+  )
 
   return (
     <div>
@@ -56,7 +60,6 @@ export default function AdminUsersPage() {
         <p style={{ color: 'rgba(255,255,255,0.5)' }}>Manage all platform users</p>
       </div>
 
-      {/* Filters */}
       <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' }}>
         <input
           value={search}

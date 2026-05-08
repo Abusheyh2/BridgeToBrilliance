@@ -16,7 +16,6 @@ export default function AdminTeachersPage() {
   const [selectedSubject, setSelectedSubject] = useState('')
   const [loading, setLoading] = useState(true)
 
-  // Create teacher form
   const [teacherName, setTeacherName] = useState('')
   const [teacherEmail, setTeacherEmail] = useState('')
   const [teacherPassword, setTeacherPassword] = useState('')
@@ -28,22 +27,26 @@ export default function AdminTeachersPage() {
         adminService.getAllUsers(),
         createClient().from('subjects').select('*'),
       ])
-      if (!cancelled) {
-        if (usersRes.success && usersRes.data) {
-          const teacherUsers = usersRes.data.filter(u => u.role === 'teacher')
-          setTeachers(teacherUsers)
-          const assignmentsMap: Record<string, TeacherAssignment[]> = {}
-          for (const teacher of teacherUsers) {
-            const assignRes = await adminService.getTeacherAssignments(teacher.id)
-            if (assignRes.success && assignRes.data) {
-              assignmentsMap[teacher.id] = assignRes.data
+      if (cancelled) return
+
+      if (usersRes.success && usersRes.data) {
+        const teacherUsers = usersRes.data.filter(u => u.role === 'teacher')
+        setTeachers(teacherUsers)
+        if (teacherUsers.length > 0) {
+          const teacherIds = teacherUsers.map(t => t.id)
+          const assignmentsRes = await adminService.getTeacherAssignmentsBatch(teacherIds)
+          if (assignmentsRes.success && assignmentsRes.data) {
+            const map: Record<string, TeacherAssignment[]> = {}
+            for (const a of assignmentsRes.data) {
+              if (!map[a.teacher_id]) map[a.teacher_id] = []
+              map[a.teacher_id].push(a)
             }
+            setAssignments(map)
           }
-          setAssignments(assignmentsMap)
         }
-        if (subjectsRes.data) setSubjects(subjectsRes.data as unknown as Subject[])
-        setLoading(false)
       }
+      if (subjectsRes.data) setSubjects(subjectsRes.data as unknown as Subject[])
+      setLoading(false)
     }
     load()
     return () => { cancelled = true }
@@ -57,18 +60,20 @@ export default function AdminTeachersPage() {
     if (usersRes.success && usersRes.data) {
       const teacherUsers = usersRes.data.filter(u => u.role === 'teacher')
       setTeachers(teacherUsers)
-      // Load assignments for each teacher
-      const assignmentsMap: Record<string, TeacherAssignment[]> = {}
-      for (const teacher of teacherUsers) {
-        const assignRes = await adminService.getTeacherAssignments(teacher.id)
-        if (assignRes.success && assignRes.data) {
-          assignmentsMap[teacher.id] = assignRes.data
+      if (teacherUsers.length > 0) {
+        const teacherIds = teacherUsers.map(t => t.id)
+        const assignmentsRes = await adminService.getTeacherAssignmentsBatch(teacherIds)
+        if (assignmentsRes.success && assignmentsRes.data) {
+          const map: Record<string, TeacherAssignment[]> = {}
+          for (const a of assignmentsRes.data) {
+            if (!map[a.teacher_id]) map[a.teacher_id] = []
+            map[a.teacher_id].push(a)
+          }
+          setAssignments(map)
         }
       }
-      setAssignments(assignmentsMap)
     }
     if (subjectsRes.data) setSubjects(subjectsRes.data as unknown as Subject[])
-    setLoading(false)
   }
 
   const handleCreateTeacher = async () => {
@@ -103,8 +108,21 @@ export default function AdminTeachersPage() {
   }
 
   const handleRemoveAssignment = async (id: string) => {
+    setAssignments(prev => {
+      const next = { ...prev }
+      for (const key of Object.keys(next)) {
+        next[key] = next[key].filter(a => a.id !== id)
+      }
+      return next
+    })
     const res = await adminService.removeTeacherAssignment(id)
-    if (res.success) loadData()
+    if (!res.success) loadData()
+  }
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%', padding: '12px', borderRadius: '10px',
+    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+    color: 'white', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box',
   }
 
   return (
@@ -160,7 +178,6 @@ export default function AdminTeachersPage() {
                 </div>
               </div>
 
-              {/* Assigned Subjects */}
               <div style={{ marginBottom: '16px' }}>
                 <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
                   Assigned Subjects
@@ -200,7 +217,6 @@ export default function AdminTeachersPage() {
         </div>
       )}
 
-      {/* Create Teacher Modal */}
       <AnimatePresence>
         {showCreateModal && (
           <motion.div
@@ -210,9 +226,9 @@ export default function AdminTeachersPage() {
           >
             <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} onClick={(e) => e.stopPropagation()} style={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '32px', width: '100%', maxWidth: '440px' }}>
               <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'white', marginBottom: '24px' }}>Create Teacher Account</h2>
-              <input value={teacherName} onChange={(e) => setTeacherName(e.target.value)} placeholder="Full Name *" style={{ width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box', marginBottom: '12px' }} />
-              <input value={teacherEmail} onChange={(e) => setTeacherEmail(e.target.value)} placeholder="Email *" type="email" style={{ width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box', marginBottom: '12px' }} />
-              <input value={teacherPassword} onChange={(e) => setTeacherPassword(e.target.value)} placeholder="Temporary Password *" type="password" style={{ width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box', marginBottom: '16px' }} />
+              <input value={teacherName} onChange={(e) => setTeacherName(e.target.value)} placeholder="Full Name *" style={{ ...inputStyle, marginBottom: '12px' }} />
+              <input value={teacherEmail} onChange={(e) => setTeacherEmail(e.target.value)} placeholder="Email *" type="email" style={{ ...inputStyle, marginBottom: '12px' }} />
+              <input value={teacherPassword} onChange={(e) => setTeacherPassword(e.target.value)} placeholder="Temporary Password *" type="password" style={{ ...inputStyle, marginBottom: '16px' }} />
               <div style={{ display: 'flex', gap: '12px' }}>
                 <button onClick={() => setShowCreateModal(false)} style={{ flex: 1, padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem', cursor: 'pointer' }}>Cancel</button>
                 <button onClick={handleCreateTeacher} disabled={!teacherName.trim() || !teacherEmail.trim() || !teacherPassword.trim()} style={{ flex: 1, padding: '12px', borderRadius: '10px', border: 'none', background: teacherName.trim() && teacherEmail.trim() && teacherPassword.trim() ? 'linear-gradient(135deg, #9B59B6, #7D3C98)' : 'rgba(255,255,255,0.05)', color: teacherName.trim() && teacherEmail.trim() && teacherPassword.trim() ? 'white' : 'rgba(255,255,255,0.3)', fontSize: '0.9rem', fontWeight: 600, cursor: teacherName.trim() && teacherEmail.trim() && teacherPassword.trim() ? 'pointer' : 'default' }}>Create</button>
@@ -222,7 +238,6 @@ export default function AdminTeachersPage() {
         )}
       </AnimatePresence>
 
-      {/* Assign Subject Modal */}
       <AnimatePresence>
         {showAssignModal && selectedTeacher && (
           <motion.div
@@ -233,7 +248,7 @@ export default function AdminTeachersPage() {
             <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} onClick={(e) => e.stopPropagation()} style={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '32px', width: '100%', maxWidth: '440px' }}>
               <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'white', marginBottom: '8px' }}>Assign Subject</h2>
               <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', marginBottom: '24px' }}>To: {selectedTeacher.full_name}</p>
-              <select value={selectedSubject} onChange={(e) => setSelectedSubject(e.target.value)} style={{ width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box', marginBottom: '16px', appearance: 'none' as const }}>
+              <select value={selectedSubject} onChange={(e) => setSelectedSubject(e.target.value)} style={{ width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box', marginBottom: '16px' }}>
                 <option value="" style={{ background: '#1a1a2e' }}>Select a subject...</option>
                 {subjects.map(s => (
                   <option key={s.id} value={s.id} style={{ background: '#1a1a2e' }}>{s.icon} {s.title}</option>

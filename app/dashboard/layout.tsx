@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, createContext, useContext } from 'react'
+import { useState, useEffect, useCallback, createContext, useContext } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
@@ -51,6 +51,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [adminLoading, setAdminLoading] = useState(false)
 
   useEffect(() => {
+    let cancelled = false
     const getProfile = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
@@ -64,22 +65,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         .eq('user_id', user.id)
         .single()
 
-      if (data) {
+      if (data && !cancelled) {
         setProfile(data as Profile)
       }
-      setLoading(false)
+      if (!cancelled) setLoading(false)
     }
 
     getProfile()
-  }, [router, supabase])
+    return () => { cancelled = true }
+  }, [])
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     await supabase.auth.signOut()
     router.push('/login')
     router.refresh()
-  }
+  }, [router, supabase])
 
-  const handleAdminLogin = async () => {
+  const handleAdminLogin = useCallback(async () => {
     setAdminLoading(true)
     setAdminError('')
     const { error } = await supabase.auth.signInWithPassword({
@@ -94,7 +96,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     setShowAdminLogin(false)
     setAdminPassword('')
     router.push('/dashboard/admin')
-  }
+  }, [adminPassword, router, supabase])
 
   if (loading) {
     return (
@@ -105,34 +107,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         justifyContent: 'center',
         background: 'var(--bg-navy)',
       }}>
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          style={{
-            width: '40px', height: '40px',
-            border: '3px solid rgba(255,255,255,0.1)',
-            borderTopColor: '#FFB300',
-            borderRadius: '50%',
-          }}
-        />
+        <div className="spinner" />
       </div>
     )
   }
 
   const role = profile?.role || 'student'
   const items = navItems[role] || navItems.student
+  const initials = profile?.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2) || '?'
 
   return (
     <ProfileContext.Provider value={profile}>
       <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-navy)' }}>
-        {/* Sidebar */}
-        <motion.aside
-          initial={{ x: -280 }}
-          animate={{ x: sidebarOpen ? 0 : -280 }}
-          transition={{ duration: 0.3 }}
+        <aside
           style={{
-            width: '280px',
-            minWidth: '280px',
+            width: sidebarOpen ? '280px' : '0',
+            minWidth: sidebarOpen ? '280px' : '0',
+            overflow: 'hidden',
             background: 'var(--bg-navy)',
             borderRight: '1px solid rgba(255,255,255,0.06)',
             display: 'flex',
@@ -142,13 +133,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             left: 0,
             bottom: 0,
             zIndex: 50,
-            overflow: 'hidden',
+            transition: 'width 0.3s, min-width 0.3s',
           }}
         >
-          {/* Logo */}
           <div style={{
             padding: '24px 24px 20px',
             borderBottom: '1px solid rgba(255,255,255,0.06)',
+            opacity: sidebarOpen ? 1 : 0,
+            transition: 'opacity 0.2s',
           }}>
             <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px', position: 'relative' }}>
               <div style={{
@@ -181,14 +173,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </Link>
           </div>
 
-          {/* Nav items */}
-          <nav style={{ padding: '16px 12px', flex: 1 }}>
+          <nav style={{ padding: '16px 12px', flex: 1, opacity: sidebarOpen ? 1 : 0, transition: 'opacity 0.2s' }}>
             {items.map((item) => {
               const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
               return (
                 <Link key={item.href} href={item.href} style={{ textDecoration: 'none' }}>
-                  <motion.div
-                    whileHover={{ x: 4 }}
+                  <div
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -198,9 +188,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       marginBottom: '4px',
                       background: isActive ? 'rgba(65, 105, 225, 0.15)' : 'transparent',
                       color: isActive ? 'white' : 'rgba(255,255,255,0.5)',
-                      transition: 'all 0.2s',
                       cursor: 'pointer',
                     }}
+                    className="nav-item"
                   >
                     <span style={{ fontSize: '1.1rem' }}>{item.icon}</span>
                     <span style={{ fontSize: '0.9rem', fontWeight: isActive ? 600 : 400 }}>{item.label}</span>
@@ -210,16 +200,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         borderRadius: '50%', background: '#FFB300',
                       }} />
                     )}
-                  </motion.div>
+                  </div>
                 </Link>
               )
             })}
           </nav>
 
-          {/* User profile */}
           <div style={{
             padding: '16px 20px',
             borderTop: '1px solid rgba(255,255,255,0.06)',
+            opacity: sidebarOpen ? 1 : 0,
+            transition: 'opacity 0.2s',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
               <div style={{
@@ -228,7 +219,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '0.8rem', fontWeight: 700, color: 'white',
               }}>
-                {profile?.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2) || '?'}
+                {initials}
               </div>
               <div>
                 <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'white' }}>
@@ -244,37 +235,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
             <button
               onClick={handleLogout}
+              className="sign-out-btn"
               style={{
                 width: '100%', padding: '10px',
                 borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)',
                 background: 'transparent', color: 'rgba(255,255,255,0.5)',
                 fontSize: '0.8rem', cursor: 'pointer', fontFamily: 'var(--font-body)',
-                transition: 'all 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(220,53,69,0.1)'
-                e.currentTarget.style.borderColor = 'rgba(220,53,69,0.3)'
-                e.currentTarget.style.color = '#dc3545'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'transparent'
-                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'
-                e.currentTarget.style.color = 'rgba(255,255,255,0.5)'
               }}
             >
               Sign Out
             </button>
           </div>
-        </motion.aside>
+        </aside>
 
-        {/* Main content */}
         <main style={{
           flex: 1,
           marginLeft: sidebarOpen ? '280px' : '0',
           transition: 'margin-left 0.3s',
           minHeight: '100vh',
         }}>
-          {/* Top bar */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
@@ -302,7 +281,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
           </div>
 
-          {/* Page content */}
           <AnimatePresence mode="wait">
             <motion.div
               key={pathname}
@@ -318,7 +296,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </main>
       </div>
 
-      {/* Admin Login Modal */}
       <AnimatePresence>
         {showAdminLogin && (
           <motion.div

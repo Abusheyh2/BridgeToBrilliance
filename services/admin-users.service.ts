@@ -122,3 +122,18 @@ export async function getTeacherAssignments(teacherId: string): Promise<ApiRespo
     return handleApiError(error)
   }
 }
+
+export async function getTeacherAssignmentsBatch(teacherIds: string[]): Promise<ApiResponse<TeacherAssignment[]>> {
+  if (teacherIds.length === 0) return successResponse([])
+  try {
+    const { data, error } = await createClient()
+      .from('teacher_assignments')
+      .select('*, subject:subjects(title, icon)')
+      .in('teacher_id', teacherIds)
+
+    if (error) throw new ApiError(error.message, 400)
+    return successResponse(data as unknown as TeacherAssignment[])
+  } catch (error) {
+    return handleApiError(error)
+  }
+}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import * as securityService from '@/services/admin-security.service'
 import type { IPBan, SecurityLog, SecuritySetting, RateLimit } from '@/types/database.types'
@@ -48,7 +48,6 @@ export default function AdminSecurityPage() {
     if (logsRes.success && logsRes.data) setLogs(logsRes.data)
     if (settingsRes.success && settingsRes.data) setSettings(settingsRes.data)
     if (ratesRes.success && ratesRes.data) setRateLimits(ratesRes.data)
-    setLoading(false)
   }
 
   const handleBanIP = async () => {
@@ -63,14 +62,16 @@ export default function AdminSecurityPage() {
   }
 
   const handleUnban = async (id: string) => {
+    setBannedIPs(prev => prev.filter(ip => ip.id !== id))
     const res = await securityService.unbanIP(id)
-    if (res.success) loadData()
+    if (!res.success) loadData()
   }
 
   const toggleSetting = async (key: string, enabled: boolean) => {
     const setting = settings.find(s => s.key === key)
     if (!setting) return
     const newValue = { ...setting.value, enabled }
+    setSettings(prev => prev.map(s => s.key === key ? { ...s, value: newValue } : s))
     await securityService.updateSecuritySetting(key, newValue)
     loadData()
   }
@@ -82,9 +83,22 @@ export default function AdminSecurityPage() {
     { id: 'settings' as const, label: 'Settings', icon: '⚙️' },
   ]
 
-  const ddosSetting = settings.find(s => s.key === 'ddos_protection')
-  const rateSetting = settings.find(s => s.key === 'rate_limiting')
-  const botSetting = settings.find(s => s.key === 'bot_protection')
+  const ddosSetting = useMemo(() => settings.find(s => s.key === 'ddos_protection'), [settings])
+  const rateSetting = useMemo(() => settings.find(s => s.key === 'rate_limiting'), [settings])
+  const botSetting = useMemo(() => settings.find(s => s.key === 'bot_protection'), [settings])
+
+  const overviewStats = useMemo(() => [
+    { label: 'Banned IPs', value: bannedIPs.length, icon: '🚫', color: '#E74C3C' },
+    { label: 'Active Rate Limits', value: rateLimits.filter(r => r.request_count > 10).length, icon: '⚡', color: '#F39C12' },
+    { label: 'Security Events', value: logs.length, icon: '📋', color: '#4169E1' },
+    { label: 'Protections Active', value: [ddosSetting, rateSetting, botSetting].filter(s => s?.value['enabled']).length, icon: '🛡️', color: '#27AE60' },
+  ], [bannedIPs, rateLimits, logs, ddosSetting, rateSetting, botSetting])
+
+  const protections = useMemo(() => [
+    { key: 'ddos_protection', label: 'DDoS Protection', desc: 'Blocks IPs exceeding request limits', setting: ddosSetting },
+    { key: 'rate_limiting', label: 'Rate Limiting', desc: 'Limits login/signup attempts', setting: rateSetting },
+    { key: 'bot_protection', label: 'Bot Protection', desc: 'Prevents automated signups', setting: botSetting },
+  ], [ddosSetting, rateSetting, botSetting])
 
   return (
     <div>
@@ -107,7 +121,6 @@ export default function AdminSecurityPage() {
         </button>
       </div>
 
-      {/* Tabs */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
         {tabs.map(tab => (
           <button
@@ -129,14 +142,8 @@ export default function AdminSecurityPage() {
         <div style={{ textAlign: 'center', padding: '40px', color: 'rgba(255,255,255,0.4)' }}>Loading...</div>
       ) : activeTab === 'overview' ? (
         <div>
-          {/* Quick Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '32px' }}>
-            {[
-              { label: 'Banned IPs', value: bannedIPs.length, icon: '🚫', color: '#E74C3C' },
-              { label: 'Active Rate Limits', value: rateLimits.filter(r => r.request_count > 10).length, icon: '⚡', color: '#F39C12' },
-              { label: 'Security Events', value: logs.length, icon: '📋', color: '#4169E1' },
-              { label: 'Protections Active', value: [ddosSetting, rateSetting, botSetting].filter(s => s?.value['enabled']).length, icon: '🛡️', color: '#27AE60' },
-            ].map(stat => (
+            {overviewStats.map(stat => (
               <div key={stat.label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '20px' }}>
                 <div style={{ fontSize: '1.5rem', marginBottom: '8px' }}>{stat.icon}</div>
                 <div style={{ fontSize: '1.8rem', fontWeight: 700, color: 'white' }}>{stat.value}</div>
@@ -145,16 +152,11 @@ export default function AdminSecurityPage() {
             ))}
           </div>
 
-          {/* Protection Status */}
           <h3 style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '1px' }}>
             Protection Status
           </h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '32px' }}>
-            {[
-              { key: 'ddos_protection', label: 'DDoS Protection', desc: 'Blocks IPs exceeding request limits', setting: ddosSetting },
-              { key: 'rate_limiting', label: 'Rate Limiting', desc: 'Limits login/signup attempts', setting: rateSetting },
-              { key: 'bot_protection', label: 'Bot Protection', desc: 'Prevents automated signups', setting: botSetting },
-            ].map(protection => (
+            {protections.map(protection => (
               <div key={protection.key} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={{ fontSize: '0.95rem', color: 'white', fontWeight: 600, marginBottom: '4px' }}>{protection.label}</div>
@@ -179,7 +181,6 @@ export default function AdminSecurityPage() {
             ))}
           </div>
 
-          {/* Recent Logs */}
           <h3 style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '1px' }}>
             Recent Security Events
           </h3>
@@ -282,7 +283,6 @@ export default function AdminSecurityPage() {
         </div>
       )}
 
-      {/* Ban IP Modal */}
       <AnimatePresence>
         {showBanModal && (
           <motion.div
