@@ -19,7 +19,7 @@ const teamMembers = [
   { name: 'Xolmatova Kamola', role: 'Operation Manager', bio: 'Keeping everything running smoothly behind the scenes.', initials: 'XK', color: '#E74C3C' },
 ]
 
-const CARD_WIDTH = 280
+const CARD_W = 280
 const GAP = 24
 
 export default function Team() {
@@ -28,8 +28,19 @@ export default function Team() {
   const [activeIndex, setActiveIndex] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
   const intervalRef = useRef<number>(0)
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const cardRefs = useRef<(HTMLDivElement | null)[]>([])
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [containerWidth, setContainerWidth] = useState(0)
+
+  useEffect(() => {
+    if (!containerRef.current) return
+    const el = containerRef.current
+    setContainerWidth(el.clientWidth)
+    const observer = new ResizeObserver(entries => {
+      setContainerWidth(entries[0].contentRect.width)
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
 
   useEffect(() => {
     if (!isInView || isPaused) {
@@ -42,18 +53,16 @@ export default function Team() {
     return () => clearInterval(intervalRef.current)
   }, [isInView, isPaused])
 
-  useEffect(() => {
-    const card = cardRefs.current[activeIndex]
-    if (card) {
-      card.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
-    }
-  }, [activeIndex])
-
   const goTo = (index: number) => {
     setActiveIndex(index)
     setIsPaused(true)
     setTimeout(() => setIsPaused(false), 4000)
   }
+
+  const cardStep = CARD_W + GAP
+  const totalWidth = teamMembers.length * cardStep
+  const containerW = containerWidth || 900
+  const offset = -(activeIndex * cardStep) + (containerW - CARD_W) / 2
 
   return (
     <section
@@ -95,78 +104,77 @@ export default function Team() {
           </h2>
         </motion.div>
 
-        {/* Carousel track */}
         <div
-          ref={scrollRef}
+          ref={containerRef}
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
-          className="carousel-track"
-          style={{
-            display: 'flex', gap: `${GAP}px`,
-            overflowX: 'auto', overflowY: 'hidden',
-            padding: '20px 0', scrollBehavior: 'smooth',
-            scrollSnapType: 'x mandatory',
-          }}
+          style={{ position: 'relative', overflow: 'hidden' }}
         >
-          {teamMembers.map((member, i) => {
-            const isActive = i === activeIndex
-            return (
-              <div
-                key={member.name}
-                ref={el => { cardRefs.current[i] = el }}
-                onClick={() => goTo(i)}
-                style={{
-                  minWidth: `${CARD_WIDTH}px`,
-                  padding: '28px 24px',
-                  borderRadius: '16px',
-                  background: isActive
-                    ? `linear-gradient(135deg, ${member.color}22, rgba(255,255,255,0.03))`
-                    : 'rgba(255,255,255,0.03)',
-                  border: `1px solid ${isActive ? member.color + '44' : 'rgba(255,255,255,0.06)'}`,
-                  cursor: 'pointer',
-                  transition: 'all 0.4s ease',
-                  transform: isActive ? 'translateY(-8px)' : 'translateY(0)',
-                  boxShadow: isActive ? `0 8px 32px ${member.color}20` : 'none',
-                  scrollSnapAlign: 'center',
-                  userSelect: 'none',
-                  flexShrink: 0,
-                }}
-              >
-                <div style={{
-                  width: '56px', height: '56px', borderRadius: '50%',
-                  background: `linear-gradient(135deg, ${member.color}, ${member.color}88)`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '1.1rem', fontWeight: 700, color: 'white',
-                  fontFamily: 'var(--font-heading)', marginBottom: '16px',
-                }}>
-                  {member.initials}
+          <div
+            style={{
+              display: 'flex', gap: `${GAP}px`,
+              transform: `translateX(${offset}px)`,
+              transition: 'transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1)',
+              width: `${totalWidth}px`,
+            }}
+          >
+            {teamMembers.map((member, i) => {
+              const isActive = i === activeIndex
+              return (
+                <div
+                  key={member.name}
+                  onClick={() => goTo(i)}
+                  style={{
+                    width: `${CARD_W}px`,
+                    flexShrink: 0,
+                    padding: '28px 24px',
+                    borderRadius: '16px',
+                    background: isActive
+                      ? `linear-gradient(135deg, ${member.color}22, rgba(255,255,255,0.03))`
+                      : 'rgba(255,255,255,0.03)',
+                    border: `1px solid ${isActive ? member.color + '44' : 'rgba(255,255,255,0.06)'}`,
+                    cursor: 'pointer',
+                    transition: 'all 0.4s ease',
+                    transform: isActive ? 'translateY(-8px)' : 'translateY(0)',
+                    boxShadow: isActive ? `0 8px 32px ${member.color}20` : 'none',
+                    userSelect: 'none',
+                  }}
+                >
+                  <div style={{
+                    width: '56px', height: '56px', borderRadius: '50%',
+                    background: `linear-gradient(135deg, ${member.color}, ${member.color}88)`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '1.1rem', fontWeight: 700, color: 'white',
+                    fontFamily: 'var(--font-heading)', marginBottom: '16px',
+                  }}>
+                    {member.initials}
+                  </div>
+                  <div style={{
+                    fontSize: '1.05rem', fontWeight: 700,
+                    color: isActive ? member.color : 'white',
+                    fontFamily: 'var(--font-heading)', marginBottom: '4px',
+                    transition: 'color 0.3s',
+                  }}>
+                    {member.name}
+                  </div>
+                  <div style={{
+                    fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)',
+                    marginBottom: '12px',
+                  }}>
+                    {member.role}
+                  </div>
+                  <p style={{
+                    fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)',
+                    lineHeight: 1.6,
+                  }}>
+                    {member.bio}
+                  </p>
                 </div>
-                <div style={{
-                  fontSize: '1.05rem', fontWeight: 700,
-                  color: isActive ? member.color : 'white',
-                  fontFamily: 'var(--font-heading)', marginBottom: '4px',
-                  transition: 'color 0.3s',
-                }}>
-                  {member.name}
-                </div>
-                <div style={{
-                  fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)',
-                  marginBottom: '12px',
-                }}>
-                  {member.role}
-                </div>
-                <p style={{
-                  fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)',
-                  lineHeight: 1.6,
-                }}>
-                  {member.bio}
-                </p>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </div>
 
-        {/* Dots */}
         <div style={{
           display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '32px',
         }}>
