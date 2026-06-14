@@ -76,7 +76,7 @@ export default function Features() {
       ref={ref}
       style={{
         padding: '120px 40px',
-        background: 'linear-gradient(180deg, #0D1B3E 0%, #132347 100%)',
+        background: 'linear-gradient(180deg, #F4F5F8 0%, #EBEDF2 100%)',
         position: 'relative',
       }}
     >
@@ -91,9 +91,9 @@ export default function Features() {
             display: 'inline-block',
             padding: '6px 16px',
             borderRadius: '20px',
-            background: 'rgba(255, 179, 0, 0.15)',
-            border: '1px solid rgba(255, 179, 0, 0.3)',
-            color: '#FFB300',
+            background: 'rgba(255, 179, 0, 0.12)',
+            border: '1px solid rgba(255, 179, 0, 0.25)',
+            color: '#CC8800',
             fontSize: '0.8rem',
             fontWeight: 600,
             marginBottom: '20px',
@@ -107,7 +107,7 @@ export default function Features() {
             fontFamily: 'var(--font-heading)',
             fontSize: 'clamp(2rem, 4vw, 2.8rem)',
             fontWeight: 700,
-            color: 'white',
+            color: '#1A1A2E',
             marginBottom: '16px',
           }}>
             Everything You Need to{' '}
@@ -122,7 +122,7 @@ export default function Features() {
 
           <p style={{
             fontSize: '1.05rem',
-            color: 'rgba(255,255,255,0.6)',
+            color: 'rgba(0,0,0,0.5)',
             maxWidth: '600px',
             margin: '0 auto',
           }}>
@@ -143,8 +143,8 @@ export default function Features() {
               transition={{ duration: 0.6, delay: 0.1 * i }}
               whileHover={{ y: -8, transition: { duration: 0.2 } }}
               style={{
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.08)',
+                background: '#ffffff',
+                border: '1px solid rgba(0,0,0,0.06)',
                 borderRadius: '16px',
                 padding: '32px',
                 cursor: 'default',
@@ -159,11 +159,10 @@ export default function Features() {
               }}
               onMouseLeave={(e) => {
                 const el = e.currentTarget as HTMLElement
-                el.style.borderColor = 'rgba(255,255,255,0.08)'
+                el.style.borderColor = 'rgba(0,0,0,0.06)'
                 el.style.boxShadow = 'none'
               }}
             >
-              {/* Gold top border glow on hover (handled via onMouseEnter/Leave above) */}
               <div style={{
                 position: 'absolute', top: 0, left: 0, right: 0, height: '2px',
                 background: 'linear-gradient(90deg, transparent, rgba(255, 179, 0, 0.5), transparent)',
@@ -174,7 +173,7 @@ export default function Features() {
               <div style={{
                 width: '56px', height: '56px',
                 borderRadius: '14px',
-                background: 'rgba(65, 105, 225, 0.15)',
+                background: 'rgba(65, 105, 225, 0.1)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -188,7 +187,7 @@ export default function Features() {
                 fontFamily: 'var(--font-heading)',
                 fontSize: '1.2rem',
                 fontWeight: 600,
-                color: 'white',
+                color: '#1A1A2E',
                 marginBottom: '12px',
               }}>
                 {feature.title}
@@ -196,7 +195,7 @@ export default function Features() {
 
               <p style={{
                 fontSize: '0.9rem',
-                color: 'rgba(255,255,255,0.55)',
+                color: 'rgba(0,0,0,0.55)',
                 lineHeight: 1.6,
               }}>
                 {feature.description}

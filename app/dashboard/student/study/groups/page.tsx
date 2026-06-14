@@ -136,17 +136,17 @@ export default function StudyGroupsPage() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
-          <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', color: 'white', marginBottom: '4px' }}>
+          <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', color: '#1A1A2E', marginBottom: '4px' }}>
             Study Groups 👥
           </h1>
-          <p style={{ color: 'rgba(255,255,255,0.5)' }}>Collaborate with fellow students</p>
+          <p style={{ color: 'rgba(0,0,0,0.5)' }}>Collaborate with fellow students</p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
           style={{
             padding: '10px 20px', borderRadius: '10px', border: 'none',
             background: 'linear-gradient(135deg, #4169E1, #2D4FC8)',
-            color: 'white', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer',
+            color: '#1A1A2E', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer',
           }}
         >
           + Create Group
@@ -158,7 +158,7 @@ export default function StudyGroupsPage() {
         <div>
           {myGroups.length > 0 && (
             <div style={{ marginBottom: '24px' }}>
-              <h3 style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '1px' }}>
+              <h3 style={{ color: 'rgba(0,0,0,0.5)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '1px' }}>
                 My Groups
               </h3>
               {myGroups.map(group => (
@@ -166,12 +166,12 @@ export default function StudyGroupsPage() {
                   key={group.id}
                   onClick={() => setSelectedGroup(group)}
                   whileHover={{ x: 4 }}
-                  style={{
+                    style={{ willChange: 'transform, opacity',
                     width: '100%', display: 'flex', alignItems: 'center', gap: '12px',
                     padding: '12px 16px', borderRadius: '10px', marginBottom: '8px',
-                    background: selectedGroup?.id === group.id ? 'rgba(65, 105, 225, 0.2)' : 'rgba(255,255,255,0.03)',
-                    border: `1px solid ${selectedGroup?.id === group.id ? 'rgba(65, 105, 225, 0.3)' : 'rgba(255,255,255,0.06)'}`,
-                    color: 'white', cursor: 'pointer', textAlign: 'left',
+                    background: selectedGroup?.id === group.id ? 'rgba(65, 105, 225, 0.2)' : 'rgba(0,0,0,0.03)',
+                    border: `1px solid ${selectedGroup?.id === group.id ? 'rgba(65, 105, 225, 0.3)' : 'rgba(0,0,0,0.06)'}`,
+                    color: '#1A1A2E', cursor: 'pointer', textAlign: 'left',
                   }}
                 >
                   <div style={{
@@ -183,32 +183,32 @@ export default function StudyGroupsPage() {
                   </div>
                   <div>
                     <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>{group.name}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>{group.description?.slice(0, 30) || 'No description'}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'rgba(0,0,0,0.4)' }}>{group.description?.slice(0, 30) || 'No description'}</div>
                   </div>
                 </motion.button>
               ))}
             </div>
           )}
 
-          <h3 style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '1px' }}>
+          <h3 style={{ color: 'rgba(0,0,0,0.5)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '1px' }}>
             Discover Groups
           </h3>
           {loading ? (
-            <div style={{ color: 'rgba(255,255,255,0.4)', textAlign: 'center', padding: '20px' }}>Loading...</div>
+            <div style={{ color: 'rgba(0,0,0,0.4)', textAlign: 'center', padding: '20px' }}>Loading...</div>
           ) : groups.filter(g => !myGroupIds.has(g.id)).length === 0 ? (
-            <div style={{ color: 'rgba(255,255,255,0.4)', textAlign: 'center', padding: '20px' }}>No groups available</div>
+            <div style={{ color: 'rgba(0,0,0,0.4)', textAlign: 'center', padding: '20px' }}>No groups available</div>
           ) : (
             groups.filter(g => !myGroupIds.has(g.id)).map(group => (
               <motion.div
                 key={group.id}
                 whileHover={{ x: 4 }}
-                style={{
+                  style={{ willChange: 'transform, opacity',
                   display: 'flex', alignItems: 'center', gap: '12px',
                   padding: '12px 16px', borderRadius: '10px', marginBottom: '8px',
-                  background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+                  background: '#ffffff', border: '1px solid rgba(0,0,0,0.06)',
                 }}
               >
-                <div style={{
+                <div style={{ willChange: 'transform, opacity', 
                   width: '40px', height: '40px', borderRadius: '10px',
                   background: `${group.color}20`, display: 'flex',
                   alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem',
@@ -216,8 +216,8 @@ export default function StudyGroupsPage() {
                   {group.icon}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'white' }}>{group.name}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>{group.description?.slice(0, 30) || 'No description'}</div>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#1A1A2E' }}>{group.name}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'rgba(0,0,0,0.4)' }}>{group.description?.slice(0, 30) || 'No description'}</div>
                 </div>
                 <button
                   onClick={() => handleJoinGroup(group.id)}
@@ -237,8 +237,8 @@ export default function StudyGroupsPage() {
         {/* Chat Area */}
         {selectedGroup && (
           <div style={{
-            background: 'rgba(255,255,255,0.02)',
-            border: '1px solid rgba(255,255,255,0.06)',
+            background: 'rgba(0,0,0,0.02)',
+            border: '1px solid rgba(0,0,0,0.06)',
             borderRadius: '16px',
             display: 'flex',
             flexDirection: 'column',
@@ -247,7 +247,7 @@ export default function StudyGroupsPage() {
             {/* Chat Header */}
             <div style={{
               padding: '16px 20px',
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              borderBottom: '1px solid rgba(0,0,0,0.06)',
               display: 'flex', alignItems: 'center', gap: '12px',
             }}>
               <div style={{
@@ -258,15 +258,15 @@ export default function StudyGroupsPage() {
                 {selectedGroup.icon}
               </div>
               <div>
-                <div style={{ fontSize: '1rem', fontWeight: 600, color: 'white' }}>{selectedGroup.name}</div>
-                <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>{selectedGroup.description}</div>
+                <div style={{ fontSize: '1rem', fontWeight: 600, color: '#1A1A2E' }}>{selectedGroup.name}</div>
+                <div style={{ fontSize: '0.75rem', color: 'rgba(0,0,0,0.4)' }}>{selectedGroup.description}</div>
               </div>
             </div>
 
             {/* Messages */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
               {messages.length === 0 ? (
-                <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', paddingTop: '40px' }}>
+                <div style={{ textAlign: 'center', color: 'rgba(0,0,0,0.3)', paddingTop: '40px' }}>
                   No messages yet. Start the conversation!
                 </div>
               ) : (
@@ -277,14 +277,14 @@ export default function StudyGroupsPage() {
                         width: '28px', height: '28px', borderRadius: '50%',
                         background: 'linear-gradient(135deg, #4169E1, #2D4FC8)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '0.65rem', fontWeight: 700, color: 'white',
+                        fontSize: '0.65rem', fontWeight: 700, color: '#1A1A2E',
                       }}>
                         {(msg as unknown as { sender?: { full_name: string } }).sender?.full_name?.[0] || '?'}
                       </div>
-                      <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>
+                      <span style={{ fontSize: '0.8rem', color: 'rgba(0,0,0,0.5)', fontWeight: 600 }}>
                         {(msg as unknown as { sender?: { full_name: string } }).sender?.full_name || 'Unknown'}
                       </span>
-                      <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)' }}>
+                      <span style={{ fontSize: '0.7rem', color: 'rgba(0,0,0,0.3)' }}>
                         {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
@@ -305,8 +305,8 @@ export default function StudyGroupsPage() {
                     ) : (
                       <div style={{
                         padding: '10px 14px', borderRadius: '12px',
-                        background: 'rgba(255,255,255,0.05)',
-                        color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem',
+                        background: 'rgba(0,0,0,0.03)',
+                        color: 'rgba(0,0,0,0.7)', fontSize: '0.9rem',
                       }}>
                         {msg.content}
                       </div>
@@ -320,15 +320,15 @@ export default function StudyGroupsPage() {
             {/* Input */}
             <div style={{
               padding: '16px 20px',
-              borderTop: '1px solid rgba(255,255,255,0.06)',
+              borderTop: '1px solid rgba(0,0,0,0.06)',
               display: 'flex', gap: '12px', alignItems: 'center',
             }}>
               <button
                 onClick={() => fileInputRef.current?.click()}
                 style={{
                   width: '40px', height: '40px', borderRadius: '10px',
-                  background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-                  color: 'rgba(255,255,255,0.5)', fontSize: '1.1rem', cursor: 'pointer',
+                  background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.08)',
+                  color: 'rgba(0,0,0,0.5)', fontSize: '1.1rem', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
                 title="Attach file or photo"
@@ -349,9 +349,9 @@ export default function StudyGroupsPage() {
                 placeholder="Type a message..."
                 style={{
                   flex: 1, padding: '12px 16px', borderRadius: '10px',
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  color: 'white', fontSize: '0.9rem', outline: 'none',
+                  background: 'rgba(0,0,0,0.03)',
+                  border: '1px solid rgba(0,0,0,0.08)',
+                  color: '#1A1A2E', fontSize: '0.9rem', outline: 'none',
                 }}
               />
               <button
@@ -359,8 +359,8 @@ export default function StudyGroupsPage() {
                 disabled={sending || !newMessage.trim()}
                 style={{
                   padding: '12px 20px', borderRadius: '10px', border: 'none',
-                  background: newMessage.trim() ? 'linear-gradient(135deg, #4169E1, #2D4FC8)' : 'rgba(255,255,255,0.05)',
-                  color: newMessage.trim() ? 'white' : 'rgba(255,255,255,0.3)',
+                  background: newMessage.trim() ? 'linear-gradient(135deg, #4169E1, #2D4FC8)' : 'rgba(0,0,0,0.03)',
+                  color: newMessage.trim() ? 'white' : 'rgba(0,0,0,0.3)',
                   fontSize: '0.9rem', fontWeight: 600, cursor: newMessage.trim() ? 'pointer' : 'default',
                 }}
               >
@@ -378,8 +378,8 @@ export default function StudyGroupsPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            style={{
-              position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
+              style={{ willChange: 'transform, opacity',
+              position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               zIndex: 100, padding: '20px',
             }}
@@ -390,17 +390,17 @@ export default function StudyGroupsPage() {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              style={{
-                background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)',
+                style={{ willChange: 'transform, opacity',
+                background: '#ffffff', border: '1px solid rgba(0,0,0,0.08)',
                 borderRadius: '20px', padding: '32px', width: '100%', maxWidth: '480px',
               }}
             >
-              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'white', marginBottom: '24px' }}>
+              <h2 style={{ willChange: 'transform, opacity',  fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: '#1A1A2E', marginBottom: '24px' }}>
                 Create Study Group
               </h2>
 
               <div style={{ marginBottom: '16px' }}>
-                <label style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', marginBottom: '6px', display: 'block' }}>
+                <label style={{ fontSize: '0.8rem', color: 'rgba(0,0,0,0.5)', marginBottom: '6px', display: 'block' }}>
                   Group Name *
                 </label>
                 <input
@@ -409,14 +409,14 @@ export default function StudyGroupsPage() {
                   placeholder="e.g., Physics Study Group"
                   style={{
                     width: '100%', padding: '12px', borderRadius: '10px',
-                    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-                    color: 'white', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box',
+                    background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.08)',
+                    color: '#1A1A2E', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box',
                   }}
                 />
               </div>
 
               <div style={{ marginBottom: '16px' }}>
-                <label style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', marginBottom: '6px', display: 'block' }}>
+                <label style={{ fontSize: '0.8rem', color: 'rgba(0,0,0,0.5)', marginBottom: '6px', display: 'block' }}>
                   Description
                 </label>
                 <textarea
@@ -426,15 +426,15 @@ export default function StudyGroupsPage() {
                   rows={3}
                   style={{
                     width: '100%', padding: '12px', borderRadius: '10px',
-                    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-                    color: 'white', fontSize: '0.9rem', outline: 'none', resize: 'vertical',
+                    background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.08)',
+                    color: '#1A1A2E', fontSize: '0.9rem', outline: 'none', resize: 'vertical',
                     fontFamily: 'var(--font-body)', boxSizing: 'border-box',
                   }}
                 />
               </div>
 
               <div style={{ marginBottom: '16px' }}>
-                <label style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', marginBottom: '8px', display: 'block' }}>
+                <label style={{ fontSize: '0.8rem', color: 'rgba(0,0,0,0.5)', marginBottom: '8px', display: 'block' }}>
                   Icon
                 </label>
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -444,8 +444,8 @@ export default function StudyGroupsPage() {
                       onClick={() => setFormIcon(icon)}
                       style={{
                         width: '40px', height: '40px', borderRadius: '8px',
-                        background: formIcon === icon ? 'rgba(65, 105, 225, 0.3)' : 'rgba(255,255,255,0.05)',
-                        border: formIcon === icon ? '1px solid #4169E1' : '1px solid rgba(255,255,255,0.1)',
+                        background: formIcon === icon ? 'rgba(65, 105, 225, 0.3)' : 'rgba(0,0,0,0.03)',
+                        border: formIcon === icon ? '1px solid #4169E1' : '1px solid rgba(0,0,0,0.08)',
                         fontSize: '1.2rem', cursor: 'pointer',
                       }}
                     >
@@ -456,7 +456,7 @@ export default function StudyGroupsPage() {
               </div>
 
               <div style={{ marginBottom: '16px' }}>
-                <label style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', marginBottom: '8px', display: 'block' }}>
+                <label style={{ fontSize: '0.8rem', color: 'rgba(0,0,0,0.5)', marginBottom: '8px', display: 'block' }}>
                   Color
                 </label>
                 <div style={{ display: 'flex', gap: '8px' }}>
@@ -476,12 +476,12 @@ export default function StudyGroupsPage() {
               </div>
 
               <div style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <label style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>Public Group</label>
+                <label style={{ fontSize: '0.8rem', color: 'rgba(0,0,0,0.5)' }}>Public Group</label>
                 <button
                   onClick={() => setFormPublic(!formPublic)}
                   style={{
                     width: '44px', height: '24px', borderRadius: '12px',
-                    background: formPublic ? '#4169E1' : 'rgba(255,255,255,0.1)',
+                    background: formPublic ? '#4169E1' : 'rgba(0,0,0,0.08)',
                     border: 'none', cursor: 'pointer', position: 'relative',
                   }}
                 >
@@ -498,8 +498,8 @@ export default function StudyGroupsPage() {
                   onClick={() => setShowCreateModal(false)}
                   style={{
                     flex: 1, padding: '12px', borderRadius: '10px',
-                    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-                    color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem', cursor: 'pointer',
+                    background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.08)',
+                    color: 'rgba(0,0,0,0.6)', fontSize: '0.9rem', cursor: 'pointer',
                   }}
                 >
                   Cancel
@@ -509,8 +509,8 @@ export default function StudyGroupsPage() {
                   disabled={!formName.trim()}
                   style={{
                     flex: 1, padding: '12px', borderRadius: '10px', border: 'none',
-                    background: formName.trim() ? 'linear-gradient(135deg, #4169E1, #2D4FC8)' : 'rgba(255,255,255,0.05)',
-                    color: formName.trim() ? 'white' : 'rgba(255,255,255,0.3)',
+                    background: formName.trim() ? 'linear-gradient(135deg, #4169E1, #2D4FC8)' : 'rgba(0,0,0,0.03)',
+                    color: formName.trim() ? 'white' : 'rgba(0,0,0,0.3)',
                     fontSize: '0.9rem', fontWeight: 600, cursor: formName.trim() ? 'pointer' : 'default',
                   }}
                 >

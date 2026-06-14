@@ -87,8 +87,8 @@ export default function AdminDashboard() {
 
   const inputStyle: React.CSSProperties = {
     width: '100%', padding: '10px 14px', borderRadius: '8px',
-    border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)',
-    color: 'white', fontSize: '0.9rem', outline: 'none', fontFamily: 'var(--font-body)', boxSizing: 'border-box',
+    border: '1px solid rgba(0,0,0,0.1)', background: 'rgba(0,0,0,0.03)',
+    color: '#1A1A2E', fontSize: '0.9rem', outline: 'none', fontFamily: 'var(--font-body)', boxSizing: 'border-box',
   }
 
   if (loading) {
@@ -102,14 +102,14 @@ export default function AdminDashboard() {
   return (
     <div>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-        style={{
+          style={{ willChange: 'transform, opacity',
           background: 'linear-gradient(135deg, rgba(65, 105, 225, 0.2), rgba(255, 179, 0, 0.1))',
           border: '1px solid rgba(65, 105, 225, 0.2)', borderRadius: '16px', padding: '32px', marginBottom: '32px',
         }}>
-        <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.8rem', fontWeight: 700, color: 'white', marginBottom: '8px' }}>
+        <h1 style={{ willChange: 'transform, opacity',  fontFamily: 'var(--font-heading)', fontSize: '1.8rem', fontWeight: 700, color: '#1A1A2E', marginBottom: '8px' }}>
           Admin Dashboard
         </h1>
-        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.95rem' }}>
+        <p style={{ willChange: 'transform, opacity',  color: 'rgba(0,0,0,0.5)', fontSize: '0.95rem' }}>
           Platform overview and management
         </p>
       </motion.div>
@@ -123,13 +123,13 @@ export default function AdminDashboard() {
         ].map((stat, i) => (
           <div key={i} style={{ animationDelay: `${i * 0.05}s` }} className="fade-in-up">
             <div style={{
-              background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+              background: '#ffffff', border: '1px solid rgba(0,0,0,0.06)',
               borderRadius: '16px', padding: '24px',
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                  <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', marginBottom: '8px' }}>{stat.label}</p>
-                  <p style={{ fontSize: '2rem', fontWeight: 700, color: 'white', fontFamily: 'var(--font-heading)' }}>{stat.value}</p>
+                  <p style={{ color: 'rgba(0,0,0,0.5)', fontSize: '0.8rem', marginBottom: '8px' }}>{stat.label}</p>
+                  <p style={{ fontSize: '2rem', fontWeight: 700, color: '#1A1A2E', fontFamily: 'var(--font-heading)' }}>{stat.value}</p>
                 </div>
                 <span style={{ fontSize: '1.5rem' }}>{stat.icon}</span>
               </div>
@@ -141,44 +141,44 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '16px', padding: '24px', border: '1px solid rgba(255,255,255,0.06)', marginBottom: '40px' }}>
-        <h3 style={{ color: 'white', fontSize: '1rem', fontWeight: 600, marginBottom: '16px' }}>Platform Overview</h3>
+      <div style={{ background: '#ffffff', borderRadius: '16px', padding: '24px', border: '1px solid rgba(0,0,0,0.06)', marginBottom: '40px' }}>
+        <h3 style={{ color: '#1A1A2E', fontSize: '1rem', fontWeight: 600, marginBottom: '16px' }}>Platform Overview</h3>
         <ResponsiveContainer width="100%" height={250}>
           <BarChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-            <XAxis dataKey="name" stroke="rgba(255,255,255,0.3)" fontSize={12} />
-            <YAxis stroke="rgba(255,255,255,0.3)" fontSize={12} />
-            <Tooltip contentStyle={{ background: '#1A2D56', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white' }} />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.03)" />
+            <XAxis dataKey="name" stroke="rgba(0,0,0,0.3)" fontSize={12} />
+            <YAxis stroke="rgba(0,0,0,0.3)" fontSize={12} />
+            <Tooltip contentStyle={{ background: '#1A2D56', border: '1px solid rgba(0,0,0,0.08)', borderRadius: '8px', color: '#1A1A2E' }} />
             <Bar dataKey="count" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
 
       <div id="users" style={{ marginBottom: '40px' }}>
-        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: 'white', marginBottom: '20px' }}>User Management</h2>
+        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: '#1A1A2E', marginBottom: '20px' }}>User Management</h2>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+              <tr style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
                 {['Name', 'Role', 'Joined', 'Actions'].map(h => (
-                  <th key={h} style={{ textAlign: 'left', padding: '12px 16px', color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', fontWeight: 600 }}>{h}</th>
+                  <th key={h} style={{ textAlign: 'left', padding: '12px 16px', color: 'rgba(0,0,0,0.5)', fontSize: '0.8rem', fontWeight: 600 }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {users.map((user) => (
-                <tr key={user.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <tr key={user.id} style={{ borderBottom: '1px solid rgba(0,0,0,0.03)' }}>
                   <td style={{ padding: '12px 16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <div style={{
                         width: '32px', height: '32px', borderRadius: '50%',
                         background: 'linear-gradient(135deg, #4169E1, #2D4FC8)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '0.7rem', fontWeight: 700, color: 'white',
+                        fontSize: '0.7rem', fontWeight: 700, color: '#1A1A2E',
                       }}>
                         {user.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2)}
                       </div>
-                      <span style={{ color: 'white', fontSize: '0.85rem' }}>{user.full_name}</span>
+                      <span style={{ color: '#1A1A2E', fontSize: '0.85rem' }}>{user.full_name}</span>
                     </div>
                   </td>
                   <td style={{ padding: '12px 16px' }}>
@@ -190,7 +190,7 @@ export default function AdminDashboard() {
                       {user.role}
                     </span>
                   </td>
-                  <td style={{ padding: '12px 16px', color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem' }}>
+                  <td style={{ padding: '12px 16px', color: 'rgba(0,0,0,0.4)', fontSize: '0.8rem' }}>
                     {new Date(user.created_at).toLocaleDateString()}
                   </td>
                   <td style={{ padding: '12px 16px' }}>
@@ -199,14 +199,14 @@ export default function AdminDashboard() {
                       onChange={(e) => handleRoleChange(user.id, e.target.value)}
                       style={{
                         padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem',
-                        background: 'rgba(255,255,255,0.05)', color: 'white',
-                        border: '1px solid rgba(255,255,255,0.15)', outline: 'none',
+                        background: 'rgba(0,0,0,0.03)', color: '#1A1A2E',
+                        border: '1px solid rgba(0,0,0,0.1)', outline: 'none',
                         cursor: 'pointer',
                       }}
                     >
-                      <option value="student" style={{ background: '#132347' }}>Student</option>
-                      <option value="teacher" style={{ background: '#132347' }}>Teacher</option>
-                      <option value="admin" style={{ background: '#132347' }}>Admin</option>
+                      <option value="student" style={{ background: '#ffffff' }}>Student</option>
+                      <option value="teacher" style={{ background: '#ffffff' }}>Teacher</option>
+                      <option value="admin" style={{ background: '#ffffff' }}>Admin</option>
                     </select>
                   </td>
                 </tr>
@@ -217,17 +217,17 @@ export default function AdminDashboard() {
       </div>
 
       <div id="subjects" style={{ marginBottom: '40px' }}>
-        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: 'white', marginBottom: '20px' }}>All Subjects</h2>
+        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: '#1A1A2E', marginBottom: '20px' }}>All Subjects</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '16px' }}>
           {subjects.map((s, i) => (
             <div key={s.id} style={{ animationDelay: `${i * 0.03}s` }} className="fade-in-up">
               <div style={{
                 padding: '20px', borderRadius: '12px',
-                background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+                background: '#ffffff', border: '1px solid rgba(0,0,0,0.06)',
               }}>
                 <span style={{ fontSize: '1.5rem' }}>{s.icon}</span>
-                <h4 style={{ color: 'white', fontSize: '0.95rem', margin: '8px 0 4px' }}>{s.title}</h4>
-                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem' }}>{s.description?.slice(0, 60)}</p>
+                <h4 style={{ color: '#1A1A2E', fontSize: '0.95rem', margin: '8px 0 4px' }}>{s.title}</h4>
+                <p style={{ color: 'rgba(0,0,0,0.4)', fontSize: '0.8rem' }}>{s.description?.slice(0, 60)}</p>
               </div>
             </div>
           ))}
@@ -236,7 +236,7 @@ export default function AdminDashboard() {
 
       <div id="announcements" style={{ marginBottom: '40px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: 'white' }}>Platform Announcements</h2>
+          <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: '#1A1A2E' }}>Platform Announcements</h2>
           <button onClick={() => setShowAnnouncementForm(!showAnnouncementForm)} className="btn-gold" style={{ padding: '8px 20px', fontSize: '0.85rem' }}>
             + New Announcement
           </button>
@@ -245,15 +245,15 @@ export default function AdminDashboard() {
         {showAnnouncementForm && (
           <motion.form initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
             onSubmit={handlePostAnnouncement}
-            style={{
-              background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)',
+              style={{ willChange: 'transform, opacity',
+              background: '#ffffff', border: '1px solid rgba(0,0,0,0.08)',
               borderRadius: '12px', padding: '24px', marginBottom: '20px',
             }}>
-            <div style={{ marginBottom: '12px' }}>
+            <div style={{ willChange: 'transform, opacity',  marginBottom: '12px' }}>
               <input value={announcementForm.title} onChange={e => setAnnouncementForm({...announcementForm, title: e.target.value})} required style={inputStyle} placeholder="Announcement title..." />
             </div>
-            <div style={{ marginBottom: '12px' }}>
-              <textarea value={announcementForm.body} onChange={e => setAnnouncementForm({...announcementForm, body: e.target.value})} required style={{...inputStyle, minHeight: '80px', resize: 'vertical'}} placeholder="Announcement body..." />
+            <div style={{ willChange: 'transform, opacity',  marginBottom: '12px' }}>
+              <textarea value={announcementForm.body} onChange={e => setAnnouncementForm({...announcementForm, body: e.target.value})} required style={{ willChange: 'transform, opacity', ...inputStyle, minHeight: '80px', resize: 'vertical'}} placeholder="Announcement body..." />
             </div>
             <button type="submit" disabled={formLoading} className="btn-primary" style={{ padding: '10px 24px', fontSize: '0.85rem' }}>
               {formLoading ? 'Posting...' : 'Post Announcement'}
@@ -263,20 +263,20 @@ export default function AdminDashboard() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {announcements.length === 0 ? (
-            <p style={{ color: 'rgba(255,255,255,0.4)', padding: '20px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', fontSize: '0.9rem' }}>
+            <p style={{ color: 'rgba(0,0,0,0.4)', padding: '20px', background: '#ffffff', borderRadius: '12px', fontSize: '0.9rem' }}>
               No global announcements posted yet.
             </p>
           ) : (
             announcements.map(ann => (
               <div key={ann.id} style={{
                 padding: '16px', borderRadius: '12px',
-                background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+                background: '#ffffff', border: '1px solid rgba(0,0,0,0.06)',
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <h4 style={{ color: 'white', fontSize: '0.9rem' }}>{ann.title}</h4>
-                  <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.7rem' }}>{new Date(ann.created_at).toLocaleDateString()}</span>
+                  <h4 style={{ color: '#1A1A2E', fontSize: '0.9rem' }}>{ann.title}</h4>
+                  <span style={{ color: 'rgba(0,0,0,0.3)', fontSize: '0.7rem' }}>{new Date(ann.created_at).toLocaleDateString()}</span>
                 </div>
-                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', lineHeight: 1.5 }}>{ann.body}</p>
+                <p style={{ color: 'rgba(0,0,0,0.5)', fontSize: '0.85rem', lineHeight: 1.5 }}>{ann.body}</p>
               </div>
             ))
           )}

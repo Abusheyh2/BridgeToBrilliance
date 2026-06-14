@@ -185,7 +185,7 @@ export default function StudentDashboard() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        style={{
+          style={{ willChange: 'transform, opacity',
           background: 'linear-gradient(135deg, rgba(65, 105, 225, 0.2), rgba(255, 179, 0, 0.1))',
           border: '1px solid rgba(65, 105, 225, 0.2)',
           borderRadius: '16px',
@@ -193,28 +193,28 @@ export default function StudentDashboard() {
           marginBottom: '32px',
         }}
       >
-        <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.8rem', fontWeight: 700, color: 'white', marginBottom: '8px' }}>
+        <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.8rem', fontWeight: 700, color: '#1A1A2E', marginBottom: '8px' }}>
           Welcome back, {firstName}! 👋
         </h1>
-        <p style={{ fontSize: '0.95rem', color: 'rgba(255,255,255,0.6)' }}>
+        <p style={{ fontSize: '0.95rem', color: 'rgba(0,0,0,0.5)' }}>
           You&apos;re enrolled in {enrollments.length} subject{enrollments.length !== 1 ? 's' : ''}. Keep learning!
         </p>
       </motion.div>
 
       <div id="subjects" style={{ marginBottom: '40px' }}>
-        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: 'white', marginBottom: '20px' }}>
+        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: '#1A1A2E', marginBottom: '20px' }}>
           📚 My Subjects
         </h2>
         {enrollments.length === 0 ? (
-          <div style={{ padding: '40px', textAlign: 'center', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
-            <p style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '16px' }}>You haven&apos;t enrolled in any subjects yet.</p>
+          <div style={{ padding: '40px', textAlign: 'center', background: '#ffffff', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.06)' }}>
+            <p style={{ color: 'rgba(0,0,0,0.5)', marginBottom: '16px' }}>You haven&apos;t enrolled in any subjects yet.</p>
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
               {allSubjects.map((s) => (
                 <div key={s.id} className="enroll-card"
-                  style={{ padding: '16px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', minWidth: '200px' }}>
+                  style={{ padding: '16px', borderRadius: '12px', background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.08)', minWidth: '200px' }}>
                   <span style={{ fontSize: '1.5rem' }}>{s.icon}</span>
-                  <h4 style={{ color: 'white', fontSize: '0.95rem', margin: '8px 0 4px' }}>{s.title}</h4>
-                  <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', marginBottom: '12px' }}>by {s.teacher?.full_name}</p>
+                  <h4 style={{ color: '#1A1A2E', fontSize: '0.95rem', margin: '8px 0 4px' }}>{s.title}</h4>
+                  <p style={{ color: 'rgba(0,0,0,0.5)', fontSize: '0.8rem', marginBottom: '12px' }}>by {s.teacher?.full_name}</p>
                   <button onClick={() => handleEnroll(s.id)} className="btn-primary" style={{ padding: '8px 16px', fontSize: '0.8rem' }}>Enroll</button>
                 </div>
               ))}
@@ -235,10 +235,10 @@ export default function StudentDashboard() {
                           {progress}%
                         </span>
                       </div>
-                      <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', fontWeight: 600, color: 'white', marginBottom: '4px' }}>
+                      <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', fontWeight: 600, color: '#1A1A2E', marginBottom: '4px' }}>
                         {subject?.title}
                       </h3>
-                      <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', marginBottom: '16px' }}>
+                      <p style={{ fontSize: '0.8rem', color: 'rgba(0,0,0,0.5)', marginBottom: '16px' }}>
                         {subject?.teacher?.full_name}
                       </p>
                       <div className="progress-bar">
@@ -255,23 +255,23 @@ export default function StudentDashboard() {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '24px', marginBottom: '40px' }}>
         <div>
-          <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: 'white', marginBottom: '20px' }}>
+          <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: '#1A1A2E', marginBottom: '20px' }}>
             📅 Upcoming Classes
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {upcomingClasses.length === 0 ? (
-              <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.9rem', padding: '20px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px' }}>
+              <p style={{ color: 'rgba(0,0,0,0.4)', fontSize: '0.9rem', padding: '20px', background: '#ffffff', borderRadius: '12px' }}>
                 No upcoming classes scheduled.
               </p>
             ) : (
               upcomingClasses.map((cls) => (
                 <div key={cls.id} className="list-item" style={{
-                  padding: '16px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  padding: '16px', borderRadius: '12px', background: '#ffffff',
+                  border: '1px solid rgba(0,0,0,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                 }}>
                   <div>
-                    <h4 style={{ color: 'white', fontSize: '0.9rem', marginBottom: '4px' }}>{cls.title}</h4>
-                    <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem' }}>
+                    <h4 style={{ color: '#1A1A2E', fontSize: '0.9rem', marginBottom: '4px' }}>{cls.title}</h4>
+                    <p style={{ color: 'rgba(0,0,0,0.4)', fontSize: '0.8rem' }}>
                       {cls.subject?.title} &middot; {new Date(cls.scheduled_at).toLocaleDateString()} at {new Date(cls.scheduled_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
@@ -287,27 +287,27 @@ export default function StudentDashboard() {
         </div>
 
         <div>
-          <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: 'white', marginBottom: '20px' }}>
+          <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: '#1A1A2E', marginBottom: '20px' }}>
             📢 Announcements
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {announcements.length === 0 ? (
-              <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.9rem', padding: '20px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px' }}>
+              <p style={{ color: 'rgba(0,0,0,0.4)', fontSize: '0.9rem', padding: '20px', background: '#ffffff', borderRadius: '12px' }}>
                 No announcements yet.
               </p>
             ) : (
               announcements.map((ann) => (
                 <div key={ann.id} className="list-item" style={{
-                  padding: '16px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.06)',
+                  padding: '16px', borderRadius: '12px', background: '#ffffff',
+                  border: '1px solid rgba(0,0,0,0.06)',
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <h4 style={{ color: 'white', fontSize: '0.9rem' }}>{ann.title}</h4>
-                    <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)' }}>
+                    <h4 style={{ color: '#1A1A2E', fontSize: '0.9rem' }}>{ann.title}</h4>
+                    <span style={{ fontSize: '0.7rem', color: 'rgba(0,0,0,0.3)' }}>
                       {new Date(ann.created_at).toLocaleDateString()}
                     </span>
                   </div>
-                  <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', lineHeight: 1.5 }}>{ann.body}</p>
+                  <p style={{ color: 'rgba(0,0,0,0.5)', fontSize: '0.8rem', lineHeight: 1.5 }}>{ann.body}</p>
                 </div>
               ))
             )}
@@ -316,26 +316,26 @@ export default function StudentDashboard() {
       </div>
 
       <div id="grades" style={{ marginBottom: '40px' }}>
-        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: 'white', marginBottom: '20px' }}>
+        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: '#1A1A2E', marginBottom: '20px' }}>
           📝 My Grades
         </h2>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+              <tr style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
                 {['Subject', 'Assignment', 'Score', 'Feedback'].map(h => (
-                  <th key={h} style={{ textAlign: 'left', padding: '12px 16px', color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', fontWeight: 600 }}>{h}</th>
+                  <th key={h} style={{ textAlign: 'left', padding: '12px 16px', color: 'rgba(0,0,0,0.5)', fontSize: '0.8rem', fontWeight: 600 }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {grades.length === 0 ? (
-                <tr><td colSpan={4} style={{ padding: '20px 16px', color: 'rgba(255,255,255,0.4)', fontSize: '0.9rem' }}>No grades yet.</td></tr>
+                <tr><td colSpan={4} style={{ padding: '20px 16px', color: 'rgba(0,0,0,0.4)', fontSize: '0.9rem' }}>No grades yet.</td></tr>
               ) : (
                 grades.map((g) => (
-                  <tr key={g.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                    <td style={{ padding: '12px 16px', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem' }}>{g.subject?.title}</td>
-                    <td style={{ padding: '12px 16px', color: 'white', fontSize: '0.85rem' }}>{g.assignment_title}</td>
+                  <tr key={g.id} style={{ borderBottom: '1px solid rgba(0,0,0,0.03)' }}>
+                    <td style={{ padding: '12px 16px', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem' }}>{g.subject?.title}</td>
+                    <td style={{ padding: '12px 16px', color: '#1A1A2E', fontSize: '0.85rem' }}>{g.assignment_title}</td>
                     <td style={{ padding: '12px 16px' }}>
                       <span style={{
                         padding: '4px 10px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 600,
@@ -345,7 +345,7 @@ export default function StudentDashboard() {
                         {g.score}/{g.max_score}
                       </span>
                     </td>
-                    <td style={{ padding: '12px 16px', color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem' }}>{g.feedback || '—'}</td>
+                    <td style={{ padding: '12px 16px', color: 'rgba(0,0,0,0.5)', fontSize: '0.8rem' }}>{g.feedback || '—'}</td>
                   </tr>
                 ))
               )}
@@ -355,30 +355,30 @@ export default function StudentDashboard() {
       </div>
 
       <div style={{ marginBottom: '40px' }}>
-        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: 'white', marginBottom: '20px' }}>
+        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: '#1A1A2E', marginBottom: '20px' }}>
           📊 Progress Analytics
         </h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '24px' }}>
-          <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '16px', padding: '24px', border: '1px solid rgba(255,255,255,0.06)' }}>
-            <h4 style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem', marginBottom: '16px' }}>Lessons Completed Over Time</h4>
+          <div style={{ background: '#ffffff', borderRadius: '16px', padding: '24px', border: '1px solid rgba(0,0,0,0.06)' }}>
+            <h4 style={{ color: 'rgba(0,0,0,0.5)', fontSize: '0.85rem', marginBottom: '16px' }}>Lessons Completed Over Time</h4>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={progressData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis dataKey="week" stroke="rgba(255,255,255,0.3)" fontSize={12} />
-                <YAxis stroke="rgba(255,255,255,0.3)" fontSize={12} />
-                <Tooltip contentStyle={{ background: '#1A2D56', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.03)" />
+                <XAxis dataKey="week" stroke="rgba(0,0,0,0.3)" fontSize={12} />
+                <YAxis stroke="rgba(0,0,0,0.3)" fontSize={12} />
+                <Tooltip contentStyle={{ background: '#1A2D56', border: '1px solid rgba(0,0,0,0.08)', borderRadius: '8px', color: '#1A1A2E' }} />
                 <Line type="monotone" dataKey="lessons" stroke="#FFB300" strokeWidth={2} dot={{ fill: '#FFB300' }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
-          <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '16px', padding: '24px', border: '1px solid rgba(255,255,255,0.06)' }}>
-            <h4 style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem', marginBottom: '16px' }}>Progress by Subject</h4>
+          <div style={{ background: '#ffffff', borderRadius: '16px', padding: '24px', border: '1px solid rgba(0,0,0,0.06)' }}>
+            <h4 style={{ color: 'rgba(0,0,0,0.5)', fontSize: '0.85rem', marginBottom: '16px' }}>Progress by Subject</h4>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={subjectProgress.length > 0 ? subjectProgress : [{ name: 'No data', progress: 0 }]}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis dataKey="name" stroke="rgba(255,255,255,0.3)" fontSize={12} />
-                <YAxis stroke="rgba(255,255,255,0.3)" fontSize={12} />
-                <Tooltip contentStyle={{ background: '#1A2D56', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.03)" />
+                <XAxis dataKey="name" stroke="rgba(0,0,0,0.3)" fontSize={12} />
+                <YAxis stroke="rgba(0,0,0,0.3)" fontSize={12} />
+                <Tooltip contentStyle={{ background: '#1A2D56', border: '1px solid rgba(0,0,0,0.08)', borderRadius: '8px', color: '#1A1A2E' }} />
                 <Bar dataKey="progress" fill="#4169E1" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>

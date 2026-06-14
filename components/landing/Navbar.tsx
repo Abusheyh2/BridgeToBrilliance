@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -45,7 +46,6 @@ export default function Navbar() {
     router.push('/dashboard/admin')
   }
 
-  // Close mobile menu when resizing to desktop
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth > 768) setMobileOpen(false)
@@ -57,7 +57,7 @@ export default function Navbar() {
   const navLinks = [
     { href: '#about', label: 'About' },
     { href: '#features', label: 'Features' },
-    { href: '#team', label: 'Team' },
+    { href: '/team', label: 'Team' },
   ]
 
   return (
@@ -76,9 +76,9 @@ export default function Navbar() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          background: scrolled ? 'rgba(13, 27, 62, 0.95)' : 'transparent',
+          background: scrolled ? 'rgba(255, 255, 255, 0.95)' : 'transparent',
           backdropFilter: scrolled ? 'blur(12px)' : 'none',
-          borderBottom: scrolled ? '1px solid rgba(255,255,255,0.1)' : 'none',
+          borderBottom: scrolled ? '1px solid rgba(0,0,0,0.06)' : 'none',
           transition: 'all 0.3s ease',
         }}
       >
@@ -88,13 +88,12 @@ export default function Navbar() {
               width: '36px',
               height: '36px',
               borderRadius: '8px',
-              background: 'linear-gradient(135deg, #4169E1, #FFB300)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '18px',
               position: 'relative',
-            }}>🌉
+            }}>
+              <Image src="/pictures/logo.png" alt="BridgeToBrilliance" width={36} height={36} style={{ borderRadius: '8px', objectFit: 'contain' }} />
               <button
                 onClick={() => setShowAdminLogin(true)}
                 aria-label="Admin Access"
@@ -105,7 +104,7 @@ export default function Navbar() {
                   width: '8px',
                   height: '8px',
                   borderRadius: '50%',
-                  background: 'rgba(255,255,255,0.08)',
+                  background: scrolled ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)',
                   border: 'none',
                   cursor: 'pointer',
                   padding: 0,
@@ -116,20 +115,24 @@ export default function Navbar() {
               fontFamily: 'var(--font-heading)',
               fontSize: '1.3rem',
               fontWeight: 700,
-              color: '#FFB300',
+              color: scrolled ? '#4169E1' : '#FFB300',
+              transition: 'color 0.3s',
             }}>
               BridgeToBrilliance
             </span>
           </div>
         </Link>
 
-        {/* Desktop nav */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}
           className="desktop-nav">
           {navLinks.map(link => (
-            <a key={link.href} href={link.href} style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500, transition: 'color 0.2s' }}>{link.label}</a>
+            link.href.startsWith('/') ? (
+              <Link key={link.href} href={link.href} style={{ color: scrolled ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500, transition: 'color 0.2s' }}>{link.label}</Link>
+            ) : (
+              <a key={link.href} href={link.href} style={{ color: scrolled ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500, transition: 'color 0.2s' }}>{link.label}</a>
+            )
           ))}
-          <Link href="/login" style={{ color: 'rgba(255,255,255,0.9)', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600 }}>Sign In</Link>
+          <Link href="/login" style={{ color: scrolled ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.9)', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600 }}>Sign In</Link>
           <Link href="/register">
             <button className="btn-gold" style={{ padding: '8px 20px', fontSize: '0.85rem' }}>
               Get Started
@@ -137,7 +140,6 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* Mobile hamburger button */}
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label="Toggle menu"
@@ -146,7 +148,7 @@ export default function Navbar() {
             display: 'none',
             background: 'none',
             border: 'none',
-            color: 'white',
+            color: scrolled ? '#1A1A2E' : 'white',
             fontSize: '1.5rem',
             cursor: 'pointer',
             padding: '4px',
@@ -157,7 +159,6 @@ export default function Navbar() {
         </button>
       </motion.nav>
 
-      {/* Admin Login Modal */}
       <AnimatePresence>
         {showAdminLogin && (
           <motion.div
@@ -182,18 +183,18 @@ export default function Navbar() {
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
               style={{
-                background: '#0d1b3e',
-                border: '1px solid rgba(255,255,255,0.1)',
+                background: '#ffffff',
+                border: '1px solid rgba(0,0,0,0.1)',
                 borderRadius: '20px',
                 padding: '32px',
                 width: '100%',
                 maxWidth: '400px',
               }}
             >
-              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', color: 'white', marginBottom: '8px' }}>
+              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', color: '#1A1A2E', marginBottom: '8px' }}>
                 Admin Access
               </h2>
-              <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', marginBottom: '24px' }}>
+              <p style={{ fontSize: '0.85rem', color: 'rgba(0,0,0,0.4)', marginBottom: '24px' }}>
                 Enter admin password to continue
               </p>
               <input
@@ -207,9 +208,9 @@ export default function Navbar() {
                   width: '100%',
                   padding: '12px 16px',
                   borderRadius: '10px',
-                  background: 'rgba(255,255,255,0.05)',
-                  border: `1px solid ${adminError ? '#dc3545' : 'rgba(255,255,255,0.1)'}`,
-                  color: 'white',
+                  background: 'rgba(0,0,0,0.03)',
+                  border: `1px solid ${adminError ? '#dc3545' : 'rgba(0,0,0,0.1)'}`,
+                  color: '#1A1A2E',
                   fontSize: '0.9rem',
                   outline: 'none',
                   boxSizing: 'border-box',
@@ -226,9 +227,9 @@ export default function Navbar() {
                     flex: 1,
                     padding: '12px',
                     borderRadius: '10px',
-                    background: 'rgba(255,255,255,0.05)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    color: 'rgba(255,255,255,0.7)',
+                    background: 'rgba(0,0,0,0.03)',
+                    border: '1px solid rgba(0,0,0,0.1)',
+                    color: 'rgba(0,0,0,0.7)',
                     fontSize: '0.9rem',
                     cursor: 'pointer',
                   }}
@@ -243,8 +244,8 @@ export default function Navbar() {
                     padding: '12px',
                     borderRadius: '10px',
                     border: 'none',
-                    background: adminPassword ? 'linear-gradient(135deg, #4169E1, #2D4FC8)' : 'rgba(255,255,255,0.05)',
-                    color: adminPassword ? 'white' : 'rgba(255,255,255,0.3)',
+                    background: adminPassword ? 'linear-gradient(135deg, #4169E1, #2D4FC8)' : 'rgba(0,0,0,0.03)',
+                    color: adminPassword ? 'white' : 'rgba(0,0,0,0.3)',
                     fontSize: '0.9rem',
                     fontWeight: 600,
                     cursor: adminPassword ? 'pointer' : 'default',
@@ -258,7 +259,6 @@ export default function Navbar() {
         )}
       </AnimatePresence>
 
-      {/* Mobile menu overlay */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
@@ -272,40 +272,59 @@ export default function Navbar() {
               right: 0,
               bottom: 0,
               width: '280px',
-              background: 'rgba(13, 27, 62, 0.98)',
+              background: 'rgba(255, 255, 255, 0.98)',
               backdropFilter: 'blur(20px)',
               zIndex: 99,
               display: 'flex',
               flexDirection: 'column',
               padding: '100px 32px 32px',
               gap: '8px',
-              borderLeft: '1px solid rgba(255,255,255,0.1)',
+              borderLeft: '1px solid rgba(0,0,0,0.08)',
             }}
           >
             {navLinks.map(link => (
-              <a
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                style={{
-                  color: 'rgba(255,255,255,0.8)',
-                  textDecoration: 'none',
-                  fontSize: '1.1rem',
-                  fontWeight: 500,
-                  padding: '14px 16px',
-                  borderRadius: '10px',
-                  transition: 'background 0.2s',
-                }}
-              >
-                {link.label}
-              </a>
+              link.href.startsWith('/') ? (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileOpen(false)}
+                  style={{
+                    color: 'rgba(0,0,0,0.7)',
+                    textDecoration: 'none',
+                    fontSize: '1.1rem',
+                    fontWeight: 500,
+                    padding: '14px 16px',
+                    borderRadius: '10px',
+                    transition: 'background 0.2s',
+                  }}
+                >
+                  {link.label}
+                </Link>
+              ) : (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileOpen(false)}
+                  style={{
+                    color: 'rgba(0,0,0,0.7)',
+                    textDecoration: 'none',
+                    fontSize: '1.1rem',
+                    fontWeight: 500,
+                    padding: '14px 16px',
+                    borderRadius: '10px',
+                    transition: 'background 0.2s',
+                  }}
+                >
+                  {link.label}
+                </a>
+              )
             ))}
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', margin: '12px 0' }} />
+            <div style={{ borderTop: '1px solid rgba(0,0,0,0.08)', margin: '12px 0' }} />
             <Link
               href="/login"
               onClick={() => setMobileOpen(false)}
               style={{
-                color: 'white',
+                color: '#1A1A2E',
                 textDecoration: 'none',
                 fontSize: '1rem',
                 fontWeight: 600,
@@ -324,7 +343,6 @@ export default function Navbar() {
         )}
       </AnimatePresence>
 
-      {/* Mobile backdrop */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
@@ -335,7 +353,7 @@ export default function Navbar() {
             style={{
               position: 'fixed',
               inset: 0,
-              background: 'rgba(0,0,0,0.5)',
+              background: 'rgba(0,0,0,0.3)',
               zIndex: 98,
             }}
           />

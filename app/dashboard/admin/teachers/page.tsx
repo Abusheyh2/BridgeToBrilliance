@@ -121,18 +121,18 @@ export default function AdminTeachersPage() {
 
   const inputStyle: React.CSSProperties = {
     width: '100%', padding: '12px', borderRadius: '10px',
-    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-    color: 'white', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box',
+    background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.08)',
+    color: '#1A1A2E', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box',
   }
 
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
-          <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', color: 'white', marginBottom: '4px' }}>
+          <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', color: '#1A1A2E', marginBottom: '4px' }}>
             Teacher Management 👨‍🏫
           </h1>
-          <p style={{ color: 'rgba(255,255,255,0.5)' }}>Create teacher accounts and assign subjects</p>
+          <p style={{ color: 'rgba(0,0,0,0.5)' }}>Create teacher accounts and assign subjects</p>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
           <button
@@ -140,7 +140,7 @@ export default function AdminTeachersPage() {
             style={{
               padding: '10px 20px', borderRadius: '10px', border: 'none',
               background: 'linear-gradient(135deg, #9B59B6, #7D3C98)',
-              color: 'white', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer',
+              color: '#1A1A2E', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer',
             }}
           >
             + Create Teacher
@@ -149,9 +149,9 @@ export default function AdminTeachersPage() {
       </div>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '40px', color: 'rgba(255,255,255,0.4)' }}>Loading...</div>
+        <div style={{ textAlign: 'center', padding: '40px', color: 'rgba(0,0,0,0.4)' }}>Loading...</div>
       ) : teachers.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '60px', color: 'rgba(255,255,255,0.4)' }}>
+        <div style={{ textAlign: 'center', padding: '60px', color: 'rgba(0,0,0,0.4)' }}>
           <div style={{ fontSize: '3rem', marginBottom: '16px' }}>👨‍🏫</div>
           <p>No teachers yet. Create your first teacher account!</p>
         </div>
@@ -161,40 +161,40 @@ export default function AdminTeachersPage() {
             <motion.div
               key={teacher.id}
               whileHover={{ y: -4 }}
-              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '20px' }}
+              style={{ willChange: 'transform, opacity',  background: '#ffffff', border: '1px solid rgba(0,0,0,0.06)', borderRadius: '16px', padding: '20px' }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                <div style={{
+              <div style={{ willChange: 'transform, opacity',  display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                <div style={{ willChange: 'transform, opacity', 
                   width: '48px', height: '48px', borderRadius: '50%',
                   background: 'linear-gradient(135deg, #9B59B6, #7D3C98)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '1rem', fontWeight: 700, color: 'white',
+                  fontSize: '1rem', fontWeight: 700, color: '#1A1A2E',
                 }}>
                   {teacher.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '1rem', color: 'white', fontWeight: 600 }}>{teacher.full_name}</div>
-                  <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>{teacher.email}</div>
+                  <div style={{ fontSize: '1rem', color: '#1A1A2E', fontWeight: 600 }}>{teacher.full_name}</div>
+                  <div style={{ fontSize: '0.8rem', color: 'rgba(0,0,0,0.4)' }}>{teacher.email}</div>
                 </div>
               </div>
 
               <div style={{ marginBottom: '16px' }}>
-                <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                <div style={{ fontSize: '0.75rem', color: 'rgba(0,0,0,0.4)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
                   Assigned Subjects
                 </div>
                 {(assignments[teacher.id] ?? []).length === 0 ? (
-                  <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>No subjects assigned</div>
+                  <div style={{ fontSize: '0.8rem', color: 'rgba(0,0,0,0.3)', fontStyle: 'italic' }}>No subjects assigned</div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {(assignments[teacher.id] ?? []).map(assignment => {
                       const subject = subjects.find(s => s.id === assignment.subject_id)
                       return (
-                        <div key={assignment.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', borderRadius: '8px', background: 'rgba(255,255,255,0.03)' }}>
-                          <span style={{ fontSize: '0.85rem', color: 'white' }}>
+                        <div key={assignment.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', borderRadius: '8px', background: '#ffffff' }}>
+                          <span style={{ fontSize: '0.85rem', color: '#1A1A2E' }}>
                             {subject?.icon} {subject?.title}
                             {assignment.is_primary && <span style={{ marginLeft: '6px', fontSize: '0.7rem', color: '#FFB300' }}>(Primary)</span>}
                           </span>
-                          <button onClick={() => handleRemoveAssignment(assignment.id)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', fontSize: '0.85rem' }}>✕</button>
+                          <button onClick={() => handleRemoveAssignment(assignment.id)} style={{ background: 'none', border: 'none', color: 'rgba(0,0,0,0.3)', cursor: 'pointer', fontSize: '0.85rem' }}>✕</button>
                         </div>
                       )
                     })}
@@ -206,8 +206,8 @@ export default function AdminTeachersPage() {
                 onClick={() => { setSelectedTeacher(teacher); setSelectedSubject(''); setShowAssignModal(true) }}
                 style={{
                   width: '100%', padding: '10px', borderRadius: '8px',
-                  border: '1px solid rgba(255,255,255,0.1)', background: 'transparent',
-                  color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', cursor: 'pointer',
+                  border: '1px solid rgba(0,0,0,0.08)', background: 'transparent',
+                  color: 'rgba(0,0,0,0.5)', fontSize: '0.85rem', cursor: 'pointer',
                 }}
               >
                 + Assign Subject
@@ -221,17 +221,17 @@ export default function AdminTeachersPage() {
         {showCreateModal && (
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '20px' }}
+            style={{ willChange: 'transform, opacity',  position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '20px' }}
             onClick={() => setShowCreateModal(false)}
           >
-            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} onClick={(e) => e.stopPropagation()} style={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '32px', width: '100%', maxWidth: '440px' }}>
-              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'white', marginBottom: '24px' }}>Create Teacher Account</h2>
-              <input value={teacherName} onChange={(e) => setTeacherName(e.target.value)} placeholder="Full Name *" style={{ ...inputStyle, marginBottom: '12px' }} />
-              <input value={teacherEmail} onChange={(e) => setTeacherEmail(e.target.value)} placeholder="Email *" type="email" style={{ ...inputStyle, marginBottom: '12px' }} />
-              <input value={teacherPassword} onChange={(e) => setTeacherPassword(e.target.value)} placeholder="Temporary Password *" type="password" style={{ ...inputStyle, marginBottom: '16px' }} />
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <button onClick={() => setShowCreateModal(false)} style={{ flex: 1, padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem', cursor: 'pointer' }}>Cancel</button>
-                <button onClick={handleCreateTeacher} disabled={!teacherName.trim() || !teacherEmail.trim() || !teacherPassword.trim()} style={{ flex: 1, padding: '12px', borderRadius: '10px', border: 'none', background: teacherName.trim() && teacherEmail.trim() && teacherPassword.trim() ? 'linear-gradient(135deg, #9B59B6, #7D3C98)' : 'rgba(255,255,255,0.05)', color: teacherName.trim() && teacherEmail.trim() && teacherPassword.trim() ? 'white' : 'rgba(255,255,255,0.3)', fontSize: '0.9rem', fontWeight: 600, cursor: teacherName.trim() && teacherEmail.trim() && teacherPassword.trim() ? 'pointer' : 'default' }}>Create</button>
+            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} onClick={(e) => e.stopPropagation()} style={{ willChange: 'transform, opacity',  background: '#ffffff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: '20px', padding: '32px', width: '100%', maxWidth: '440px' }}>
+              <h2 style={{ willChange: 'transform, opacity',  fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: '#1A1A2E', marginBottom: '24px' }}>Create Teacher Account</h2>
+              <input value={teacherName} onChange={(e) => setTeacherName(e.target.value)} placeholder="Full Name *" style={{ willChange: 'transform, opacity',  ...inputStyle, marginBottom: '12px' }} />
+              <input value={teacherEmail} onChange={(e) => setTeacherEmail(e.target.value)} placeholder="Email *" type="email" style={{ willChange: 'transform, opacity',  ...inputStyle, marginBottom: '12px' }} />
+              <input value={teacherPassword} onChange={(e) => setTeacherPassword(e.target.value)} placeholder="Temporary Password *" type="password" style={{ willChange: 'transform, opacity',  ...inputStyle, marginBottom: '16px' }} />
+              <div style={{ willChange: 'transform, opacity',  display: 'flex', gap: '12px' }}>
+                <button onClick={() => setShowCreateModal(false)} style={{ willChange: 'transform, opacity',  flex: 1, padding: '12px', borderRadius: '10px', background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.08)', color: 'rgba(0,0,0,0.6)', fontSize: '0.9rem', cursor: 'pointer' }}>Cancel</button>
+                <button onClick={handleCreateTeacher} disabled={!teacherName.trim() || !teacherEmail.trim() || !teacherPassword.trim()} style={{ willChange: 'transform, opacity',  flex: 1, padding: '12px', borderRadius: '10px', border: 'none', background: teacherName.trim() && teacherEmail.trim() && teacherPassword.trim() ? 'linear-gradient(135deg, #9B59B6, #7D3C98)' : 'rgba(0,0,0,0.03)', color: teacherName.trim() && teacherEmail.trim() && teacherPassword.trim() ? 'white' : 'rgba(0,0,0,0.3)', fontSize: '0.9rem', fontWeight: 600, cursor: teacherName.trim() && teacherEmail.trim() && teacherPassword.trim() ? 'pointer' : 'default' }}>Create</button>
               </div>
             </motion.div>
           </motion.div>
@@ -242,21 +242,21 @@ export default function AdminTeachersPage() {
         {showAssignModal && selectedTeacher && (
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '20px' }}
+            style={{ willChange: 'transform, opacity',  position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '20px' }}
             onClick={() => setShowAssignModal(false)}
           >
-            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} onClick={(e) => e.stopPropagation()} style={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '32px', width: '100%', maxWidth: '440px' }}>
-              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'white', marginBottom: '8px' }}>Assign Subject</h2>
-              <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', marginBottom: '24px' }}>To: {selectedTeacher.full_name}</p>
-              <select value={selectedSubject} onChange={(e) => setSelectedSubject(e.target.value)} style={{ width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box', marginBottom: '16px' }}>
-                <option value="" style={{ background: '#1a1a2e' }}>Select a subject...</option>
+            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} onClick={(e) => e.stopPropagation()} style={{ willChange: 'transform, opacity',  background: '#ffffff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: '20px', padding: '32px', width: '100%', maxWidth: '440px' }}>
+              <h2 style={{ willChange: 'transform, opacity',  fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: '#1A1A2E', marginBottom: '8px' }}>Assign Subject</h2>
+              <p style={{ willChange: 'transform, opacity',  fontSize: '0.85rem', color: 'rgba(0,0,0,0.4)', marginBottom: '24px' }}>To: {selectedTeacher.full_name}</p>
+              <select value={selectedSubject} onChange={(e) => setSelectedSubject(e.target.value)} style={{ willChange: 'transform, opacity',  width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.08)', color: '#1A1A2E', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box', marginBottom: '16px' }}>
+                <option value="" style={{ willChange: 'transform, opacity',  background: '#ffffff' }}>Select a subject...</option>
                 {subjects.map(s => (
-                  <option key={s.id} value={s.id} style={{ background: '#1a1a2e' }}>{s.icon} {s.title}</option>
+                  <option key={s.id} value={s.id} style={{ willChange: 'transform, opacity',  background: '#ffffff' }}>{s.icon} {s.title}</option>
                 ))}
               </select>
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <button onClick={() => setShowAssignModal(false)} style={{ flex: 1, padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem', cursor: 'pointer' }}>Cancel</button>
-                <button onClick={handleAssignSubject} disabled={!selectedSubject} style={{ flex: 1, padding: '12px', borderRadius: '10px', border: 'none', background: selectedSubject ? 'linear-gradient(135deg, #4169E1, #2D4FC8)' : 'rgba(255,255,255,0.05)', color: selectedSubject ? 'white' : 'rgba(255,255,255,0.3)', fontSize: '0.9rem', fontWeight: 600, cursor: selectedSubject ? 'pointer' : 'default' }}>Assign</button>
+              <div style={{ willChange: 'transform, opacity',  display: 'flex', gap: '12px' }}>
+                <button onClick={() => setShowAssignModal(false)} style={{ willChange: 'transform, opacity',  flex: 1, padding: '12px', borderRadius: '10px', background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.08)', color: 'rgba(0,0,0,0.6)', fontSize: '0.9rem', cursor: 'pointer' }}>Cancel</button>
+                <button onClick={handleAssignSubject} disabled={!selectedSubject} style={{ flex: 1, padding: '12px', borderRadius: '10px', border: 'none', background: selectedSubject ? 'linear-gradient(135deg, #4169E1, #2D4FC8)' : 'rgba(0,0,0,0.03)', color: selectedSubject ? 'white' : 'rgba(0,0,0,0.3)', fontSize: '0.9rem', fontWeight: 600, cursor: selectedSubject ? 'pointer' : 'default' }}>Assign</button>
               </div>
             </motion.div>
           </motion.div>

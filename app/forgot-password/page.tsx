@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { useForm } from 'react-hook-form'
@@ -67,11 +68,7 @@ export default function ForgotPasswordPage() {
       >
         <Link href="/" style={{ textDecoration: 'none' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
-            <div style={{
-              width: '40px', height: '40px', borderRadius: '10px',
-              background: 'linear-gradient(135deg, #4169E1, #FFB300)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px',
-            }}>🌉</div>
+            <Image src="/pictures/logo.png" alt="BridgeToBrilliance" width={40} height={40} style={{ borderRadius: '10px', objectFit: 'contain' }} />
             <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 700, color: '#4169E1' }}>
               BridgeToBrilliance
             </span>

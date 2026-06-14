@@ -113,10 +113,10 @@ export default function SubjectPage() {
     return (
       <div style={{
         minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'var(--bg-navy)',
+        background: '#F8F9FA',
       }}>
         <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          style={{ width: '40px', height: '40px', border: '3px solid rgba(255,255,255,0.1)', borderTopColor: '#FFB300', borderRadius: '50%' }} />
+          style={{ willChange: 'transform', width: '40px', height: '40px', border: '3px solid rgba(0,0,0,0.08)', borderTopColor: '#FFB300', borderRadius: '50%' }} />
       </div>
     )
   }
@@ -127,31 +127,31 @@ export default function SubjectPage() {
   if (profile?.role === 'student') tabs.push('grades')
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-navy)' }}>
+    <div style={{ minHeight: '100vh', background: '#F8F9FA' }}>
       {/* Subject Banner */}
       <div style={{
         background: `linear-gradient(135deg, ${subject.color}30, rgba(255,179,0,0.1))`,
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        borderBottom: '1px solid rgba(0,0,0,0.06)',
         padding: '32px 40px',
       }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <button onClick={() => router.back()} style={{
-            background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)',
+            background: 'none', border: 'none', color: 'rgba(0,0,0,0.5)',
             cursor: 'pointer', fontSize: '0.85rem', marginBottom: '16px', fontFamily: 'var(--font-body)',
           }}>← Back to Dashboard</button>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '8px' }}>
             <span style={{ fontSize: '2.5rem' }}>{subject.icon}</span>
             <div>
-              <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.8rem', fontWeight: 700, color: 'white' }}>
+              <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.8rem', fontWeight: 700, color: '#1A1A2E' }}>
                 {subject.title}
               </h1>
-              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem' }}>
+              <p style={{ color: 'rgba(0,0,0,0.5)', fontSize: '0.9rem' }}>
                 {subject.teacher?.full_name} &middot; {enrollmentCount} student{enrollmentCount !== 1 ? 's' : ''} &middot; {lessons.length} lesson{lessons.length !== 1 ? 's' : ''}
               </p>
             </div>
           </div>
           {subject.description && (
-            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.9rem', marginTop: '8px', maxWidth: '600px' }}>
+            <p style={{ color: 'rgba(0,0,0,0.4)', fontSize: '0.9rem', marginTop: '8px', maxWidth: '600px' }}>
               {subject.description}
             </p>
           )}
@@ -159,13 +159,13 @@ export default function SubjectPage() {
       </div>
 
       {/* Tabs */}
-      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '0 40px' }}>
+      <div style={{ borderBottom: '1px solid rgba(0,0,0,0.06)', padding: '0 40px' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', gap: '32px' }}>
           {tabs.map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)}
               style={{
                 background: 'none', border: 'none', padding: '16px 0',
-                color: activeTab === tab ? '#FFB300' : 'rgba(255,255,255,0.4)',
+                color: activeTab === tab ? '#FFB300' : 'rgba(0,0,0,0.4)',
                 borderBottom: activeTab === tab ? '2px solid #FFB300' : '2px solid transparent',
                 fontSize: '0.9rem', fontWeight: activeTab === tab ? 600 : 400,
                 cursor: 'pointer', textTransform: 'capitalize', fontFamily: 'var(--font-body)',
@@ -184,12 +184,12 @@ export default function SubjectPage() {
           {/* Video Player */}
           {activeLesson && (
             <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
-              style={{ marginBottom: '32px' }}>
-              <div className="video-container" style={{ marginBottom: '16px', position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '12px' }}>
+              style={{ willChange: 'transform, opacity',  marginBottom: '32px' }}>
+              <div className="video-container" style={{ willChange: 'transform, opacity',  marginBottom: '16px', position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '12px' }}>
                 {activeLesson.video_url?.includes('youtube.com') ? (
                   <iframe 
                     src={activeLesson.video_url} 
-                    style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+                    style={{ willChange: 'transform, opacity',  position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                     allowFullScreen
                     onLoad={() => markAsWatched(activeLesson.id)}
@@ -206,11 +206,11 @@ export default function SubjectPage() {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <h3 style={{ color: 'white', fontSize: '1.2rem', fontFamily: 'var(--font-heading)' }}>{activeLesson.title}</h3>
-                  <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', marginTop: '4px' }}>{activeLesson.description}</p>
+                  <h3 style={{ color: '#1A1A2E', fontSize: '1.2rem', fontFamily: 'var(--font-heading)' }}>{activeLesson.title}</h3>
+                  <p style={{ color: 'rgba(0,0,0,0.5)', fontSize: '0.85rem', marginTop: '4px' }}>{activeLesson.description}</p>
                 </div>
                 <button onClick={() => setActiveLesson(null)} style={{
-                  background: 'none', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.5)',
+                  background: 'none', border: '1px solid rgba(0,0,0,0.15)', color: 'rgba(0,0,0,0.5)',
                   padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', fontFamily: 'var(--font-body)',
                 }}>Close</button>
               </div>
@@ -221,7 +221,7 @@ export default function SubjectPage() {
           {activeTab === 'lessons' && (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '16px' }}>
               {lessons.length === 0 ? (
-                <p style={{ color: 'rgba(255,255,255,0.4)' }}>No lessons available yet.</p>
+                <p style={{ color: 'rgba(0,0,0,0.4)' }}>No lessons available yet.</p>
               ) : (
                 lessons.map((lesson, i) => {
                   const watched = isLessonWatched(lesson.id)
@@ -229,12 +229,12 @@ export default function SubjectPage() {
                     <motion.div key={lesson.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.05 }} whileHover={{ y: -4 }}
                       onClick={() => setActiveLesson(lesson)}
-                      style={{
+                        style={{ willChange: 'transform, opacity',
                         cursor: 'pointer', borderRadius: '12px', overflow: 'hidden',
-                        background: 'rgba(255,255,255,0.03)', border: `1px solid ${watched ? 'rgba(40,167,69,0.3)' : 'rgba(255,255,255,0.06)'}`,
+                        background: '#ffffff', border: `1px solid ${watched ? 'rgba(40,167,69,0.3)' : 'rgba(0,0,0,0.06)'}`,
                         transition: 'border-color 0.2s',
                       }}>
-                      <div style={{
+                      <div style={{ willChange: 'transform, opacity', 
                         height: '140px',
                         background: lesson.thumbnail_url ? `url(${lesson.thumbnail_url}) center/cover` : `linear-gradient(135deg, ${subject.color}30, rgba(255,179,0,0.1))`,
                         display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative',
@@ -248,13 +248,13 @@ export default function SubjectPage() {
                           <div style={{
                             position: 'absolute', top: '8px', right: '8px',
                             padding: '4px 8px', borderRadius: '6px',
-                            background: 'rgba(40,167,69,0.9)', fontSize: '0.7rem', color: 'white', fontWeight: 600,
+                            background: 'rgba(40,167,69,0.9)', fontSize: '0.7rem', color: '#1A1A2E', fontWeight: 600,
                           }}>✓ Watched</div>
                         )}
                       </div>
                       <div style={{ padding: '14px' }}>
-                        <h4 style={{ color: 'white', fontSize: '0.9rem', marginBottom: '4px' }}>{lesson.title}</h4>
-                        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem' }}>Lesson {i + 1}</p>
+                        <h4 style={{ color: '#1A1A2E', fontSize: '0.9rem', marginBottom: '4px' }}>{lesson.title}</h4>
+                        <p style={{ color: 'rgba(0,0,0,0.4)', fontSize: '0.75rem' }}>Lesson {i + 1}</p>
                       </div>
                     </motion.div>
                   )
@@ -267,19 +267,19 @@ export default function SubjectPage() {
           {activeTab === 'announcements' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {announcements.length === 0 ? (
-                <p style={{ color: 'rgba(255,255,255,0.4)' }}>No announcements for this subject.</p>
+                <p style={{ color: 'rgba(0,0,0,0.4)' }}>No announcements for this subject.</p>
               ) : (
                 announcements.map(ann => (
                   <motion.div key={ann.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                    style={{
+                      style={{ willChange: 'transform, opacity',
                       padding: '20px', borderRadius: '12px',
-                      background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+                      background: '#ffffff', border: '1px solid rgba(0,0,0,0.06)',
                     }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                      <h4 style={{ color: 'white', fontSize: '0.95rem' }}>{ann.title}</h4>
-                      <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.75rem' }}>{new Date(ann.created_at).toLocaleDateString()}</span>
+                    <div style={{ willChange: 'transform, opacity',  display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <h4 style={{ willChange: 'transform, opacity',  color: '#1A1A2E', fontSize: '0.95rem' }}>{ann.title}</h4>
+                      <span style={{ willChange: 'transform, opacity',  color: 'rgba(0,0,0,0.3)', fontSize: '0.75rem' }}>{new Date(ann.created_at).toLocaleDateString()}</span>
                     </div>
-                    <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', lineHeight: 1.6 }}>{ann.body}</p>
+                    <p style={{ willChange: 'transform, opacity',  color: 'rgba(0,0,0,0.5)', fontSize: '0.85rem', lineHeight: 1.6 }}>{ann.body}</p>
                   </motion.div>
                 ))
               )}
@@ -290,24 +290,24 @@ export default function SubjectPage() {
           {activeTab === 'classes' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {classes.length === 0 ? (
-                <p style={{ color: 'rgba(255,255,255,0.4)' }}>No classes scheduled.</p>
+                <p style={{ color: 'rgba(0,0,0,0.4)' }}>No classes scheduled.</p>
               ) : (
                 classes.map(cls => {
                   const isPast = new Date(cls.scheduled_at) < new Date()
                   return (
                     <motion.div key={cls.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                      style={{
+                        style={{ willChange: 'transform, opacity',
                         padding: '20px', borderRadius: '12px',
-                        background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+                        background: '#ffffff', border: '1px solid rgba(0,0,0,0.06)',
                         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                         opacity: isPast ? 0.5 : 1,
                       }}>
                       <div>
-                        <h4 style={{ color: 'white', fontSize: '0.95rem', marginBottom: '4px' }}>{cls.title}</h4>
-                        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem' }}>
+                        <h4 style={{ willChange: 'transform, opacity',  color: '#1A1A2E', fontSize: '0.95rem', marginBottom: '4px' }}>{cls.title}</h4>
+                        <p style={{ willChange: 'transform, opacity',  color: 'rgba(0,0,0,0.4)', fontSize: '0.8rem' }}>
                           {new Date(cls.scheduled_at).toLocaleString()} {isPast && '(Past)'}
                         </p>
-                        {cls.description && <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.8rem', marginTop: '4px' }}>{cls.description}</p>}
+                        {cls.description && <p style={{ color: 'rgba(0,0,0,0.3)', fontSize: '0.8rem', marginTop: '4px' }}>{cls.description}</p>}
                       </div>
                       {cls.meeting_link && !isPast && (
                         <a href={cls.meeting_link} target="_blank" rel="noreferrer" className="btn-primary" style={{ padding: '8px 18px', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
@@ -326,19 +326,19 @@ export default function SubjectPage() {
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                  <tr style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
                     {['Assignment', 'Score', 'Feedback', 'Date'].map(h => (
-                      <th key={h} style={{ textAlign: 'left', padding: '12px 16px', color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', fontWeight: 600 }}>{h}</th>
+                      <th key={h} style={{ textAlign: 'left', padding: '12px 16px', color: 'rgba(0,0,0,0.5)', fontSize: '0.8rem', fontWeight: 600 }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {grades.length === 0 ? (
-                    <tr><td colSpan={4} style={{ padding: '20px 16px', color: 'rgba(255,255,255,0.4)' }}>No grades yet.</td></tr>
+                    <tr><td colSpan={4} style={{ padding: '20px 16px', color: 'rgba(0,0,0,0.4)' }}>No grades yet.</td></tr>
                   ) : (
                     grades.map(g => (
-                      <tr key={g.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                        <td style={{ padding: '12px 16px', color: 'white', fontSize: '0.85rem' }}>{g.assignment_title}</td>
+                      <tr key={g.id} style={{ borderBottom: '1px solid rgba(0,0,0,0.03)' }}>
+                        <td style={{ padding: '12px 16px', color: '#1A1A2E', fontSize: '0.85rem' }}>{g.assignment_title}</td>
                         <td style={{ padding: '12px 16px' }}>
                           <span style={{
                             padding: '4px 10px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 600,
@@ -346,8 +346,8 @@ export default function SubjectPage() {
                             color: (g.score / g.max_score) >= 0.7 ? '#28a745' : '#dc3545',
                           }}>{g.score}/{g.max_score}</span>
                         </td>
-                        <td style={{ padding: '12px 16px', color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem' }}>{g.feedback || '—'}</td>
-                        <td style={{ padding: '12px 16px', color: 'rgba(255,255,255,0.3)', fontSize: '0.75rem' }}>{new Date(g.created_at).toLocaleDateString()}</td>
+                        <td style={{ padding: '12px 16px', color: 'rgba(0,0,0,0.5)', fontSize: '0.8rem' }}>{g.feedback || '—'}</td>
+                        <td style={{ padding: '12px 16px', color: 'rgba(0,0,0,0.3)', fontSize: '0.75rem' }}>{new Date(g.created_at).toLocaleDateString()}</td>
                       </tr>
                     ))
                   )}

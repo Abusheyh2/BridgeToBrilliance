@@ -1,14 +1,15 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import Link from 'next/link'
 
 export default function Footer() {
   return (
     <footer style={{
-      background: 'var(--bg-navy)',
+      background: '#F4F5F8',
       padding: '80px 40px 40px',
-      borderTop: '1px solid rgba(255,255,255,0.05)',
+      borderTop: '1px solid rgba(0,0,0,0.05)',
     }}>
       <div style={{
         maxWidth: '1100px',
@@ -20,32 +21,21 @@ export default function Footer() {
           gap: '48px',
           marginBottom: '60px',
         }}>
-          {/* Brand */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-              <div style={{
-                width: '32px', height: '32px',
-                borderRadius: '8px',
-                background: 'linear-gradient(135deg, #4169E1, #FFB300)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '16px',
-              }}>
-                🌉
-              </div>
+              <Image src="/pictures/logo.png" alt="BridgeToBrilliance" width={32} height={32} style={{ borderRadius: '8px', objectFit: 'contain' }} />
               <span style={{
                 fontFamily: 'var(--font-heading)',
                 fontSize: '1.2rem',
                 fontWeight: 700,
-                color: '#FFB300',
+                color: '#4169E1',
               }}>
                 BridgeToBrilliance
               </span>
             </div>
             <p style={{
               fontSize: '0.85rem',
-              color: 'rgba(255,255,255,0.5)',
+              color: 'rgba(0,0,0,0.5)',
               lineHeight: 1.6,
               maxWidth: '280px',
             }}>
@@ -54,44 +44,65 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Quick Links */}
           <div>
             <h4 style={{
               fontFamily: 'var(--font-heading)',
               fontSize: '1rem',
               fontWeight: 600,
-              color: 'white',
+              color: '#1A1A2E',
               marginBottom: '16px',
             }}>
               Quick Links
             </h4>
-            {['About', 'Features', 'Team'].map((label) => (
-              <a
-                key={label}
-                href={`#${label.toLowerCase()}`}
-                style={{
-                  display: 'block',
-                  fontSize: '0.85rem',
-                  color: 'rgba(255,255,255,0.5)',
-                  textDecoration: 'none',
-                  marginBottom: '10px',
-                  transition: 'color 0.2s',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = '#FFB300')}
-                onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.5)')}
-              >
-                {label}
-              </a>
+            {[
+              { label: 'About', href: '#about' },
+              { label: 'Features', href: '#features' },
+              { label: 'Team', href: '/team' },
+            ].map((link) => (
+              link.href.startsWith('/') ? (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  style={{
+                    display: 'block',
+                    fontSize: '0.85rem',
+                    color: 'rgba(0,0,0,0.5)',
+                    textDecoration: 'none',
+                    marginBottom: '10px',
+                    transition: 'color 0.2s',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = '#FFB300')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(0,0,0,0.5)')}
+                >
+                  {link.label}
+                </Link>
+              ) : (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  style={{
+                    display: 'block',
+                    fontSize: '0.85rem',
+                    color: 'rgba(0,0,0,0.5)',
+                    textDecoration: 'none',
+                    marginBottom: '10px',
+                    transition: 'color 0.2s',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = '#FFB300')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(0,0,0,0.5)')}
+                >
+                  {link.label}
+                </a>
+              )
             ))}
           </div>
 
-          {/* Platform */}
           <div>
             <h4 style={{
               fontFamily: 'var(--font-heading)',
               fontSize: '1rem',
               fontWeight: 600,
-              color: 'white',
+              color: '#1A1A2E',
               marginBottom: '16px',
             }}>
               Platform
@@ -106,26 +117,25 @@ export default function Footer() {
                 style={{
                   display: 'block',
                   fontSize: '0.85rem',
-                  color: 'rgba(255,255,255,0.5)',
+                  color: 'rgba(0,0,0,0.5)',
                   textDecoration: 'none',
                   marginBottom: '10px',
                   transition: 'color 0.2s',
                 }}
                 onMouseEnter={(e) => (e.currentTarget.style.color = '#FFB300')}
-                onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.5)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(0,0,0,0.5)')}
               >
                 {link.label}
               </Link>
             ))}
           </div>
 
-          {/* Contact */}
           <div>
             <h4 style={{
               fontFamily: 'var(--font-heading)',
               fontSize: '1rem',
               fontWeight: 600,
-              color: 'white',
+              color: '#1A1A2E',
               marginBottom: '16px',
             }}>
               Connect
@@ -140,13 +150,13 @@ export default function Footer() {
                     width: '36px',
                     height: '36px',
                     borderRadius: '8px',
-                    background: 'rgba(255,255,255,0.05)',
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    background: 'rgba(0,0,0,0.03)',
+                    border: '1px solid rgba(0,0,0,0.08)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontSize: '0.75rem',
-                    color: 'rgba(255,255,255,0.5)',
+                    color: 'rgba(0,0,0,0.5)',
                     textDecoration: 'none',
                     fontWeight: 700,
                     transition: 'border-color 0.2s, color 0.2s',
@@ -156,8 +166,8 @@ export default function Footer() {
                     e.currentTarget.style.color = '#FFB300'
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'
-                    e.currentTarget.style.color = 'rgba(255,255,255,0.5)'
+                    e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)'
+                    e.currentTarget.style.color = 'rgba(0,0,0,0.5)'
                   }}
                 >
                   {platform}
@@ -167,14 +177,12 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Divider */}
         <div style={{
           height: '1px',
-          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)',
+          background: 'linear-gradient(90deg, transparent, rgba(0,0,0,0.08), transparent)',
           marginBottom: '24px',
         }} />
 
-        {/* Bottom */}
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -182,12 +190,12 @@ export default function Footer() {
           flexWrap: 'wrap',
           gap: '12px',
         }}>
-          <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.3)' }}>
+          <p style={{ fontSize: '0.8rem', color: 'rgba(0,0,0,0.3)' }}>
             © 2024 BridgeToBrilliance. All rights reserved. A nonprofit initiative.
           </p>
           <p style={{
             fontSize: '0.8rem',
-            color: 'rgba(255, 179, 0, 0.5)',
+            color: 'rgba(255, 179, 0, 0.6)',
             fontStyle: 'italic',
           }}>
             &quot;Building bridges to a brighter future&quot;

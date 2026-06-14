@@ -63,10 +63,10 @@ export default function QuizzesPage() {
   return (
     <div>
       <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', color: 'white', marginBottom: '4px' }}>
+        <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', color: '#1A1A2E', marginBottom: '4px' }}>
           Practice Quizzes 💡
         </h1>
-        <p style={{ color: 'rgba(255,255,255,0.5)' }}>Test your knowledge with practice quizzes</p>
+        <p style={{ color: 'rgba(0,0,0,0.5)' }}>Test your knowledge with practice quizzes</p>
       </div>
 
       {activeQuiz && !showResults ? (
@@ -74,13 +74,13 @@ export default function QuizzesPage() {
         <div style={{ maxWidth: '700px', margin: '0 auto' }}>
           <button
             onClick={() => setActiveQuiz(null)}
-            style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', marginBottom: '20px', padding: 0 }}
+            style={{ background: 'none', border: 'none', color: 'rgba(0,0,0,0.5)', cursor: 'pointer', marginBottom: '20px', padding: 0 }}
           >
             ← Back to Quizzes
           </button>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <span style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)' }}>
+            <span style={{ fontSize: '0.85rem', color: 'rgba(0,0,0,0.5)' }}>
               Question {currentQuestion + 1} of {activeQuiz.questions.length}
             </span>
             <span style={{ fontSize: '0.85rem', color: '#FFB300', fontWeight: 600 }}>
@@ -88,11 +88,11 @@ export default function QuizzesPage() {
             </span>
           </div>
 
-          <div style={{ height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', marginBottom: '32px' }}>
+          <div style={{ height: '4px', background: 'rgba(0,0,0,0.08)', borderRadius: '2px', marginBottom: '32px' }}>
             <div style={{ height: '100%', borderRadius: '2px', background: 'linear-gradient(90deg, #F39C12, #E67E22)', transition: 'width 0.3s', width: `${((currentQuestion + 1) / activeQuiz.questions.length) * 100}%` }} />
           </div>
 
-          <h2 style={{ fontSize: '1.3rem', color: 'white', marginBottom: '24px', lineHeight: 1.5 }}>
+          <h2 style={{ fontSize: '1.3rem', color: '#1A1A2E', marginBottom: '24px', lineHeight: 1.5 }}>
             {activeQuiz.questions[currentQuestion].question}
           </h2>
 
@@ -106,17 +106,17 @@ export default function QuizzesPage() {
                   key={idx}
                   onClick={() => selectAnswer(activeQuiz.questions[currentQuestion].id, value)}
                   whileHover={{ x: 4 }}
-                  style={{
+                    style={{ willChange: 'transform, opacity',
                     padding: '16px 20px', borderRadius: '12px', textAlign: 'left',
-                    background: isSelected ? 'rgba(65, 105, 225, 0.2)' : 'rgba(255,255,255,0.03)',
-                    border: `2px solid ${isSelected ? '#4169E1' : 'rgba(255,255,255,0.1)'}`,
-                    color: 'white', fontSize: '1rem', cursor: 'pointer',
+                    background: isSelected ? 'rgba(65, 105, 225, 0.2)' : 'rgba(0,0,0,0.03)',
+                    border: `2px solid ${isSelected ? '#4169E1' : 'rgba(0,0,0,0.08)'}`,
+                    color: '#1A1A2E', fontSize: '1rem', cursor: 'pointer',
                   }}
                 >
                   <span style={{
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                     width: '28px', height: '28px', borderRadius: '50%',
-                    background: isSelected ? '#4169E1' : 'rgba(255,255,255,0.1)',
+                    background: isSelected ? '#4169E1' : 'rgba(0,0,0,0.08)',
                     marginRight: '12px', fontSize: '0.85rem', fontWeight: 600,
                   }}>
                     {String.fromCharCode(65 + idx)}
@@ -133,8 +133,8 @@ export default function QuizzesPage() {
               disabled={currentQuestion === 0}
               style={{
                 padding: '12px 24px', borderRadius: '10px',
-                border: '1px solid rgba(255,255,255,0.1)', background: 'transparent',
-                color: currentQuestion === 0 ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.7)',
+                border: '1px solid rgba(0,0,0,0.08)', background: 'transparent',
+                color: currentQuestion === 0 ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.6)',
                 fontSize: '0.9rem', cursor: currentQuestion === 0 ? 'default' : 'pointer',
               }}
             >
@@ -146,7 +146,7 @@ export default function QuizzesPage() {
                 style={{
                   padding: '12px 24px', borderRadius: '10px', border: 'none',
                   background: 'linear-gradient(135deg, #4169E1, #2D4FC8)',
-                  color: 'white', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer',
+                  color: '#1A1A2E', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer',
                 }}
               >
                 Next
@@ -159,8 +159,8 @@ export default function QuizzesPage() {
                   padding: '12px 24px', borderRadius: '10px', border: 'none',
                   background: Object.keys(answers).length === activeQuiz.questions.length
                     ? 'linear-gradient(135deg, #27AE60, #1E8449)'
-                    : 'rgba(255,255,255,0.05)',
-                  color: Object.keys(answers).length === activeQuiz.questions.length ? 'white' : 'rgba(255,255,255,0.3)',
+                    : 'rgba(0,0,0,0.03)',
+                  color: Object.keys(answers).length === activeQuiz.questions.length ? 'white' : 'rgba(0,0,0,0.3)',
                   fontSize: '0.9rem', fontWeight: 600,
                   cursor: Object.keys(answers).length === activeQuiz.questions.length ? 'pointer' : 'default',
                 }}
@@ -176,7 +176,7 @@ export default function QuizzesPage() {
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            style={{
+              style={{ willChange: 'transform, opacity',
               width: '160px', height: '160px', borderRadius: '50%',
               background: percentage >= 70 ? 'rgba(39, 174, 96, 0.1)' : 'rgba(231, 76, 60, 0.1)',
               border: `4px solid ${percentage >= 70 ? '#27AE60' : '#E74C3C'}`,
@@ -188,15 +188,15 @@ export default function QuizzesPage() {
               <div style={{ fontSize: '3rem', fontWeight: 700, color: percentage >= 70 ? '#27AE60' : '#E74C3C' }}>
                 {percentage}%
               </div>
-              <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)' }}>
+              <div style={{ fontSize: '0.85rem', color: 'rgba(0,0,0,0.5)' }}>
                 {score}/{totalPoints} pts
               </div>
             </div>
           </motion.div>
-          <h2 style={{ color: 'white', marginBottom: '8px' }}>
+          <h2 style={{ color: '#1A1A2E', marginBottom: '8px' }}>
             {percentage >= 70 ? '🎉 Great Job!' : '📚 Keep Practicing!'}
           </h2>
-          <p style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '32px' }}>
+          <p style={{ color: 'rgba(0,0,0,0.5)', marginBottom: '32px' }}>
             You scored {score} out of {totalPoints} points
           </p>
 
@@ -205,10 +205,10 @@ export default function QuizzesPage() {
             {activeQuiz.questions.map((q) => {
               const isCorrect = answers[q.id] === q.correct_answer
               return (
-                <div key={q.id} style={{ padding: '16px', marginBottom: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', borderLeft: `4px solid ${isCorrect ? '#27AE60' : '#E74C3C'}` }}>
+                <div key={q.id} style={{ padding: '16px', marginBottom: '12px', borderRadius: '12px', background: '#ffffff', borderLeft: `4px solid ${isCorrect ? '#27AE60' : '#E74C3C'}` }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                     <span style={{ fontSize: '1rem' }}>{isCorrect ? '✅' : '❌'}</span>
-                    <span style={{ fontSize: '0.9rem', color: 'white', fontWeight: 500 }}>{q.question}</span>
+                    <span style={{ fontSize: '0.9rem', color: '#1A1A2E', fontWeight: 500 }}>{q.question}</span>
                   </div>
                   {!isCorrect && (
                     <div style={{ fontSize: '0.8rem', color: '#27AE60' }}>
@@ -216,7 +216,7 @@ export default function QuizzesPage() {
                     </div>
                   )}
                   {q.explanation && (
-                    <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginTop: '4px' }}>
+                    <div style={{ fontSize: '0.8rem', color: 'rgba(0,0,0,0.4)', marginTop: '4px' }}>
                       {q.explanation}
                     </div>
                   )}
@@ -230,7 +230,7 @@ export default function QuizzesPage() {
             style={{
               padding: '12px 32px', borderRadius: '10px', border: 'none',
               background: 'linear-gradient(135deg, #4169E1, #2D4FC8)',
-              color: 'white', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer',
+              color: '#1A1A2E', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer',
             }}
           >
             Back to Quizzes
@@ -242,23 +242,23 @@ export default function QuizzesPage() {
           {quizzes.length === 0 ? (
             <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px' }}>
               <div style={{ fontSize: '3rem', marginBottom: '16px' }}>💡</div>
-              <p style={{ color: 'rgba(255,255,255,0.5)' }}>No quizzes available yet. Check back soon!</p>
+              <p style={{ color: 'rgba(0,0,0,0.5)' }}>No quizzes available yet. Check back soon!</p>
             </div>
           ) : (
             quizzes.map(quiz => (
               <motion.div
                 key={quiz.id}
                 whileHover={{ y: -4 }}
-                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '24px' }}
+                style={{ willChange: 'transform, opacity',  background: '#ffffff', border: '1px solid rgba(0,0,0,0.06)', borderRadius: '16px', padding: '24px' }}
               >
-                <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', color: 'white', marginBottom: '8px' }}>
+                <h3 style={{ willChange: 'transform, opacity',  fontFamily: 'var(--font-heading)', fontSize: '1.1rem', color: '#1A1A2E', marginBottom: '8px' }}>
                   {quiz.title}
                 </h3>
-                <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', marginBottom: '16px' }}>
+                <p style={{ willChange: 'transform, opacity',  fontSize: '0.85rem', color: 'rgba(0,0,0,0.4)', marginBottom: '16px' }}>
                   {quiz.description || 'No description'}
                 </p>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                  <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.3)' }}>
+                  <span style={{ fontSize: '0.8rem', color: 'rgba(0,0,0,0.3)' }}>
                     {(quiz as unknown as { question_count?: number }).question_count ?? 0} questions
                   </span>
                   {quiz.time_limit_seconds && (
@@ -272,7 +272,7 @@ export default function QuizzesPage() {
                   style={{
                     width: '100%', padding: '12px', borderRadius: '10px', border: 'none',
                     background: 'linear-gradient(135deg, #F39C12, #E67E22)',
-                    color: 'white', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer',
+                    color: '#1A1A2E', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer',
                   }}
                 >
                   Start Quiz

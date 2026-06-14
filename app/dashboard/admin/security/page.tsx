@@ -104,17 +104,17 @@ export default function AdminSecurityPage() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
-          <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', color: 'white', marginBottom: '4px' }}>
+          <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', color: '#1A1A2E', marginBottom: '4px' }}>
             Security Center 🛡️
           </h1>
-          <p style={{ color: 'rgba(255,255,255,0.5)' }}>Monitor and protect your platform</p>
+          <p style={{ color: 'rgba(0,0,0,0.5)' }}>Monitor and protect your platform</p>
         </div>
         <button
           onClick={() => setShowBanModal(true)}
           style={{
             padding: '10px 20px', borderRadius: '10px', border: 'none',
             background: 'linear-gradient(135deg, #E74C3C, #C0392B)',
-            color: 'white', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer',
+            color: '#1A1A2E', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer',
           }}
         >
           + Ban IP
@@ -128,8 +128,8 @@ export default function AdminSecurityPage() {
             onClick={() => setActiveTab(tab.id)}
             style={{
               padding: '8px 16px', borderRadius: '8px', border: 'none',
-              background: activeTab === tab.id ? 'rgba(65, 105, 225, 0.2)' : 'rgba(255,255,255,0.05)',
-              color: activeTab === tab.id ? '#4169E1' : 'rgba(255,255,255,0.5)',
+              background: activeTab === tab.id ? 'rgba(65, 105, 225, 0.2)' : 'rgba(0,0,0,0.03)',
+              color: activeTab === tab.id ? '#4169E1' : 'rgba(0,0,0,0.5)',
               fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer',
             }}
           >
@@ -139,34 +139,34 @@ export default function AdminSecurityPage() {
       </div>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '40px', color: 'rgba(255,255,255,0.4)' }}>Loading...</div>
+        <div style={{ textAlign: 'center', padding: '40px', color: 'rgba(0,0,0,0.4)' }}>Loading...</div>
       ) : activeTab === 'overview' ? (
         <div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '32px' }}>
             {overviewStats.map(stat => (
-              <div key={stat.label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '20px' }}>
+              <div key={stat.label} style={{ background: '#ffffff', border: '1px solid rgba(0,0,0,0.06)', borderRadius: '16px', padding: '20px' }}>
                 <div style={{ fontSize: '1.5rem', marginBottom: '8px' }}>{stat.icon}</div>
-                <div style={{ fontSize: '1.8rem', fontWeight: 700, color: 'white' }}>{stat.value}</div>
-                <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>{stat.label}</div>
+                <div style={{ fontSize: '1.8rem', fontWeight: 700, color: '#1A1A2E' }}>{stat.value}</div>
+                <div style={{ fontSize: '0.8rem', color: 'rgba(0,0,0,0.4)' }}>{stat.label}</div>
               </div>
             ))}
           </div>
 
-          <h3 style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '1px' }}>
+          <h3 style={{ color: 'rgba(0,0,0,0.5)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '1px' }}>
             Protection Status
           </h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '32px' }}>
             {protections.map(protection => (
-              <div key={protection.key} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div key={protection.key} style={{ background: '#ffffff', border: '1px solid rgba(0,0,0,0.06)', borderRadius: '12px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <div style={{ fontSize: '0.95rem', color: 'white', fontWeight: 600, marginBottom: '4px' }}>{protection.label}</div>
-                  <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>{protection.desc}</div>
+                  <div style={{ fontSize: '0.95rem', color: '#1A1A2E', fontWeight: 600, marginBottom: '4px' }}>{protection.label}</div>
+                  <div style={{ fontSize: '0.8rem', color: 'rgba(0,0,0,0.4)' }}>{protection.desc}</div>
                 </div>
                 <button
                   onClick={() => toggleSetting(protection.key, !(protection.setting?.value['enabled'] ?? false))}
                   style={{
                     width: '48px', height: '26px', borderRadius: '13px',
-                    background: protection.setting?.value['enabled'] ? '#27AE60' : 'rgba(255,255,255,0.1)',
+                    background: protection.setting?.value['enabled'] ? '#27AE60' : 'rgba(0,0,0,0.08)',
                     border: 'none', cursor: 'pointer', position: 'relative',
                   }}
                 >
@@ -181,17 +181,17 @@ export default function AdminSecurityPage() {
             ))}
           </div>
 
-          <h3 style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '1px' }}>
+          <h3 style={{ color: 'rgba(0,0,0,0.5)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '1px' }}>
             Recent Security Events
           </h3>
-          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', overflow: 'hidden' }}>
+          <div style={{ background: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.06)', borderRadius: '12px', overflow: 'hidden' }}>
             {logs.slice(0, 10).map(log => (
-              <div key={log.id} style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.04)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div key={log.id} style={{ padding: '12px 16px', borderBottom: '1px solid rgba(0,0,0,0.03)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <span style={{ fontSize: '0.85rem', color: 'white', fontWeight: 500 }}>{log.action}</span>
-                  {log.ip_address && <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', marginLeft: '12px' }}>{log.ip_address}</span>}
+                  <span style={{ fontSize: '0.85rem', color: '#1A1A2E', fontWeight: 500 }}>{log.action}</span>
+                  {log.ip_address && <span style={{ fontSize: '0.75rem', color: 'rgba(0,0,0,0.3)', marginLeft: '12px' }}>{log.ip_address}</span>}
                 </div>
-                <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)' }}>
+                <span style={{ fontSize: '0.75rem', color: 'rgba(0,0,0,0.3)' }}>
                   {new Date(log.created_at).toLocaleString()}
                 </span>
               </div>
@@ -201,16 +201,16 @@ export default function AdminSecurityPage() {
       ) : activeTab === 'bans' ? (
         <div>
           {bannedIPs.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '60px', color: 'rgba(255,255,255,0.4)' }}>
+            <div style={{ textAlign: 'center', padding: '60px', color: 'rgba(0,0,0,0.4)' }}>
               No banned IPs. Your platform is clean!
             </div>
           ) : (
-            <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', overflow: 'hidden' }}>
+            <div style={{ background: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.06)', borderRadius: '12px', overflow: 'hidden' }}>
               {bannedIPs.map(ip => (
-                <div key={ip.id} style={{ padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.04)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div key={ip.id} style={{ padding: '16px', borderBottom: '1px solid rgba(0,0,0,0.03)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
-                    <div style={{ fontSize: '0.95rem', color: 'white', fontWeight: 600, fontFamily: 'monospace' }}>{ip.ip_address}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginTop: '4px' }}>{ip.reason}</div>
+                    <div style={{ fontSize: '0.95rem', color: '#1A1A2E', fontWeight: 600, fontFamily: 'monospace' }}>{ip.ip_address}</div>
+                    <div style={{ fontSize: '0.8rem', color: 'rgba(0,0,0,0.4)', marginTop: '4px' }}>{ip.reason}</div>
                     {ip.expires_at && (
                       <div style={{ fontSize: '0.75rem', color: '#F39C12', marginTop: '2px' }}>
                         Expires: {new Date(ip.expires_at).toLocaleString()}
@@ -234,16 +234,16 @@ export default function AdminSecurityPage() {
         </div>
       ) : activeTab === 'logs' ? (
         <div>
-          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', overflow: 'hidden' }}>
+          <div style={{ background: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.06)', borderRadius: '12px', overflow: 'hidden' }}>
             {logs.map(log => (
-              <div key={log.id} style={{ padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+              <div key={log.id} style={{ padding: '14px 16px', borderBottom: '1px solid rgba(0,0,0,0.03)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '4px' }}>
-                  <span style={{ fontSize: '0.9rem', color: 'white', fontWeight: 500 }}>{log.action}</span>
-                  <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)' }}>
+                  <span style={{ fontSize: '0.9rem', color: '#1A1A2E', fontWeight: 500 }}>{log.action}</span>
+                  <span style={{ fontSize: '0.75rem', color: 'rgba(0,0,0,0.3)' }}>
                     {new Date(log.created_at).toLocaleString()}
                   </span>
                 </div>
-                <div style={{ display: 'flex', gap: '16px', fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>
+                <div style={{ display: 'flex', gap: '16px', fontSize: '0.8rem', color: 'rgba(0,0,0,0.4)' }}>
                   {log.ip_address && <span>IP: {log.ip_address}</span>}
                   {log.user && <span>User: {log.user.full_name}</span>}
                 </div>
@@ -254,16 +254,16 @@ export default function AdminSecurityPage() {
       ) : (
         <div>
           {settings.map(setting => (
-            <div key={setting.key} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '20px', marginBottom: '16px' }}>
+            <div key={setting.key} style={{ background: '#ffffff', border: '1px solid rgba(0,0,0,0.06)', borderRadius: '12px', padding: '20px', marginBottom: '16px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                <h3 style={{ fontSize: '1rem', color: 'white', fontWeight: 600, textTransform: 'capitalize' }}>
+                <h3 style={{ fontSize: '1rem', color: '#1A1A2E', fontWeight: 600, textTransform: 'capitalize' }}>
                   {setting.key.replace(/_/g, ' ')}
                 </h3>
                 <button
                   onClick={() => toggleSetting(setting.key, !(setting.value['enabled'] ?? false))}
                   style={{
                     width: '48px', height: '26px', borderRadius: '13px',
-                    background: setting.value['enabled'] ? '#27AE60' : 'rgba(255,255,255,0.1)',
+                    background: setting.value['enabled'] ? '#27AE60' : 'rgba(0,0,0,0.08)',
                     border: 'none', cursor: 'pointer', position: 'relative',
                   }}
                 >
@@ -275,7 +275,7 @@ export default function AdminSecurityPage() {
                   }} />
                 </button>
               </div>
-              <pre style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: '8px', overflow: 'auto' }}>
+              <pre style={{ fontSize: '0.8rem', color: 'rgba(0,0,0,0.4)', background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: '8px', overflow: 'auto' }}>
                 {JSON.stringify(setting.value, null, 2)}
               </pre>
             </div>
@@ -287,16 +287,16 @@ export default function AdminSecurityPage() {
         {showBanModal && (
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '20px' }}
+            style={{ willChange: 'transform, opacity',  position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '20px' }}
             onClick={() => setShowBanModal(false)}
           >
-            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} onClick={(e) => e.stopPropagation()} style={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '32px', width: '100%', maxWidth: '440px' }}>
-              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'white', marginBottom: '24px' }}>Ban IP Address</h2>
-              <input value={banIP} onChange={(e) => setBanIP(e.target.value)} placeholder="IP Address (e.g., 192.168.1.1)" style={{ width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box', marginBottom: '12px' }} />
-              <textarea value={banReason} onChange={(e) => setBanReason(e.target.value)} placeholder="Reason for ban" rows={3} style={{ width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', fontSize: '0.9rem', outline: 'none', resize: 'vertical', fontFamily: 'var(--font-body)', boxSizing: 'border-box', marginBottom: '16px' }} />
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <button onClick={() => setShowBanModal(false)} style={{ flex: 1, padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem', cursor: 'pointer' }}>Cancel</button>
-                <button onClick={handleBanIP} disabled={!banIP.trim()} style={{ flex: 1, padding: '12px', borderRadius: '10px', border: 'none', background: banIP.trim() ? 'linear-gradient(135deg, #E74C3C, #C0392B)' : 'rgba(255,255,255,0.05)', color: banIP.trim() ? 'white' : 'rgba(255,255,255,0.3)', fontSize: '0.9rem', fontWeight: 600, cursor: banIP.trim() ? 'pointer' : 'default' }}>Ban IP</button>
+            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} onClick={(e) => e.stopPropagation()} style={{ willChange: 'transform, opacity',  background: '#ffffff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: '20px', padding: '32px', width: '100%', maxWidth: '440px' }}>
+              <h2 style={{ willChange: 'transform, opacity',  fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: '#1A1A2E', marginBottom: '24px' }}>Ban IP Address</h2>
+              <input value={banIP} onChange={(e) => setBanIP(e.target.value)} placeholder="IP Address (e.g., 192.168.1.1)" style={{ willChange: 'transform, opacity',  width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.08)', color: '#1A1A2E', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box', marginBottom: '12px' }} />
+              <textarea value={banReason} onChange={(e) => setBanReason(e.target.value)} placeholder="Reason for ban" rows={3} style={{ willChange: 'transform, opacity',  width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.08)', color: '#1A1A2E', fontSize: '0.9rem', outline: 'none', resize: 'vertical', fontFamily: 'var(--font-body)', boxSizing: 'border-box', marginBottom: '16px' }} />
+              <div style={{ willChange: 'transform, opacity',  display: 'flex', gap: '12px' }}>
+                <button onClick={() => setShowBanModal(false)} style={{ willChange: 'transform, opacity',  flex: 1, padding: '12px', borderRadius: '10px', background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.08)', color: 'rgba(0,0,0,0.6)', fontSize: '0.9rem', cursor: 'pointer' }}>Cancel</button>
+                <button onClick={handleBanIP} disabled={!banIP.trim()} style={{ willChange: 'transform, opacity',  flex: 1, padding: '12px', borderRadius: '10px', border: 'none', background: banIP.trim() ? 'linear-gradient(135deg, #E74C3C, #C0392B)' : 'rgba(0,0,0,0.03)', color: banIP.trim() ? 'white' : 'rgba(0,0,0,0.3)', fontSize: '0.9rem', fontWeight: 600, cursor: banIP.trim() ? 'pointer' : 'default' }}>Ban IP</button>
               </div>
             </motion.div>
           </motion.div>

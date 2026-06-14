@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, createContext, useContext } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
+import Image from 'next/image'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import type { Profile } from '@/types/database.types'
@@ -10,7 +11,7 @@ import type { Profile } from '@/types/database.types'
 const ProfileContext = createContext<Profile | null>(null)
 export const useProfile = () => useContext(ProfileContext)
 
-const navItems = {
+const navItems: Record<string, { href: string; label: string; icon: string }[]> = {
   student: [
     { href: '/dashboard/student', label: 'Dashboard', icon: '📊' },
     { href: '/dashboard/student/study', label: 'Study Hub', icon: '🎯' },
@@ -105,7 +106,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'var(--bg-navy)',
+        background: '#F8F9FA',
       }}>
         <div className="spinner" />
       </div>
@@ -118,14 +119,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <ProfileContext.Provider value={profile}>
-      <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-navy)' }}>
+      <div style={{ display: 'flex', minHeight: '100vh', background: '#F8F9FA' }}>
         <aside
           style={{
             width: sidebarOpen ? '280px' : '0',
             minWidth: sidebarOpen ? '280px' : '0',
             overflow: 'hidden',
-            background: 'var(--bg-navy)',
-            borderRight: '1px solid rgba(255,255,255,0.06)',
+            background: '#ffffff',
+            borderRight: '1px solid rgba(0,0,0,0.06)',
             display: 'flex',
             flexDirection: 'column',
             position: 'fixed',
@@ -138,17 +139,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         >
           <div style={{
             padding: '24px 24px 20px',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            borderBottom: '1px solid rgba(0,0,0,0.06)',
             opacity: sidebarOpen ? 1 : 0,
             transition: 'opacity 0.2s',
           }}>
             <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px', position: 'relative' }}>
               <div style={{
                 width: '32px', height: '32px', borderRadius: '8px',
-                background: 'linear-gradient(135deg, #4169E1, #FFB300)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px',
-                position: 'relative',
-              }}>🌉
+                display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative',
+              }}>
+                <Image src="/pictures/logo.png" alt="BridgeToBrilliance" width={32} height={32} style={{ borderRadius: '8px', objectFit: 'contain' }} />
                 <button
                   onClick={() => setShowAdminLogin(true)}
                   aria-label="Admin Access"
@@ -159,7 +159,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     width: '8px',
                     height: '8px',
                     borderRadius: '50%',
-                    background: 'rgba(255,255,255,0.08)',
+                    background: 'rgba(0,0,0,0.08)',
                     border: 'none',
                     cursor: 'pointer',
                     padding: 0,
@@ -168,7 +168,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
               <span style={{
                 fontFamily: 'var(--font-heading)', fontSize: '1.1rem',
-                fontWeight: 700, color: '#FFB300',
+                fontWeight: 700, color: '#4169E1',
               }}>BridgeToBrilliance</span>
             </Link>
           </div>
@@ -186,8 +186,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       padding: '12px 16px',
                       borderRadius: '10px',
                       marginBottom: '4px',
-                      background: isActive ? 'rgba(65, 105, 225, 0.15)' : 'transparent',
-                      color: isActive ? 'white' : 'rgba(255,255,255,0.5)',
+                      background: isActive ? 'rgba(65, 105, 225, 0.1)' : 'transparent',
+                      color: isActive ? '#4169E1' : 'rgba(0,0,0,0.5)',
                       cursor: 'pointer',
                     }}
                     className="nav-item"
@@ -208,7 +208,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           <div style={{
             padding: '16px 20px',
-            borderTop: '1px solid rgba(255,255,255,0.06)',
+            borderTop: '1px solid rgba(0,0,0,0.06)',
             opacity: sidebarOpen ? 1 : 0,
             transition: 'opacity 0.2s',
           }}>
@@ -222,7 +222,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 {initials}
               </div>
               <div>
-                <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'white' }}>
+                <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1A1A2E' }}>
                   {profile?.full_name || 'User'}
                 </div>
                 <div style={{
@@ -238,8 +238,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               className="sign-out-btn"
               style={{
                 width: '100%', padding: '10px',
-                borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)',
-                background: 'transparent', color: 'rgba(255,255,255,0.5)',
+                borderRadius: '8px', border: '1px solid rgba(0,0,0,0.08)',
+                background: 'transparent', color: 'rgba(0,0,0,0.5)',
                 fontSize: '0.8rem', cursor: 'pointer', fontFamily: 'var(--font-body)',
               }}
             >
@@ -259,12 +259,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '16px 32px',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            borderBottom: '1px solid rgba(0,0,0,0.06)',
+            background: '#ffffff',
           }}>
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
               style={{
-                background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)',
+                background: 'none', border: 'none', color: 'rgba(0,0,0,0.5)',
                 fontSize: '1.2rem', cursor: 'pointer', padding: '4px 8px',
               }}
             >
@@ -274,7 +275,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <span style={{
                 padding: '4px 12px', borderRadius: '20px',
                 background: 'rgba(255, 179, 0, 0.1)', border: '1px solid rgba(255, 179, 0, 0.2)',
-                color: '#FFB300', fontSize: '0.75rem', fontWeight: 600, textTransform: 'capitalize',
+                color: '#CC8800', fontSize: '0.75rem', fontWeight: 600, textTransform: 'capitalize',
               }}>
                 {role}
               </span>
@@ -287,7 +288,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.2 }}
               style={{ padding: '32px' }}
             >
               {children}
@@ -306,7 +307,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             style={{
               position: 'fixed',
               inset: 0,
-              background: 'rgba(0,0,0,0.8)',
+              background: 'rgba(0,0,0,0.5)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -320,18 +321,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
               style={{
-                background: '#0d1b3e',
-                border: '1px solid rgba(255,255,255,0.1)',
+                background: '#ffffff',
+                border: '1px solid rgba(0,0,0,0.1)',
                 borderRadius: '20px',
                 padding: '32px',
                 width: '100%',
                 maxWidth: '400px',
               }}
             >
-              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', color: 'white', marginBottom: '8px' }}>
+              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', color: '#1A1A2E', marginBottom: '8px' }}>
                 Admin Access
               </h2>
-              <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', marginBottom: '24px' }}>
+              <p style={{ fontSize: '0.85rem', color: 'rgba(0,0,0,0.4)', marginBottom: '24px' }}>
                 Enter admin password to continue
               </p>
               <input
@@ -345,9 +346,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   width: '100%',
                   padding: '12px 16px',
                   borderRadius: '10px',
-                  background: 'rgba(255,255,255,0.05)',
-                  border: `1px solid ${adminError ? '#dc3545' : 'rgba(255,255,255,0.1)'}`,
-                  color: 'white',
+                  background: 'rgba(0,0,0,0.03)',
+                  border: `1px solid ${adminError ? '#dc3545' : 'rgba(0,0,0,0.1)'}`,
+                  color: '#1A1A2E',
                   fontSize: '0.9rem',
                   outline: 'none',
                   boxSizing: 'border-box',
@@ -364,9 +365,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     flex: 1,
                     padding: '12px',
                     borderRadius: '10px',
-                    background: 'rgba(255,255,255,0.05)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    color: 'rgba(255,255,255,0.7)',
+                    background: 'rgba(0,0,0,0.03)',
+                    border: '1px solid rgba(0,0,0,0.1)',
+                    color: 'rgba(0,0,0,0.7)',
                     fontSize: '0.9rem',
                     cursor: 'pointer',
                   }}
@@ -381,8 +382,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     padding: '12px',
                     borderRadius: '10px',
                     border: 'none',
-                    background: adminPassword ? 'linear-gradient(135deg, #4169E1, #2D4FC8)' : 'rgba(255,255,255,0.05)',
-                    color: adminPassword ? 'white' : 'rgba(255,255,255,0.3)',
+                    background: adminPassword ? 'linear-gradient(135deg, #4169E1, #2D4FC8)' : 'rgba(0,0,0,0.03)',
+                    color: adminPassword ? 'white' : 'rgba(0,0,0,0.3)',
                     fontSize: '0.9rem',
                     fontWeight: 600,
                     cursor: adminPassword ? 'pointer' : 'default',

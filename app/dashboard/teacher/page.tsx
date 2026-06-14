@@ -26,14 +26,14 @@ function Modal({ title, children, onClose }: { title: string; children: React.Re
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         onClick={(e) => e.stopPropagation()}
-        style={{
-          background: '#132347', border: '1px solid rgba(255,255,255,0.1)',
+          style={{ willChange: 'transform, opacity',
+          background: '#ffffff', border: '1px solid rgba(0,0,0,0.08)',
           borderRadius: '16px', padding: '32px', width: '100%', maxWidth: '480px', maxHeight: '90vh', overflow: 'auto',
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
-          <h3 style={{ fontFamily: 'var(--font-heading)', color: 'white', fontSize: '1.2rem' }}>{title}</h3>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
+        <div style={{ willChange: 'transform, opacity',  display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
+          <h3 style={{ willChange: 'transform, opacity',  fontFamily: 'var(--font-heading)', color: '#1A1A2E', fontSize: '1.2rem' }}>{title}</h3>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(0,0,0,0.5)', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
         </div>
         {children}
       </motion.div>
@@ -208,8 +208,8 @@ export default function TeacherDashboard() {
 
   const inputStyle: React.CSSProperties = {
     width: '100%', padding: '10px 14px', borderRadius: '8px',
-    border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)',
-    color: 'white', fontSize: '0.9rem', outline: 'none', fontFamily: 'var(--font-body)', boxSizing: 'border-box',
+    border: '1px solid rgba(0,0,0,0.1)', background: 'rgba(0,0,0,0.03)',
+    color: '#1A1A2E', fontSize: '0.9rem', outline: 'none', fontFamily: 'var(--font-body)', boxSizing: 'border-box',
   }
 
   if (loading) {
@@ -223,21 +223,21 @@ export default function TeacherDashboard() {
   return (
     <div>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-        style={{
+          style={{ willChange: 'transform, opacity',
           background: 'linear-gradient(135deg, rgba(65, 105, 225, 0.2), rgba(255, 179, 0, 0.1))',
           border: '1px solid rgba(65, 105, 225, 0.2)', borderRadius: '16px', padding: '32px', marginBottom: '32px',
         }}>
-        <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.8rem', fontWeight: 700, color: 'white', marginBottom: '8px' }}>
+        <h1 style={{ willChange: 'transform, opacity',  fontFamily: 'var(--font-heading)', fontSize: '1.8rem', fontWeight: 700, color: '#1A1A2E', marginBottom: '8px' }}>
           Teacher Dashboard
         </h1>
-        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.95rem' }}>
+        <p style={{ willChange: 'transform, opacity',  color: 'rgba(0,0,0,0.5)', fontSize: '0.95rem' }}>
           You&apos;re teaching {subjects.length} subject{subjects.length !== 1 ? 's' : ''}.
         </p>
       </motion.div>
 
       <div id="subjects" style={{ marginBottom: '40px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: 'white' }}>My Subjects</h2>
+          <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: '#1A1A2E' }}>My Subjects</h2>
           <button onClick={() => setActiveModal('create-subject')} className="btn-gold" style={{ padding: '8px 20px', fontSize: '0.85rem' }}>
             + Create Subject
           </button>
@@ -249,10 +249,10 @@ export default function TeacherDashboard() {
               role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && fetchSubjectDetails(subject)}>
               <div className="glass-card-gold subject-card" style={{ padding: '24px' }}>
                 <span style={{ fontSize: '2rem' }}>{subject.icon}</span>
-                <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', fontWeight: 600, color: 'white', margin: '12px 0 8px' }}>
+                <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', fontWeight: 600, color: '#1A1A2E', margin: '12px 0 8px' }}>
                   {subject.title}
                 </h3>
-                <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', marginBottom: '16px', lineHeight: 1.5 }}>
+                <p style={{ fontSize: '0.8rem', color: 'rgba(0,0,0,0.5)', marginBottom: '16px', lineHeight: 1.5 }}>
                   {subject.description?.slice(0, 80)}{subject.description && subject.description.length > 80 ? '...' : ''}
                 </p>
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -266,18 +266,18 @@ export default function TeacherDashboard() {
 
       {selectedSubject && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          style={{ marginBottom: '40px' }}>
-          <div style={{
+          style={{ willChange: 'transform, opacity',  marginBottom: '40px' }}>
+          <div style={{ willChange: 'transform, opacity', 
             background: `linear-gradient(135deg, ${selectedSubject.color}20, rgba(255,179,0,0.05))`,
             border: `1px solid ${selectedSubject.color}30`,
             borderRadius: '16px', padding: '24px', marginBottom: '24px',
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+            <div style={{ willChange: 'transform, opacity',  display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
               <div>
-                <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.4rem', color: 'white' }}>
+                <h2 style={{ willChange: 'transform, opacity',  fontFamily: 'var(--font-heading)', fontSize: '1.4rem', color: '#1A1A2E' }}>
                   {selectedSubject.icon} {selectedSubject.title}
                 </h2>
-                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', marginTop: '4px' }}>
+                <p style={{ color: 'rgba(0,0,0,0.5)', fontSize: '0.85rem', marginTop: '4px' }}>
                   {enrolledStudents.length} students enrolled &middot; {lessons.length} lessons
                 </p>
               </div>
@@ -289,19 +289,19 @@ export default function TeacherDashboard() {
             </div>
           </div>
 
-          <h3 style={{ color: 'white', fontSize: '1rem', fontWeight: 600, marginBottom: '12px' }}>Video Lessons</h3>
+          <h3 style={{ color: '#1A1A2E', fontSize: '1rem', fontWeight: 600, marginBottom: '12px' }}>Video Lessons</h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '16px', marginBottom: '32px' }}>
             {lessons.map((lesson, i) => (
               <div key={lesson.id} style={{
-                background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+                background: '#ffffff', border: '1px solid rgba(0,0,0,0.06)',
                 borderRadius: '12px', overflow: 'hidden',
               }}>
                 <div style={{ height: '120px', background: `linear-gradient(135deg, ${selectedSubject.color}30, rgba(255,179,0,0.1))`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <span style={{ fontSize: '2rem' }}>🎥</span>
                 </div>
                 <div style={{ padding: '12px' }}>
-                  <h4 style={{ color: 'white', fontSize: '0.85rem', marginBottom: '4px' }}>{lesson.title}</h4>
-                  <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem' }}>Lesson {i + 1}</p>
+                  <h4 style={{ color: '#1A1A2E', fontSize: '0.85rem', marginBottom: '4px' }}>{lesson.title}</h4>
+                  <p style={{ color: 'rgba(0,0,0,0.4)', fontSize: '0.75rem' }}>Lesson {i + 1}</p>
                 </div>
               </div>
             ))}
@@ -309,34 +309,34 @@ export default function TeacherDashboard() {
 
           <div id="gradebook">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-              <h3 style={{ color: 'white', fontSize: '1rem', fontWeight: 600 }}>Gradebook</h3>
+              <h3 style={{ color: '#1A1A2E', fontSize: '1rem', fontWeight: 600 }}>Gradebook</h3>
               <button onClick={() => setActiveModal('add-grade')} className="btn-primary" style={{ padding: '6px 14px', fontSize: '0.8rem' }}>+ Add Grade</button>
             </div>
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                  <tr style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
                     {['Student', 'Assignment', 'Score', 'Feedback', 'Date'].map(h => (
-                      <th key={h} style={{ textAlign: 'left', padding: '10px 14px', color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem', fontWeight: 600 }}>{h}</th>
+                      <th key={h} style={{ textAlign: 'left', padding: '10px 14px', color: 'rgba(0,0,0,0.5)', fontSize: '0.75rem', fontWeight: 600 }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {grades.length === 0 ? (
-                    <tr><td colSpan={5} style={{ padding: '16px', color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}>No grades yet.</td></tr>
+                    <tr><td colSpan={5} style={{ padding: '16px', color: 'rgba(0,0,0,0.4)', fontSize: '0.85rem' }}>No grades yet.</td></tr>
                   ) : (
                     grades.map((g) => (
-                      <tr key={g.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                        <td style={{ padding: '10px 14px', color: 'white', fontSize: '0.85rem' }}>{g.student?.full_name}</td>
-                        <td style={{ padding: '10px 14px', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem' }}>{g.assignment_title}</td>
+                      <tr key={g.id} style={{ borderBottom: '1px solid rgba(0,0,0,0.03)' }}>
+                        <td style={{ padding: '10px 14px', color: '#1A1A2E', fontSize: '0.85rem' }}>{g.student?.full_name}</td>
+                        <td style={{ padding: '10px 14px', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem' }}>{g.assignment_title}</td>
                         <td style={{ padding: '10px 14px' }}>
                           <span style={{ padding: '3px 8px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600,
                             background: (g.score / g.max_score) >= 0.7 ? 'rgba(40,167,69,0.15)' : 'rgba(220,53,69,0.15)',
                             color: (g.score / g.max_score) >= 0.7 ? '#28a745' : '#dc3545',
                           }}>{g.score}/{g.max_score}</span>
                         </td>
-                        <td style={{ padding: '10px 14px', color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem' }}>{g.feedback || '—'}</td>
-                        <td style={{ padding: '10px 14px', color: 'rgba(255,255,255,0.3)', fontSize: '0.75rem' }}>{new Date(g.created_at).toLocaleDateString()}</td>
+                        <td style={{ padding: '10px 14px', color: 'rgba(0,0,0,0.5)', fontSize: '0.8rem' }}>{g.feedback || '—'}</td>
+                        <td style={{ padding: '10px 14px', color: 'rgba(0,0,0,0.3)', fontSize: '0.75rem' }}>{new Date(g.created_at).toLocaleDateString()}</td>
                       </tr>
                     ))
                   )}
@@ -351,20 +351,20 @@ export default function TeacherDashboard() {
         <Modal title="Create Subject" onClose={() => setActiveModal(null)}>
           <form onSubmit={handleCreateSubject}>
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', marginBottom: '6px' }}>Title</label>
+              <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Title</label>
               <input value={subjectForm.title} onChange={e => setSubjectForm({...subjectForm, title: e.target.value})} required style={inputStyle} placeholder="e.g. Mathematics" />
             </div>
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', marginBottom: '6px' }}>Description</label>
+              <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Description</label>
               <textarea value={subjectForm.description} onChange={e => setSubjectForm({...subjectForm, description: e.target.value})} style={{...inputStyle, minHeight: '80px', resize: 'vertical'}} placeholder="Subject description..." />
             </div>
             <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
               <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', marginBottom: '6px' }}>Icon</label>
+                <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Icon</label>
                 <input value={subjectForm.icon} onChange={e => setSubjectForm({...subjectForm, icon: e.target.value})} style={inputStyle} placeholder="📚" />
               </div>
               <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', marginBottom: '6px' }}>Color</label>
+                <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Color</label>
                 <input type="color" value={subjectForm.color} onChange={e => setSubjectForm({...subjectForm, color: e.target.value})} style={{...inputStyle, height: '42px', padding: '4px'}} />
               </div>
             </div>
@@ -379,15 +379,15 @@ export default function TeacherDashboard() {
         <Modal title="Add Lesson" onClose={() => setActiveModal(null)}>
           <form onSubmit={handleAddLesson}>
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', marginBottom: '6px' }}>Title</label>
+              <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Title</label>
               <input value={lessonForm.title} onChange={e => setLessonForm({...lessonForm, title: e.target.value})} required style={inputStyle} />
             </div>
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', marginBottom: '6px' }}>Description</label>
+              <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Description</label>
               <textarea value={lessonForm.description} onChange={e => setLessonForm({...lessonForm, description: e.target.value})} style={{...inputStyle, minHeight: '60px', resize: 'vertical'}} />
             </div>
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', marginBottom: '6px' }}>YouTube Link</label>
+              <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>YouTube Link</label>
               <input type="text" placeholder="https://youtube.com/watch?v=..." value={lessonForm.youtube_url} onChange={e => setLessonForm({...lessonForm, youtube_url: e.target.value})} required
                 style={{...inputStyle, padding: '8px'}} />
             </div>
@@ -402,19 +402,19 @@ export default function TeacherDashboard() {
         <Modal title="Schedule Class" onClose={() => setActiveModal(null)}>
           <form onSubmit={handleScheduleClass}>
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', marginBottom: '6px' }}>Title</label>
+              <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Title</label>
               <input value={classForm.title} onChange={e => setClassForm({...classForm, title: e.target.value})} required style={inputStyle} />
             </div>
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', marginBottom: '6px' }}>Date &amp; Time</label>
+              <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Date &amp; Time</label>
               <input type="datetime-local" value={classForm.scheduled_at} onChange={e => setClassForm({...classForm, scheduled_at: e.target.value})} required style={inputStyle} />
             </div>
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', marginBottom: '6px' }}>Meeting Link</label>
+              <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Meeting Link</label>
               <input value={classForm.meeting_link} onChange={e => setClassForm({...classForm, meeting_link: e.target.value})} style={inputStyle} placeholder="https://meet.google.com/..." />
             </div>
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', marginBottom: '6px' }}>Description</label>
+              <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Description</label>
               <textarea value={classForm.description} onChange={e => setClassForm({...classForm, description: e.target.value})} style={{...inputStyle, minHeight: '60px', resize: 'vertical'}} />
             </div>
             <button type="submit" disabled={formLoading} className="btn-gold" style={{ width: '100%', padding: '12px' }}>
@@ -428,11 +428,11 @@ export default function TeacherDashboard() {
         <Modal title="Post Announcement" onClose={() => setActiveModal(null)}>
           <form onSubmit={handlePostAnnouncement}>
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', marginBottom: '6px' }}>Title</label>
+              <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Title</label>
               <input value={announcementForm.title} onChange={e => setAnnouncementForm({...announcementForm, title: e.target.value})} required style={inputStyle} />
             </div>
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', marginBottom: '6px' }}>Body</label>
+              <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Body</label>
               <textarea value={announcementForm.body} onChange={e => setAnnouncementForm({...announcementForm, body: e.target.value})} required style={{...inputStyle, minHeight: '100px', resize: 'vertical'}} />
             </div>
             <button type="submit" disabled={formLoading} className="btn-gold" style={{ width: '100%', padding: '12px' }}>
@@ -446,7 +446,7 @@ export default function TeacherDashboard() {
         <Modal title="Add Grade" onClose={() => setActiveModal(null)}>
           <form onSubmit={handleAddGrade}>
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', marginBottom: '6px' }}>Student</label>
+              <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Student</label>
               <select value={gradeForm.student_id} onChange={e => setGradeForm({...gradeForm, student_id: e.target.value})} required style={inputStyle}>
                 <option value="">Select student...</option>
                 {enrolledStudents.map((e) => (
@@ -455,21 +455,21 @@ export default function TeacherDashboard() {
               </select>
             </div>
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', marginBottom: '6px' }}>Assignment Title</label>
+              <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Assignment Title</label>
               <input value={gradeForm.assignment_title} onChange={e => setGradeForm({...gradeForm, assignment_title: e.target.value})} required style={inputStyle} />
             </div>
             <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
               <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', marginBottom: '6px' }}>Score</label>
+                <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Score</label>
                 <input type="number" value={gradeForm.score} onChange={e => setGradeForm({...gradeForm, score: e.target.value})} required style={inputStyle} />
               </div>
               <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', marginBottom: '6px' }}>Max Score</label>
+                <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Max Score</label>
                 <input type="number" value={gradeForm.max_score} onChange={e => setGradeForm({...gradeForm, max_score: e.target.value})} required style={inputStyle} />
               </div>
             </div>
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', marginBottom: '6px' }}>Feedback</label>
+              <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Feedback</label>
               <textarea value={gradeForm.feedback} onChange={e => setGradeForm({...gradeForm, feedback: e.target.value})} style={{...inputStyle, minHeight: '60px', resize: 'vertical'}} />
             </div>
             <button type="submit" disabled={formLoading} className="btn-gold" style={{ width: '100%', padding: '12px' }}>

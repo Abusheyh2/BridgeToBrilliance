@@ -103,10 +103,10 @@ export default function TimerPage() {
   return (
     <div>
       <div style={{ marginBottom: '32px' }}>
-        <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', color: 'white', marginBottom: '4px' }}>
+        <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', color: '#1A1A2E', marginBottom: '4px' }}>
           Study Timer ⏱️
         </h1>
-        <p style={{ color: 'rgba(255,255,255,0.5)' }}>Pomodoro technique for focused studying</p>
+        <p style={{ color: 'rgba(0,0,0,0.5)' }}>Pomodoro technique for focused studying</p>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
@@ -120,8 +120,8 @@ export default function TimerPage() {
                 onClick={() => switchMode(key)}
                 style={{
                   padding: '8px 16px', borderRadius: '8px', border: 'none',
-                  background: mode === key ? `${m.color}20` : 'rgba(255,255,255,0.05)',
-                  color: mode === key ? m.color : 'rgba(255,255,255,0.5)',
+                  background: mode === key ? `${m.color}20` : 'rgba(0,0,0,0.03)',
+                  color: mode === key ? m.color : 'rgba(0,0,0,0.5)',
                   fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer',
                 }}
               >
@@ -133,7 +133,7 @@ export default function TimerPage() {
           {/* Circular Timer */}
           <div style={{ position: 'relative', width: '260px', height: '260px' }}>
             <svg width="260" height="260" style={{ transform: 'rotate(-90deg)' }}>
-              <circle cx="130" cy="130" r="120" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8" />
+              <circle cx="130" cy="130" r="120" fill="none" stroke="rgba(0,0,0,0.03)" strokeWidth="8" />
               <circle
                 cx="130" cy="130" r="120" fill="none"
                 stroke={currentMode.color}
@@ -148,7 +148,7 @@ export default function TimerPage() {
               position: 'absolute', inset: 0, display: 'flex',
               flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
             }}>
-              <div style={{ fontSize: '3.5rem', fontWeight: 700, color: 'white', fontFamily: 'monospace' }}>
+              <div style={{ fontSize: '3.5rem', fontWeight: 700, color: '#1A1A2E', fontFamily: 'monospace' }}>
                 {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
               </div>
               <div style={{ fontSize: '0.85rem', color: currentMode.color, marginTop: '4px' }}>
@@ -165,7 +165,7 @@ export default function TimerPage() {
                 style={{
                   padding: '14px 40px', borderRadius: '12px', border: 'none',
                   background: `linear-gradient(135deg, ${currentMode.color}, ${currentMode.color}CC)`,
-                  color: 'white', fontSize: '1rem', fontWeight: 600, cursor: 'pointer',
+                  color: '#1A1A2E', fontSize: '1rem', fontWeight: 600, cursor: 'pointer',
                 }}
               >
                 {timeLeft === currentMode.duration ? 'Start' : 'Resume'}
@@ -175,7 +175,7 @@ export default function TimerPage() {
                 onClick={handlePause}
                 style={{
                   padding: '14px 40px', borderRadius: '12px', border: 'none',
-                  background: 'rgba(255,255,255,0.1)', color: 'white',
+                  background: 'rgba(0,0,0,0.08)', color: '#1A1A2E',
                   fontSize: '1rem', fontWeight: 600, cursor: 'pointer',
                 }}
               >
@@ -186,8 +186,8 @@ export default function TimerPage() {
               onClick={handleReset}
               style={{
                 padding: '14px 24px', borderRadius: '12px',
-                border: '1px solid rgba(255,255,255,0.1)', background: 'transparent',
-                color: 'rgba(255,255,255,0.5)', fontSize: '1rem', cursor: 'pointer',
+                border: '1px solid rgba(0,0,0,0.08)', background: 'transparent',
+                color: 'rgba(0,0,0,0.5)', fontSize: '1rem', cursor: 'pointer',
               }}
             >
               Reset
@@ -204,8 +204,8 @@ export default function TimerPage() {
                 rows={2}
                 style={{
                   width: '100%', padding: '12px', borderRadius: '10px',
-                  background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-                  color: 'white', fontSize: '0.85rem', outline: 'none', resize: 'none',
+                  background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.08)',
+                  color: '#1A1A2E', fontSize: '0.85rem', outline: 'none', resize: 'none',
                   fontFamily: 'var(--font-body)', boxSizing: 'border-box',
                 }}
               />
@@ -223,20 +223,20 @@ export default function TimerPage() {
                 { label: 'Day Streak', value: stats.currentStreak.toString(), icon: '🔥' },
                 { label: 'Best Streak', value: (stats as unknown as { longestStreak?: number }).longestStreak?.toString() ?? '0', icon: '⭐' },
               ].map(s => (
-                <div key={s.label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
+                <div key={s.label} style={{ background: '#ffffff', border: '1px solid rgba(0,0,0,0.06)', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
                   <div style={{ fontSize: '1.5rem', marginBottom: '4px' }}>{s.icon}</div>
-                  <div style={{ fontSize: '1.3rem', fontWeight: 700, color: 'white' }}>{s.value}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>{s.label}</div>
+                  <div style={{ fontSize: '1.3rem', fontWeight: 700, color: '#1A1A2E' }}>{s.value}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'rgba(0,0,0,0.4)' }}>{s.label}</div>
                 </div>
               ))}
             </div>
           )}
 
-          <h3 style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '1px' }}>
+          <h3 style={{ color: 'rgba(0,0,0,0.5)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '1px' }}>
             Recent Sessions
           </h3>
           {sessions.length === 0 ? (
-            <div style={{ color: 'rgba(255,255,255,0.3)', textAlign: 'center', padding: '20px' }}>
+            <div style={{ color: 'rgba(0,0,0,0.3)', textAlign: 'center', padding: '20px' }}>
               No sessions yet. Start studying!
             </div>
           ) : (
@@ -244,20 +244,20 @@ export default function TimerPage() {
               <div key={session.id} style={{
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                 padding: '12px', marginBottom: '8px', borderRadius: '8px',
-                background: 'rgba(255,255,255,0.03)',
+                background: '#ffffff',
               }}>
                 <div>
-                  <div style={{ fontSize: '0.85rem', color: 'white', fontWeight: 500 }}>
+                  <div style={{ fontSize: '0.85rem', color: '#1A1A2E', fontWeight: 500 }}>
                     {Math.round(session.duration_seconds / 60)} min session
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'rgba(0,0,0,0.3)' }}>
                     {new Date(session.created_at).toLocaleDateString()}
                   </div>
                 </div>
                 <span style={{
                   padding: '4px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 600,
-                  background: session.completed ? 'rgba(39, 174, 96, 0.1)' : 'rgba(255,255,255,0.05)',
-                  color: session.completed ? '#27AE60' : 'rgba(255,255,255,0.3)',
+                  background: session.completed ? 'rgba(39, 174, 96, 0.1)' : 'rgba(0,0,0,0.03)',
+                  color: session.completed ? '#27AE60' : 'rgba(0,0,0,0.3)',
                 }}>
                   {session.completed ? 'Completed' : 'Incomplete'}
                 </span>

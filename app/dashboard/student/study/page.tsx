@@ -41,10 +41,10 @@ export default function StudyHubPage() {
   return (
     <div>
       <div style={{ marginBottom: '32px' }}>
-        <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', color: 'white', marginBottom: '8px' }}>
+        <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', color: '#1A1A2E', marginBottom: '8px' }}>
           Study Hub 🎯
         </h1>
-        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '1rem' }}>
+        <p style={{ color: 'rgba(0,0,0,0.5)', fontSize: '1rem' }}>
           Welcome back, {profile?.full_name?.split(' ')[0]}! Ready to learn?
         </p>
       </div>
@@ -62,9 +62,9 @@ export default function StudyHubPage() {
             <motion.div
               key={stat.label}
               whileHover={{ y: -4 }}
-              style={{
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.06)',
+                style={{ willChange: 'transform, opacity',
+                background: '#ffffff',
+                border: '1px solid rgba(0,0,0,0.06)',
                 borderRadius: '16px',
                 padding: '20px',
                 display: 'flex',
@@ -81,8 +81,8 @@ export default function StudyHubPage() {
                 {stat.icon}
               </div>
               <div>
-                <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'white' }}>{stat.value}</div>
-                <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>{stat.label}</div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1A1A2E' }}>{stat.value}</div>
+                <div style={{ fontSize: '0.8rem', color: 'rgba(0,0,0,0.4)' }}>{stat.label}</div>
               </div>
             </motion.div>
           ))}
@@ -98,9 +98,9 @@ export default function StudyHubPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
               whileHover={{ y: -6, scale: 1.02 }}
-              style={{
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.06)',
+                style={{ willChange: 'transform, opacity',
+                background: '#ffffff',
+                border: '1px solid rgba(0,0,0,0.06)',
                 borderRadius: '16px',
                 padding: '24px',
                 cursor: 'pointer',
@@ -116,10 +116,10 @@ export default function StudyHubPage() {
               }}>
                 {feature.icon}
               </div>
-              <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', color: 'white', marginBottom: '8px' }}>
+              <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', color: '#1A1A2E', marginBottom: '8px' }}>
                 {feature.title}
               </h3>
-              <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.5, margin: 0 }}>
+              <p style={{ fontSize: '0.85rem', color: 'rgba(0,0,0,0.4)', lineHeight: 1.5, margin: 0 }}>
                 {feature.desc}
               </p>
             </motion.div>

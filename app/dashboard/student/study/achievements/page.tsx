@@ -26,26 +26,26 @@ export default function AchievementsPage() {
   return (
     <div>
       <div style={{ marginBottom: '32px' }}>
-        <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', color: 'white', marginBottom: '4px' }}>
+        <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', color: '#1A1A2E', marginBottom: '4px' }}>
           Achievements 🏆
         </h1>
-        <p style={{ color: 'rgba(255,255,255,0.5)' }}>Track your milestones and accomplishments</p>
+        <p style={{ color: 'rgba(0,0,0,0.5)' }}>Track your milestones and accomplishments</p>
       </div>
 
       {/* Progress Overview */}
-      <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '24px', marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '32px' }}>
+      <div style={{ background: '#ffffff', border: '1px solid rgba(0,0,0,0.06)', borderRadius: '16px', padding: '24px', marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '32px' }}>
         <div style={{ position: 'relative', width: '100px', height: '100px' }}>
           <svg width="100" height="100" style={{ transform: 'rotate(-90deg)' }}>
-            <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8" />
+            <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(0,0,0,0.03)" strokeWidth="8" />
             <circle cx="50" cy="50" r="40" fill="none" stroke="#FFB300" strokeWidth="8" strokeLinecap="round" strokeDasharray={251.2} strokeDashoffset={251.2 - (percentage / 100) * 251.2} />
           </svg>
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ fontSize: '1.5rem', fontWeight: 700, color: 'white' }}>{percentage}%</span>
+            <span style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1A1A2E' }}>{percentage}%</span>
           </div>
         </div>
         <div>
-          <h2 style={{ fontSize: '1.3rem', color: 'white', marginBottom: '4px' }}>{unlockedCount} of {totalCount} Unlocked</h2>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.9rem' }}>Keep studying to unlock more achievements!</p>
+          <h2 style={{ fontSize: '1.3rem', color: '#1A1A2E', marginBottom: '4px' }}>{unlockedCount} of {totalCount} Unlocked</h2>
+          <p style={{ color: 'rgba(0,0,0,0.4)', fontSize: '0.9rem' }}>Keep studying to unlock more achievements!</p>
         </div>
       </div>
 
@@ -54,7 +54,7 @@ export default function AchievementsPage() {
         const categoryAchievements = all.filter(a => a.category === category)
         return (
           <div key={category} style={{ marginBottom: '32px' }}>
-            <h3 style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '1px' }}>
+            <h3 style={{ color: 'rgba(0,0,0,0.5)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '1px' }}>
               {category.replace('_', ' ')}
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
@@ -65,17 +65,17 @@ export default function AchievementsPage() {
                   <motion.div
                     key={achievement.id}
                     whileHover={{ y: -4 }}
-                    style={{
-                      background: isUnlocked ? 'rgba(255, 179, 0, 0.05)' : 'rgba(255,255,255,0.02)',
-                      border: `1px solid ${isUnlocked ? 'rgba(255, 179, 0, 0.2)' : 'rgba(255,255,255,0.06)'}`,
+                      style={{ willChange: 'transform, opacity',
+                      background: isUnlocked ? 'rgba(255, 179, 0, 0.05)' : 'rgba(0,0,0,0.02)',
+                      border: `1px solid ${isUnlocked ? 'rgba(255, 179, 0, 0.2)' : 'rgba(0,0,0,0.06)'}`,
                       borderRadius: '16px', padding: '20px',
                       opacity: isUnlocked ? 1 : 0.5,
                     }}
                   >
-                    <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                    <div style={{ willChange: 'transform, opacity',  display: 'flex', gap: '16px', alignItems: 'center' }}>
                       <div style={{
                         width: '56px', height: '56px', borderRadius: '14px',
-                        background: isUnlocked ? 'rgba(255, 179, 0, 0.15)' : 'rgba(255,255,255,0.05)',
+                        background: isUnlocked ? 'rgba(255, 179, 0, 0.15)' : 'rgba(0,0,0,0.03)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: '1.8rem',
                         filter: isUnlocked ? 'none' : 'grayscale(1)',
@@ -83,15 +83,15 @@ export default function AchievementsPage() {
                         {achievement.icon}
                       </div>
                       <div style={{ flex: 1 }}>
-                        <h4 style={{ fontSize: '1rem', color: isUnlocked ? '#FFB300' : 'rgba(255,255,255,0.5)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <h4 style={{ fontSize: '1rem', color: isUnlocked ? '#FFB300' : 'rgba(0,0,0,0.5)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                           {achievement.name}
                           {isUnlocked && <span style={{ fontSize: '0.7rem' }}>✅</span>}
                         </h4>
-                        <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginBottom: '4px' }}>
+                        <p style={{ fontSize: '0.8rem', color: 'rgba(0,0,0,0.4)', marginBottom: '4px' }}>
                           {achievement.description}
                         </p>
                         {userAch && (
-                          <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)' }}>
+                          <span style={{ fontSize: '0.7rem', color: 'rgba(0,0,0,0.3)' }}>
                             Unlocked {new Date(userAch.unlocked_at).toLocaleDateString()}
                           </span>
                         )}

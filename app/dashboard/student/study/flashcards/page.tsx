@@ -84,10 +84,10 @@ export default function FlashcardsPage() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
-          <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', color: 'white', marginBottom: '4px' }}>
+          <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', color: '#1A1A2E', marginBottom: '4px' }}>
             Flashcards 🃏
           </h1>
-          <p style={{ color: 'rgba(255,255,255,0.5)' }}>Create and review flashcard decks</p>
+          <p style={{ color: 'rgba(0,0,0,0.5)' }}>Create and review flashcard decks</p>
         </div>
         {selectedDeck && (
           <button
@@ -95,7 +95,7 @@ export default function FlashcardsPage() {
             style={{
               padding: '10px 20px', borderRadius: '10px', border: 'none',
               background: 'linear-gradient(135deg, #9B59B6, #7D3C98)',
-              color: 'white', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer',
+              color: '#1A1A2E', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer',
               marginRight: '12px',
             }}
           >
@@ -107,7 +107,7 @@ export default function FlashcardsPage() {
           style={{
             padding: '10px 20px', borderRadius: '10px', border: 'none',
             background: 'linear-gradient(135deg, #4169E1, #2D4FC8)',
-            color: 'white', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer',
+            color: '#1A1A2E', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer',
           }}
         >
           + New Deck
@@ -120,20 +120,20 @@ export default function FlashcardsPage() {
           <button
             onClick={() => setSelectedDeck(null)}
             style={{
-              background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)',
+              background: 'none', border: 'none', color: 'rgba(0,0,0,0.5)',
               fontSize: '0.9rem', cursor: 'pointer', marginBottom: '20px', padding: 0,
             }}
           >
             ← Back to Decks
           </button>
 
-          <h2 style={{ color: 'white', marginBottom: '8px' }}>{selectedDeck.deck.title}</h2>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem', marginBottom: '24px' }}>
+          <h2 style={{ color: '#1A1A2E', marginBottom: '8px' }}>{selectedDeck.deck.title}</h2>
+          <p style={{ color: 'rgba(0,0,0,0.4)', fontSize: '0.85rem', marginBottom: '24px' }}>
             Card {currentCardIndex + 1} of {selectedDeck.cards.length}
           </p>
 
           {/* Progress Bar */}
-          <div style={{ height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', marginBottom: '32px' }}>
+          <div style={{ height: '4px', background: 'rgba(0,0,0,0.08)', borderRadius: '2px', marginBottom: '32px' }}>
             <div style={{
               height: '100%', borderRadius: '2px', transition: 'width 0.3s',
               width: `${((currentCardIndex + 1) / selectedDeck.cards.length) * 100}%`,
@@ -144,7 +144,7 @@ export default function FlashcardsPage() {
           {selectedDeck.cards.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '60px 20px' }}>
               <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📝</div>
-              <p style={{ color: 'rgba(255,255,255,0.5)' }}>No cards yet. Add some cards to start studying!</p>
+              <p style={{ color: 'rgba(0,0,0,0.5)' }}>No cards yet. Add some cards to start studying!</p>
             </div>
           ) : (
             <>
@@ -152,10 +152,10 @@ export default function FlashcardsPage() {
               <motion.div
                 onClick={() => setIsFlipped(!isFlipped)}
                 animate={{ rotateY: isFlipped ? 180 : 0 }}
-                transition={{ duration: 0.4 }}
-                style={{
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.08)',
+                transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+                  style={{ willChange: 'transform, opacity',
+                  background: '#ffffff',
+                  border: '1px solid rgba(0,0,0,0.06)',
                   borderRadius: '20px',
                   padding: '40px',
                   minHeight: '250px',
@@ -169,19 +169,19 @@ export default function FlashcardsPage() {
               >
                 <div style={{
                   textAlign: 'center',
-                  color: 'white',
+                  color: '#1A1A2E',
                   fontSize: '1.3rem',
                   lineHeight: 1.6,
                   transform: isFlipped ? 'rotateY(180deg)' : 'none',
                 }}>
-                  <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'rgba(0,0,0,0.4)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
                     {isFlipped ? 'Answer' : 'Question'}
                   </div>
                   {isFlipped ? selectedDeck.cards[currentCardIndex].back : selectedDeck.cards[currentCardIndex].front}
                 </div>
               </motion.div>
 
-              <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '0.8rem', marginBottom: '24px' }}>
+              <p style={{ textAlign: 'center', color: 'rgba(0,0,0,0.3)', fontSize: '0.8rem', marginBottom: '24px' }}>
                 Click to {isFlipped ? 'see question' : 'reveal answer'}
               </p>
 
@@ -191,7 +191,7 @@ export default function FlashcardsPage() {
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}
+                    style={{ willChange: 'transform, opacity',  display: 'flex', gap: '12px', justifyContent: 'center' }}
                   >
                     {[
                       { label: 'Again', color: '#E74C3C', value: 0 },
@@ -223,7 +223,7 @@ export default function FlashcardsPage() {
           {decks.length === 0 ? (
             <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px' }}>
               <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🃏</div>
-              <p style={{ color: 'rgba(255,255,255,0.5)' }}>No flashcard decks yet. Create one to get started!</p>
+              <p style={{ color: 'rgba(0,0,0,0.5)' }}>No flashcard decks yet. Create one to get started!</p>
             </div>
           ) : (
             decks.map(deck => (
@@ -231,28 +231,28 @@ export default function FlashcardsPage() {
                 key={deck.id}
                 whileHover={{ y: -4 }}
                 onClick={() => loadDeck(deck.id)}
-                style={{
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.06)',
+                  style={{ willChange: 'transform, opacity',
+                  background: '#ffffff',
+                  border: '1px solid rgba(0,0,0,0.06)',
                   borderRadius: '16px',
                   padding: '24px',
                   cursor: 'pointer',
                 }}
               >
-                <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', color: 'white', marginBottom: '8px' }}>
+                <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', color: '#1A1A2E', marginBottom: '8px' }}>
                   {deck.title}
                 </h3>
-                <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', marginBottom: '16px' }}>
+                <p style={{ fontSize: '0.85rem', color: 'rgba(0,0,0,0.4)', marginBottom: '16px' }}>
                   {deck.description || 'No description'}
                 </p>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.3)' }}>
+                  <span style={{ fontSize: '0.8rem', color: 'rgba(0,0,0,0.3)' }}>
                     {(deck as unknown as { card_count?: number }).card_count ?? 0} cards
                   </span>
                   <span style={{
                     padding: '4px 10px', borderRadius: '6px',
-                    background: deck.is_public ? 'rgba(39, 174, 96, 0.1)' : 'rgba(255,255,255,0.05)',
-                    color: deck.is_public ? '#27AE60' : 'rgba(255,255,255,0.4)',
+                    background: deck.is_public ? 'rgba(39, 174, 96, 0.1)' : 'rgba(0,0,0,0.03)',
+                    color: deck.is_public ? '#27AE60' : 'rgba(0,0,0,0.4)',
                     fontSize: '0.7rem', fontWeight: 600,
                   }}>
                     {deck.is_public ? 'Public' : 'Private'}
@@ -269,20 +269,20 @@ export default function FlashcardsPage() {
         {showCreateModal && (
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '20px' }}
+            style={{ willChange: 'transform, opacity',  position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '20px' }}
             onClick={() => setShowCreateModal(false)}
           >
             <motion.div
               initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}
               onClick={(e) => e.stopPropagation()}
-              style={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '32px', width: '100%', maxWidth: '440px' }}
+              style={{ willChange: 'transform, opacity',  background: '#ffffff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: '20px', padding: '32px', width: '100%', maxWidth: '440px' }}
             >
-              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'white', marginBottom: '24px' }}>New Flashcard Deck</h2>
-              <input value={deckTitle} onChange={(e) => setDeckTitle(e.target.value)} placeholder="Deck title *" style={{ width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box', marginBottom: '12px' }} />
-              <textarea value={deckDesc} onChange={(e) => setDeckDesc(e.target.value)} placeholder="Description (optional)" rows={3} style={{ width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', fontSize: '0.9rem', outline: 'none', resize: 'vertical', fontFamily: 'var(--font-body)', boxSizing: 'border-box', marginBottom: '16px' }} />
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <button onClick={() => setShowCreateModal(false)} style={{ flex: 1, padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem', cursor: 'pointer' }}>Cancel</button>
-                <button onClick={handleCreateDeck} disabled={!deckTitle.trim()} style={{ flex: 1, padding: '12px', borderRadius: '10px', border: 'none', background: deckTitle.trim() ? 'linear-gradient(135deg, #9B59B6, #7D3C98)' : 'rgba(255,255,255,0.05)', color: deckTitle.trim() ? 'white' : 'rgba(255,255,255,0.3)', fontSize: '0.9rem', fontWeight: 600, cursor: deckTitle.trim() ? 'pointer' : 'default' }}>Create</button>
+              <h2 style={{ willChange: 'transform, opacity',  fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: '#1A1A2E', marginBottom: '24px' }}>New Flashcard Deck</h2>
+              <input value={deckTitle} onChange={(e) => setDeckTitle(e.target.value)} placeholder="Deck title *" style={{ willChange: 'transform, opacity',  width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.08)', color: '#1A1A2E', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box', marginBottom: '12px' }} />
+              <textarea value={deckDesc} onChange={(e) => setDeckDesc(e.target.value)} placeholder="Description (optional)" rows={3} style={{ willChange: 'transform, opacity',  width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.08)', color: '#1A1A2E', fontSize: '0.9rem', outline: 'none', resize: 'vertical', fontFamily: 'var(--font-body)', boxSizing: 'border-box', marginBottom: '16px' }} />
+              <div style={{ willChange: 'transform, opacity',  display: 'flex', gap: '12px' }}>
+                <button onClick={() => setShowCreateModal(false)} style={{ willChange: 'transform, opacity',  flex: 1, padding: '12px', borderRadius: '10px', background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.08)', color: 'rgba(0,0,0,0.6)', fontSize: '0.9rem', cursor: 'pointer' }}>Cancel</button>
+                <button onClick={handleCreateDeck} disabled={!deckTitle.trim()} style={{ willChange: 'transform, opacity',  flex: 1, padding: '12px', borderRadius: '10px', border: 'none', background: deckTitle.trim() ? 'linear-gradient(135deg, #9B59B6, #7D3C98)' : 'rgba(0,0,0,0.03)', color: deckTitle.trim() ? 'white' : 'rgba(0,0,0,0.3)', fontSize: '0.9rem', fontWeight: 600, cursor: deckTitle.trim() ? 'pointer' : 'default' }}>Create</button>
               </div>
             </motion.div>
           </motion.div>
@@ -294,20 +294,20 @@ export default function FlashcardsPage() {
         {showAddCardModal && (
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '20px' }}
+            style={{ willChange: 'transform, opacity',  position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '20px' }}
             onClick={() => { setShowAddCardModal(false); setCardFront(''); setCardBack('') }}
           >
             <motion.div
               initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}
               onClick={(e) => e.stopPropagation()}
-              style={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '32px', width: '100%', maxWidth: '440px' }}
+              style={{ willChange: 'transform, opacity',  background: '#ffffff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: '20px', padding: '32px', width: '100%', maxWidth: '440px' }}
             >
-              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'white', marginBottom: '24px' }}>Add Flashcard</h2>
-              <textarea value={cardFront} onChange={(e) => setCardFront(e.target.value)} placeholder="Front (question) *" rows={3} style={{ width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', fontSize: '0.9rem', outline: 'none', resize: 'vertical', fontFamily: 'var(--font-body)', boxSizing: 'border-box', marginBottom: '12px' }} />
-              <textarea value={cardBack} onChange={(e) => setCardBack(e.target.value)} placeholder="Back (answer) *" rows={3} style={{ width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', fontSize: '0.9rem', outline: 'none', resize: 'vertical', fontFamily: 'var(--font-body)', boxSizing: 'border-box', marginBottom: '16px' }} />
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <button onClick={() => { setShowAddCardModal(false); setCardFront(''); setCardBack('') }} style={{ flex: 1, padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem', cursor: 'pointer' }}>Cancel</button>
-                <button onClick={handleAddCard} disabled={!cardFront.trim() || !cardBack.trim()} style={{ flex: 1, padding: '12px', borderRadius: '10px', border: 'none', background: cardFront.trim() && cardBack.trim() ? 'linear-gradient(135deg, #9B59B6, #7D3C98)' : 'rgba(255,255,255,0.05)', color: cardFront.trim() && cardBack.trim() ? 'white' : 'rgba(255,255,255,0.3)', fontSize: '0.9rem', fontWeight: 600, cursor: cardFront.trim() && cardBack.trim() ? 'pointer' : 'default' }}>Add</button>
+              <h2 style={{ willChange: 'transform, opacity',  fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: '#1A1A2E', marginBottom: '24px' }}>Add Flashcard</h2>
+              <textarea value={cardFront} onChange={(e) => setCardFront(e.target.value)} placeholder="Front (question) *" rows={3} style={{ willChange: 'transform, opacity',  width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.08)', color: '#1A1A2E', fontSize: '0.9rem', outline: 'none', resize: 'vertical', fontFamily: 'var(--font-body)', boxSizing: 'border-box', marginBottom: '12px' }} />
+              <textarea value={cardBack} onChange={(e) => setCardBack(e.target.value)} placeholder="Back (answer) *" rows={3} style={{ willChange: 'transform, opacity',  width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.08)', color: '#1A1A2E', fontSize: '0.9rem', outline: 'none', resize: 'vertical', fontFamily: 'var(--font-body)', boxSizing: 'border-box', marginBottom: '16px' }} />
+              <div style={{ willChange: 'transform, opacity',  display: 'flex', gap: '12px' }}>
+                <button onClick={() => { setShowAddCardModal(false); setCardFront(''); setCardBack('') }} style={{ willChange: 'transform, opacity',  flex: 1, padding: '12px', borderRadius: '10px', background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.08)', color: 'rgba(0,0,0,0.6)', fontSize: '0.9rem', cursor: 'pointer' }}>Cancel</button>
+                <button onClick={handleAddCard} disabled={!cardFront.trim() || !cardBack.trim()} style={{ willChange: 'transform, opacity',  flex: 1, padding: '12px', borderRadius: '10px', border: 'none', background: cardFront.trim() && cardBack.trim() ? 'linear-gradient(135deg, #9B59B6, #7D3C98)' : 'rgba(0,0,0,0.03)', color: cardFront.trim() && cardBack.trim() ? 'white' : 'rgba(0,0,0,0.3)', fontSize: '0.9rem', fontWeight: 600, cursor: cardFront.trim() && cardBack.trim() ? 'pointer' : 'default' }}>Add</button>
               </div>
             </motion.div>
           </motion.div>
