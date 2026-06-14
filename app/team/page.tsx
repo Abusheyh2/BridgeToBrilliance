@@ -3,11 +3,13 @@
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
+import Navbar from '@/components/landing/Navbar'
 import { founder, teamMembers } from '@/data/team'
 
 export default function TeamPage() {
   return (
     <main>
+      <Navbar />
       <div style={{
         padding: '120px 40px 60px',
         background: 'linear-gradient(135deg, #F8F9FF 0%, #E8ECF8 50%, #F8F9FF 100%)',
@@ -43,7 +45,7 @@ export default function TeamPage() {
               Team
             </span>
           </h1>
-          <p style={{ fontSize: '1.1rem', color: 'rgba(0,0,0,0.5)', maxWidth: '600px', margin: '0 auto' }}>
+          <p style={{ fontSize: '1.1rem', color: 'rgba(0,0,0,0.65)', maxWidth: '600px', margin: '0 auto' }}>
             Dedicated educators and staff working together to make quality education accessible to all.
           </p>
         </motion.div>
@@ -90,7 +92,7 @@ export default function TeamPage() {
             </p>
             <p style={{
               fontSize: '0.95rem',
-              color: 'rgba(0,0,0,0.5)',
+              color: 'rgba(0,0,0,0.65)',
               maxWidth: '550px',
               margin: '0 auto',
               lineHeight: 1.7,
@@ -149,7 +151,7 @@ export default function TeamPage() {
                   </p>
                   <p style={{
                     fontSize: '0.85rem',
-                    color: 'rgba(0,0,0,0.5)',
+                    color: 'rgba(0,0,0,0.65)',
                     lineHeight: 1.6,
                   }}>
                     {member.bio}

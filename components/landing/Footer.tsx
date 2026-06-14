@@ -35,7 +35,7 @@ export default function Footer() {
             </div>
             <p style={{
               fontSize: '0.85rem',
-              color: 'rgba(0,0,0,0.5)',
+              color: 'rgba(0,0,0,0.65)',
               lineHeight: 1.6,
               maxWidth: '280px',
             }}>
@@ -66,7 +66,7 @@ export default function Footer() {
                   style={{
                     display: 'block',
                     fontSize: '0.85rem',
-                    color: 'rgba(0,0,0,0.5)',
+                    color: 'rgba(0,0,0,0.65)',
                     textDecoration: 'none',
                     marginBottom: '10px',
                     transition: 'color 0.2s',
@@ -83,7 +83,7 @@ export default function Footer() {
                   style={{
                     display: 'block',
                     fontSize: '0.85rem',
-                    color: 'rgba(0,0,0,0.5)',
+                    color: 'rgba(0,0,0,0.65)',
                     textDecoration: 'none',
                     marginBottom: '10px',
                     transition: 'color 0.2s',
@@ -117,7 +117,7 @@ export default function Footer() {
                 style={{
                   display: 'block',
                   fontSize: '0.85rem',
-                  color: 'rgba(0,0,0,0.5)',
+                  color: 'rgba(0,0,0,0.65)',
                   textDecoration: 'none',
                   marginBottom: '10px',
                   transition: 'color 0.2s',
@@ -156,7 +156,7 @@ export default function Footer() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontSize: '0.75rem',
-                    color: 'rgba(0,0,0,0.5)',
+                    color: 'rgba(0,0,0,0.65)',
                     textDecoration: 'none',
                     fontWeight: 700,
                     transition: 'border-color 0.2s, color 0.2s',

@@ -122,7 +122,7 @@ export default function Features() {
 
           <p style={{
             fontSize: '1.05rem',
-            color: 'rgba(0,0,0,0.5)',
+            color: 'rgba(0,0,0,0.65)',
             maxWidth: '600px',
             margin: '0 auto',
           }}>
@@ -195,7 +195,7 @@ export default function Features() {
 
               <p style={{
                 fontSize: '0.9rem',
-                color: 'rgba(0,0,0,0.55)',
+                color: 'rgba(0,0,0,0.7)',
                 lineHeight: 1.6,
               }}>
                 {feature.description}

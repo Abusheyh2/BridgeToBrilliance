@@ -313,7 +313,7 @@ export default function Hero() {
             transition={{ duration: 0.8, delay: 0.4 }}
             style={{
               fontSize: '1.15rem',
-              color: 'rgba(0,0,0,0.6)',
+              color: 'rgba(0,0,0,0.75)',
               lineHeight: 1.6,
               marginBottom: '36px',
               maxWidth: '520px',
@@ -366,7 +366,7 @@ export default function Hero() {
             ].map((stat, i) => (
               <div key={i}>
                 <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#FFB300', fontFamily: 'var(--font-heading)' }}>{stat.num}</div>
-                <div style={{ fontSize: '0.85rem', color: 'rgba(0,0,0,0.5)' }}>{stat.label}</div>
+                <div style={{ fontSize: '0.85rem', color: 'rgba(0,0,0,0.6)' }}>{stat.label}</div>
               </div>
             ))}
           </motion.div>
