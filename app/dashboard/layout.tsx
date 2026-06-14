@@ -114,7 +114,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   const role = profile?.role || 'student'
-  const items = navItems[role] || navItems.student
+  const items = navItems[role] || navItems['student']
   const initials = profile?.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2) || '?'
 
   return (
