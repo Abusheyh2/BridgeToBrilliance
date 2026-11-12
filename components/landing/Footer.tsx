@@ -72,7 +72,7 @@ export default function Footer() {
                     transition: 'color 0.2s',
                   }}
                   onMouseEnter={(e) => (e.currentTarget.style.color = '#FFB300')}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(0,0,0,0.5)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(0,0,0,0.65)')}
                 >
                   {link.label}
                 </Link>
@@ -89,7 +89,7 @@ export default function Footer() {
                     transition: 'color 0.2s',
                   }}
                   onMouseEnter={(e) => (e.currentTarget.style.color = '#FFB300')}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(0,0,0,0.5)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(0,0,0,0.65)')}
                 >
                   {link.label}
                 </a>
@@ -123,7 +123,7 @@ export default function Footer() {
                   transition: 'color 0.2s',
                 }}
                 onMouseEnter={(e) => (e.currentTarget.style.color = '#FFB300')}
-                onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(0,0,0,0.5)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(0,0,0,0.65)')}
               >
                 {link.label}
               </Link>
@@ -191,7 +191,8 @@ export default function Footer() {
           gap: '12px',
         }}>
           <p style={{ fontSize: '0.8rem', color: 'rgba(0,0,0,0.3)' }}>
-            © 2024 BridgeToBrilliance. All rights reserved. A nonprofit initiative.
+            © {new Date().getFullYear()} BridgeToBrilliance. All rights reserved. A nonprofit
+            initiative.
           </p>
           <p style={{
             fontSize: '0.8rem',

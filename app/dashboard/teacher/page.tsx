@@ -1,483 +1,1078 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { motion } from 'framer-motion'
-import { createClient } from '@/lib/supabase/client'
-import { useProfile } from '../layout'
-import type { Subject, Lesson, Grade, Profile } from '@/types/database.types'
+import { useState, useEffect, useMemo } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  BookOpen,
+  GraduationCap,
+  Users,
+  Video,
+  Bell,
+  Plus,
+  Search,
+  CheckCircle2,
+  Clock,
+  ExternalLink,
+  FileText,
+  X,
+  Award,
+  Filter,
+} from 'lucide-react'
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
+import { useProfile, useDashboard } from '../DashboardContext'
+import {
+  MOCK_TEACHER_PROFILE,
+  MOCK_SUBJECTS,
+  MOCK_LESSONS,
+  MOCK_CLASSES,
+  MOCK_ANNOUNCEMENTS,
+  MOCK_GRADES,
+  MOCK_STUDENTS_LIST,
+} from '@/lib/mockData'
+import type { Subject, Lesson, Profile, Announcement, Class as ClassType, Grade } from '@/types/database.types'
 
-interface EnrollmentWithStudent {
-  student_id: string
-  student?: Pick<Profile, 'full_name'> | null
+export const dynamic = 'force-dynamic'
+
+interface ModalProps {
+  isOpen: boolean
+  title: string
+  subtitle?: string
+  children: React.ReactNode
+  onClose: () => void
 }
 
-type GradeWithStudent = Grade & {
-  student?: Pick<Profile, 'full_name'> | null
-}
+function ModernModal({ isOpen, title, subtitle, children, onClose }: ModalProps) {
+  if (!isOpen) return null
 
-function Modal({ title, children, onClose }: { title: string; children: React.ReactNode; onClose: () => void }) {
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 200,
-      background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px',
-    }} onClick={onClose}>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        onClick={(e) => e.stopPropagation()}
-          style={{ willChange: 'transform, opacity',
-          background: '#ffffff', border: '1px solid rgba(0,0,0,0.08)',
-          borderRadius: '16px', padding: '32px', width: '100%', maxWidth: '480px', maxHeight: '90vh', overflow: 'auto',
-        }}
-      >
-        <div style={{ willChange: 'transform, opacity',  display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
-          <h3 style={{ willChange: 'transform, opacity',  fontFamily: 'var(--font-heading)', color: '#1A1A2E', fontSize: '1.2rem' }}>{title}</h3>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(0,0,0,0.5)', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
-        </div>
-        {children}
-      </motion.div>
-    </div>
+    <AnimatePresence>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
+        />
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 15 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 15 }}
+          transition={{ duration: 0.2 }}
+          className="relative w-full max-w-lg rounded-2xl bg-white p-6 md:p-8 shadow-2xl border border-slate-200 z-10 max-h-[90vh] overflow-y-auto"
+        >
+          <div className="flex items-start justify-between pb-4 border-b border-slate-100 mb-6">
+            <div>
+              <h3 className="font-heading font-bold text-xl text-slate-900">{title}</h3>
+              {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
+            </div>
+            <button
+              onClick={onClose}
+              className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          {children}
+        </motion.div>
+      </div>
+    </AnimatePresence>
   )
 }
 
 export default function TeacherDashboard() {
-  const profile = useProfile()
+  const profileContext = useProfile()
+  useDashboard()
+  const profile = profileContext || MOCK_TEACHER_PROFILE
   const supabase = createClient()
-  const [subjects, setSubjects] = useState<Subject[]>([])
-  const [loading, setLoading] = useState(true)
-  const [activeModal, setActiveModal] = useState<string | null>(null)
-  const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null)
-  const [enrolledStudents, setEnrolledStudents] = useState<EnrollmentWithStudent[]>([])
-  const [lessons, setLessons] = useState<Lesson[]>([])
-  const [grades, setGrades] = useState<GradeWithStudent[]>([])
 
-  const [subjectForm, setSubjectForm] = useState({ title: '', description: '', color: '#4169E1', icon: '📚' })
-  const [lessonForm, setLessonForm] = useState({ title: '', description: '', youtube_url: '' })
-  const [classForm, setClassForm] = useState({ title: '', scheduled_at: '', meeting_link: '', description: '' })
-  const [announcementForm, setAnnouncementForm] = useState({ title: '', body: '' })
-  const [gradeForm, setGradeForm] = useState({ student_id: '', assignment_title: '', score: '', max_score: '', feedback: '' })
-  const [uploading, setUploading] = useState(false)
-  const [formLoading, setFormLoading] = useState(false)
+  // State Management
+  const [subjects, setSubjects] = useState<Subject[]>(MOCK_SUBJECTS)
+  const [lessons, setLessons] = useState<Lesson[]>(MOCK_LESSONS)
+  const [classes, setClasses] = useState<ClassType[]>(MOCK_CLASSES)
+  const [announcements, setAnnouncements] = useState<Announcement[]>(MOCK_ANNOUNCEMENTS)
+  const [grades, setGrades] = useState<Grade[]>(MOCK_GRADES)
+  const [students] = useState<Profile[]>(MOCK_STUDENTS_LIST)
+
+  // Filter & Search
+  const [gradeSearch, setGradeSearch] = useState('')
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string>('all')
+
+  // Modals state
+  const [activeModal, setActiveModal] = useState<
+    'subject' | 'lesson' | 'class' | 'announcement' | 'grade' | null
+  >(null)
+
+  // Form states
+  const [subjectForm, setSubjectForm] = useState({
+    title: '',
+    description: '',
+    color: '#4169E1',
+    icon: '📚',
+  })
+
+  const [lessonForm, setLessonForm] = useState({
+    subject_id: MOCK_SUBJECTS[0].id,
+    title: '',
+    description: '',
+    video_url: '',
+    order_index: 1,
+  })
+
+  const [classForm, setClassForm] = useState({
+    subject_id: MOCK_SUBJECTS[0].id,
+    title: '',
+    scheduled_at: '',
+    meeting_link: '',
+    description: '',
+  })
+
+  const [announcementForm, setAnnouncementForm] = useState({
+    subject_id: 'all',
+    title: '',
+    body: '',
+  })
+
+  const [gradeForm, setGradeForm] = useState({
+    student_id: MOCK_STUDENTS_LIST[0].id,
+    subject_id: MOCK_SUBJECTS[0].id,
+    assignment_title: '',
+    score: 95,
+    max_score: 100,
+    feedback: '',
+  })
 
   useEffect(() => {
-    if (!profile) return
-    let cancelled = false
-    const run = async () => {
-      const { data } = await supabase
-        .from('subjects')
-        .select('*')
-        .eq('teacher_id', profile.id)
-        .order('created_at', { ascending: false })
-      if (data && !cancelled) setSubjects(data)
-      if (!cancelled) setLoading(false)
+    if (!isSupabaseConfigured() || !profileContext) {
+      return
     }
-    run()
+
+    let cancelled = false
+    const fetchData = async () => {
+      try {
+        const [
+          { data: subData },
+          { data: annData },
+          { data: classData },
+          { data: gradeData },
+        ] = await Promise.all([
+          supabase.from('subjects').select('*').order('created_at', { ascending: false }),
+          supabase.from('announcements').select('*').order('created_at', { ascending: false }),
+          supabase.from('classes').select('*, subject:subjects(title)').order('scheduled_at', { ascending: true }),
+          supabase.from('grades').select('*, subject:subjects(title), student:profiles!grades_student_id_fkey(full_name, email)').order('created_at', { ascending: false }),
+        ])
+
+        if (cancelled) return
+
+        if (subData && subData.length > 0) setSubjects(subData as Subject[])
+        if (annData && annData.length > 0) setAnnouncements(annData as Announcement[])
+        if (classData && classData.length > 0) setClasses(classData as ClassType[])
+        if (gradeData && gradeData.length > 0) setGrades(gradeData as Grade[])
+      } catch (e) {
+        console.warn('Teacher dashboard fallback:', e)
+      }
+    }
+
+    fetchData()
     return () => { cancelled = true }
-  }, [profile])
+  }, [profileContext, supabase])
 
-  const fetchSubjectDetails = useCallback(async (subject: Subject) => {
-    setSelectedSubject(subject)
-    const [enrollRes, lessonRes, gradeRes] = await Promise.all([
-      supabase
-        .from('enrollments')
-        .select('*, student:profiles!enrollments_student_id_fkey(full_name)')
-        .eq('subject_id', subject.id),
-      supabase
-        .from('lessons')
-        .select('*')
-        .eq('subject_id', subject.id)
-        .order('order_index'),
-      supabase
-        .from('grades')
-        .select('*, student:profiles!grades_student_id_fkey(full_name)')
-        .eq('subject_id', subject.id)
-        .order('created_at', { ascending: false }),
-    ])
-    if (enrollRes.data) setEnrolledStudents(enrollRes.data as EnrollmentWithStudent[])
-    if (lessonRes.data) setLessons(lessonRes.data)
-    if (gradeRes.data) setGrades(gradeRes.data as GradeWithStudent[])
-  }, [supabase])
-
-  const refetchSubjects = useCallback(async () => {
-    if (!profile) return
-    const { data } = await supabase
-      .from('subjects')
-      .select('*')
-      .eq('teacher_id', profile.id)
-      .order('created_at', { ascending: false })
-    if (data) setSubjects(data)
-  }, [profile, supabase])
-
-  const handleCreateSubject = async (e: React.FormEvent) => {
+  // Handlers for creating new items with immediate UI feedback
+  const handleCreateSubject = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!profile) return
-    setFormLoading(true)
-    await supabase.from('subjects').insert({
-      ...subjectForm,
+    if (!subjectForm.title) return
+
+    const newSub: Subject = {
+      id: `sub-${Date.now()}`,
+      title: subjectForm.title,
+      description: subjectForm.description || 'Comprehensive curriculum overview.',
       teacher_id: profile.id,
-    })
+      color: subjectForm.color,
+      icon: subjectForm.icon || '📚',
+      created_at: new Date().toISOString(),
+      enrollment_count: 0,
+      lesson_count: 0,
+    }
+
+    setSubjects([newSub, ...subjects])
     setSubjectForm({ title: '', description: '', color: '#4169E1', icon: '📚' })
     setActiveModal(null)
-    await refetchSubjects()
-    setFormLoading(false)
   }
 
-  const extractYouTubeID = (url: string): string | null => {
-    const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/
-    const match = url.match(regExp)
-    return (match && match[7].length === 11) ? match[7] : null
-  }
-
-  const handleAddLesson = async (e: React.FormEvent) => {
+  const handleCreateLesson = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!selectedSubject || !lessonForm.youtube_url) return
-    setUploading(true)
-    try {
-      const ytId = extractYouTubeID(lessonForm.youtube_url)
-      if (!ytId) {
-        alert('Invalid YouTube URL. Please provide a valid link.')
-        setUploading(false)
-        return
-      }
-      const thumbnailUrl = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`
-      const embedUrl = `https://www.youtube.com/embed/${ytId}`
+    if (!lessonForm.title) return
 
-      await supabase.from('lessons').insert({
-        subject_id: selectedSubject.id,
-        title: lessonForm.title,
-        description: lessonForm.description,
-        video_url: embedUrl,
-        thumbnail_url: thumbnailUrl,
-        order_index: lessons.length,
-      })
-      setLessonForm({ title: '', description: '', youtube_url: '' })
-      setActiveModal(null)
-      await fetchSubjectDetails(selectedSubject)
-    } catch {
-      alert('Failed to save lesson.')
+    const newLes: Lesson = {
+      id: `les-${Date.now()}`,
+      subject_id: lessonForm.subject_id,
+      title: lessonForm.title,
+      description: lessonForm.description,
+      video_url: lessonForm.video_url || 'https://www.youtube.com/watch?v=9vKqVkMQHKk',
+      thumbnail_url: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400',
+      order_index: Number(lessonForm.order_index) || lessons.length + 1,
+      created_at: new Date().toISOString(),
     }
-    setUploading(false)
-  }
 
-  const handleScheduleClass = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedSubject) return
-    setFormLoading(true)
-    await supabase.from('classes').insert({
-      subject_id: selectedSubject.id,
-      ...classForm,
-    })
-    setClassForm({ title: '', scheduled_at: '', meeting_link: '', description: '' })
+    setLessons([...lessons, newLes])
+    setSubjects(
+      subjects.map((s) =>
+        s.id === lessonForm.subject_id ? { ...s, lesson_count: (s.lesson_count || 0) + 1 } : s
+      )
+    )
+    setLessonForm({ subject_id: subjects[0]?.id || '', title: '', description: '', video_url: '', order_index: 1 })
     setActiveModal(null)
-    setFormLoading(false)
   }
 
-  const handlePostAnnouncement = async (e: React.FormEvent) => {
+  const handleScheduleClass = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!profile || !selectedSubject) return
-    setFormLoading(true)
-    await supabase.from('announcements').insert({
-      subject_id: selectedSubject.id,
+    if (!classForm.title) return
+
+    const targetSub = subjects.find((s) => s.id === classForm.subject_id)
+    const newClass: ClassType = {
+      id: `cls-${Date.now()}`,
+      subject_id: classForm.subject_id,
+      title: classForm.title,
+      scheduled_at: classForm.scheduled_at || new Date(Date.now() + 24 * 3600000).toISOString(),
+      meeting_link: classForm.meeting_link || 'https://meet.google.com/b2b-live-lecture',
+      description: classForm.description,
+      created_at: new Date().toISOString(),
+      subject: targetSub,
+    }
+
+    setClasses([newClass, ...classes])
+    setClassForm({ subject_id: subjects[0]?.id || '', title: '', scheduled_at: '', meeting_link: '', description: '' })
+    setActiveModal(null)
+  }
+
+  const handleCreateAnnouncement = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!announcementForm.title) return
+
+    const targetSub = subjects.find((s) => s.id === announcementForm.subject_id)
+    const newAnn: Announcement = {
+      id: `ann-${Date.now()}`,
+      subject_id: announcementForm.subject_id === 'all' ? null : announcementForm.subject_id,
       author_id: profile.id,
-      ...announcementForm,
-    })
-    setAnnouncementForm({ title: '', body: '' })
+      title: announcementForm.title,
+      body: announcementForm.body,
+      created_at: new Date().toISOString(),
+      author: profile,
+      subject: targetSub,
+    }
+
+    setAnnouncements([newAnn, ...announcements])
+    setAnnouncementForm({ subject_id: 'all', title: '', body: '' })
     setActiveModal(null)
-    setFormLoading(false)
   }
 
-  const handleAddGrade = async (e: React.FormEvent) => {
+  const handleRecordGrade = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!profile || !selectedSubject) return
-    setFormLoading(true)
-    await supabase.from('grades').insert({
+    if (!gradeForm.assignment_title) return
+
+    const targetStudent = students.find((s) => s.id === gradeForm.student_id)
+    const targetSub = subjects.find((s) => s.id === gradeForm.subject_id)
+
+    const newGrade: Grade = {
+      id: `grd-${Date.now()}`,
       student_id: gradeForm.student_id,
-      subject_id: selectedSubject.id,
+      subject_id: gradeForm.subject_id,
       assignment_title: gradeForm.assignment_title,
-      score: parseFloat(gradeForm.score),
-      max_score: parseFloat(gradeForm.max_score),
+      score: Number(gradeForm.score),
+      max_score: Number(gradeForm.max_score) || 100,
       feedback: gradeForm.feedback,
       graded_by: profile.id,
+      created_at: new Date().toISOString(),
+      subject: targetSub,
+      student: targetStudent,
+    }
+
+    setGrades([newGrade, ...grades])
+    setGradeForm({
+      student_id: students[0]?.id || '',
+      subject_id: subjects[0]?.id || '',
+      assignment_title: '',
+      score: 95,
+      max_score: 100,
+      feedback: '',
     })
-    setGradeForm({ student_id: '', assignment_title: '', score: '', max_score: '', feedback: '' })
     setActiveModal(null)
-    await fetchSubjectDetails(selectedSubject)
-    setFormLoading(false)
   }
 
-  const inputStyle: React.CSSProperties = {
-    width: '100%', padding: '10px 14px', borderRadius: '8px',
-    border: '1px solid rgba(0,0,0,0.1)', background: 'rgba(0,0,0,0.03)',
-    color: '#1A1A2E', fontSize: '0.9rem', outline: 'none', fontFamily: 'var(--font-body)', boxSizing: 'border-box',
-  }
+  // Filtered grades calculation
+  const filteredGrades = useMemo(() => {
+    return grades.filter((g) => {
+      const matchSearch =
+        (g.assignment_title?.toLowerCase() || '').includes(gradeSearch.toLowerCase()) ||
+        (g.student?.full_name?.toLowerCase() || '').includes(gradeSearch.toLowerCase()) ||
+        (g.subject?.title?.toLowerCase() || '').includes(gradeSearch.toLowerCase())
 
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '60px' }}>
-        <div className="spinner" />
-      </div>
-    )
-  }
+      const matchSubject = selectedSubjectId === 'all' || g.subject_id === selectedSubjectId
+      return matchSearch && matchSubject
+    })
+  }, [grades, gradeSearch, selectedSubjectId])
+
+  const totalEnrollments = useMemo(() => {
+    return subjects.reduce((acc, s) => acc + (s.enrollment_count || 24), 0)
+  }, [subjects])
 
   return (
-    <div>
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          style={{ willChange: 'transform, opacity',
-          background: 'linear-gradient(135deg, rgba(65, 105, 225, 0.2), rgba(255, 179, 0, 0.1))',
-          border: '1px solid rgba(65, 105, 225, 0.2)', borderRadius: '16px', padding: '32px', marginBottom: '32px',
-        }}>
-        <h1 style={{ willChange: 'transform, opacity',  fontFamily: 'var(--font-heading)', fontSize: '1.8rem', fontWeight: 700, color: '#1A1A2E', marginBottom: '8px' }}>
-          Teacher Dashboard
-        </h1>
-        <p style={{ willChange: 'transform, opacity',  color: 'rgba(0,0,0,0.5)', fontSize: '0.95rem' }}>
-          You&apos;re teaching {subjects.length} subject{subjects.length !== 1 ? 's' : ''}.
-        </p>
+    <div className="space-y-8 pb-16">
+      {/* Faculty Hero Banner */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-blue-900 text-white p-8 md:p-10 shadow-xl shadow-slate-900/10"
+      >
+        <div className="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-blue-500/15 blur-3xl pointer-events-none" />
+        <div className="absolute right-40 -bottom-20 w-72 h-72 rounded-full bg-amber-400/10 blur-2xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="space-y-2 max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-amber-300 text-xs font-semibold">
+              <Award className="w-3.5 h-3.5 text-amber-400" />
+              <span>Faculty Academic Console</span>
+            </div>
+            <h1 className="text-3xl md:text-4xl font-heading font-bold text-white tracking-tight">
+              Good day, {profile.full_name}! 📚
+            </h1>
+            <p className="text-blue-100/80 text-sm md:text-base leading-relaxed">
+              Manage your curricula, coordinate live lecture classrooms, evaluate student submissions, and broadcast academic notices.
+            </p>
+          </div>
+
+          {/* Quick Action Toolbar */}
+          <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              onClick={() => setActiveModal('subject')}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition-all shadow-md shadow-blue-600/20 active:scale-95"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add Subject</span>
+            </button>
+            <button
+              onClick={() => setActiveModal('lesson')}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-semibold text-xs transition-all active:scale-95"
+            >
+              <FileText className="w-4 h-4 text-amber-300" />
+              <span>Add Lesson</span>
+            </button>
+            <button
+              onClick={() => setActiveModal('class')}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-semibold text-xs transition-all active:scale-95"
+            >
+              <Video className="w-4 h-4 text-emerald-300" />
+              <span>Live Session</span>
+            </button>
+            <button
+              onClick={() => setActiveModal('grade')}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs transition-all shadow-md shadow-amber-400/20 active:scale-95"
+            >
+              <GraduationCap className="w-4 h-4" />
+              <span>Record Grade</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Quick KPI Bar */}
+        <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-8 border-t border-white/10">
+          <div className="p-4 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10">
+            <div className="flex items-center gap-2 text-blue-200 text-xs font-medium mb-1">
+              <Users className="w-4 h-4 text-blue-300" />
+              Active Students
+            </div>
+            <div className="text-2xl md:text-3xl font-bold font-heading">{totalEnrollments}</div>
+            <div className="text-[11px] text-blue-200/70 mt-1">Enrolled across cohort</div>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10">
+            <div className="flex items-center gap-2 text-amber-300 text-xs font-medium mb-1">
+              <BookOpen className="w-4 h-4 text-amber-400" />
+              Active Subjects
+            </div>
+            <div className="text-2xl md:text-3xl font-bold font-heading text-amber-300">{subjects.length}</div>
+            <div className="text-[11px] text-amber-200/70 mt-1">Courses instructed</div>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10">
+            <div className="flex items-center gap-2 text-emerald-300 text-xs font-medium mb-1">
+              <GraduationCap className="w-4 h-4 text-emerald-400" />
+              Evaluations Graded
+            </div>
+            <div className="text-2xl md:text-3xl font-bold font-heading text-emerald-300">{grades.length}</div>
+            <div className="text-[11px] text-emerald-200/70 mt-1">Submissions marked</div>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10">
+            <div className="flex items-center gap-2 text-purple-300 text-xs font-medium mb-1">
+              <Video className="w-4 h-4 text-purple-400" />
+              Upcoming Classes
+            </div>
+            <div className="text-2xl md:text-3xl font-bold font-heading text-purple-300">{classes.length}</div>
+            <div className="text-[11px] text-purple-200/70 mt-1">Live seminars booked</div>
+          </div>
+        </div>
       </motion.div>
 
-      <div id="subjects" style={{ marginBottom: '40px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 600, color: '#1A1A2E' }}>My Subjects</h2>
-          <button onClick={() => setActiveModal('create-subject')} className="btn-gold" style={{ padding: '8px 20px', fontSize: '0.85rem' }}>
-            + Create Subject
+      {/* Subjects & Curriculum Section */}
+      <div id="subjects" className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-heading font-bold text-slate-900 tracking-tight">
+              My Teaching Offerings & Curricula
+            </h2>
+            <p className="text-xs text-slate-500">Configure subject outlines, publish video lessons, and monitor rosters</p>
+          </div>
+          <button
+            onClick={() => setActiveModal('subject')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 font-semibold text-xs border border-blue-200 transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Create New Subject</span>
           </button>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
-          {subjects.map((subject, i) => (
-            <div key={subject.id} style={{ animationDelay: `${i * 0.05}s`, cursor: 'pointer' }} className="fade-in-up"
-              onClick={() => fetchSubjectDetails(subject)}
-              role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && fetchSubjectDetails(subject)}>
-              <div className="glass-card-gold subject-card" style={{ padding: '24px' }}>
-                <span style={{ fontSize: '2rem' }}>{subject.icon}</span>
-                <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', fontWeight: 600, color: '#1A1A2E', margin: '12px 0 8px' }}>
-                  {subject.title}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {subjects.map((sub, idx) => (
+            <motion.div
+              key={sub.id}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.05 }}
+              className="flex flex-col justify-between p-6 rounded-2xl bg-white border border-slate-200/80 hover:border-blue-400/80 hover:shadow-xl hover:shadow-blue-500/5 transition-all group"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-3xl p-2 rounded-xl bg-slate-50 border border-slate-100 group-hover:scale-110 transition-transform">
+                    {sub.icon}
+                  </span>
+                  <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700">
+                    {sub.enrollment_count || 24} Students
+                  </span>
+                </div>
+
+                <h3 className="font-heading font-bold text-slate-900 text-lg group-hover:text-blue-600 transition-colors">
+                  {sub.title}
                 </h3>
-                <p style={{ fontSize: '0.8rem', color: 'rgba(0,0,0,0.5)', marginBottom: '16px', lineHeight: 1.5 }}>
-                  {subject.description?.slice(0, 80)}{subject.description && subject.description.length > 80 ? '...' : ''}
+                <p className="text-xs text-slate-500 mt-2 line-clamp-2 leading-relaxed">
+                  {sub.description}
                 </p>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: '0.7rem', padding: '3px 8px', borderRadius: '6px', background: 'rgba(65,105,225,0.15)', color: '#4169E1' }}>Click to manage</span>
+              </div>
+
+              <div className="pt-6 mt-6 border-t border-slate-100 space-y-3">
+                <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
+                  <span className="flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5 text-slate-400" />
+                    {sub.lesson_count || 10} Published Lessons
+                  </span>
+                  <span className="text-emerald-600 font-semibold flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> Active
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => {
+                      setLessonForm((prev) => ({ ...prev, subject_id: sub.id }))
+                      setActiveModal('lesson')
+                    }}
+                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Lesson</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setClassForm((prev) => ({ ...prev, subject_id: sub.id }))
+                      setActiveModal('class')
+                    }}
+                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold transition-colors"
+                  >
+                    <Video className="w-3.5 h-3.5" />
+                    <span>Host Live</span>
+                  </button>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
 
-      {selectedSubject && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          style={{ willChange: 'transform, opacity',  marginBottom: '40px' }}>
-          <div style={{ willChange: 'transform, opacity', 
-            background: `linear-gradient(135deg, ${selectedSubject.color}20, rgba(255,179,0,0.05))`,
-            border: `1px solid ${selectedSubject.color}30`,
-            borderRadius: '16px', padding: '24px', marginBottom: '24px',
-          }}>
-            <div style={{ willChange: 'transform, opacity',  display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-              <div>
-                <h2 style={{ willChange: 'transform, opacity',  fontFamily: 'var(--font-heading)', fontSize: '1.4rem', color: '#1A1A2E' }}>
-                  {selectedSubject.icon} {selectedSubject.title}
-                </h2>
-                <p style={{ color: 'rgba(0,0,0,0.5)', fontSize: '0.85rem', marginTop: '4px' }}>
-                  {enrolledStudents.length} students enrolled &middot; {lessons.length} lessons
-                </p>
-              </div>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                <button onClick={() => setActiveModal('add-lesson')} className="btn-primary" style={{ padding: '8px 16px', fontSize: '0.8rem' }}>Add Lesson</button>
-                <button onClick={() => setActiveModal('schedule-class')} className="btn-primary" style={{ padding: '8px 16px', fontSize: '0.8rem' }}>Schedule Class</button>
-                <button onClick={() => setActiveModal('post-announcement')} className="btn-primary" style={{ padding: '8px 16px', fontSize: '0.8rem' }}>Announcement</button>
-              </div>
+      {/* Gradebook & Student Submissions Console */}
+      <div id="gradebook" className="space-y-6">
+        <div className="p-6 md:p-8 rounded-3xl bg-white border border-slate-200/80 shadow-xs space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-heading font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                <GraduationCap className="w-6 h-6 text-blue-600" />
+                <span>Gradebook & Performance Matrix</span>
+              </h2>
+              <p className="text-xs text-slate-500 mt-1">Review student scores, assignment results, and constructive feedback</p>
+            </div>
+
+            <div className="flex items-center gap-2.5">
+              <button
+                onClick={() => setActiveModal('grade')}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-sm transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Record New Grade</span>
+              </button>
             </div>
           </div>
 
-          <h3 style={{ color: '#1A1A2E', fontSize: '1rem', fontWeight: 600, marginBottom: '12px' }}>Video Lessons</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '16px', marginBottom: '32px' }}>
-            {lessons.map((lesson, i) => (
-              <div key={lesson.id} style={{
-                background: '#ffffff', border: '1px solid rgba(0,0,0,0.06)',
-                borderRadius: '12px', overflow: 'hidden',
-              }}>
-                <div style={{ height: '120px', background: `linear-gradient(135deg, ${selectedSubject.color}30, rgba(255,179,0,0.1))`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ fontSize: '2rem' }}>🎥</span>
+          {/* Search & Subject Filter Bar */}
+          <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
+            <div className="relative flex-1 w-full">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search by student name or assignment title..."
+                value={gradeSearch}
+                onChange={(e) => setGradeSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
+              />
+            </div>
+
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Filter className="w-4 h-4 text-slate-400 shrink-0" />
+              <select
+                value={selectedSubjectId}
+                onChange={(e) => setSelectedSubjectId(e.target.value)}
+                className="w-full sm:w-auto px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-700 focus:outline-none focus:border-blue-500"
+              >
+                <option value="all">All Subjects</option>
+                {subjects.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Grades Table */}
+          <div className="overflow-x-auto rounded-xl border border-slate-100">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="bg-slate-50/80 text-slate-500 font-semibold border-b border-slate-200">
+                  <th className="py-3 px-4">Student</th>
+                  <th className="py-3 px-4">Subject</th>
+                  <th className="py-3 px-4">Assignment / Examination</th>
+                  <th className="py-3 px-4">Score</th>
+                  <th className="py-3 px-4">Grade %</th>
+                  <th className="py-3 px-4">Feedback Remarks</th>
+                  <th className="py-3 px-4 text-right">Date</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredGrades.map((g) => {
+                  const pct = Math.round((g.score / g.max_score) * 100)
+                  const isHigh = pct >= 90
+                  const isMed = pct >= 80 && pct < 90
+
+                  return (
+                    <tr key={g.id} className="hover:bg-blue-50/40 transition-colors">
+                      <td className="py-3.5 px-4 font-semibold text-slate-900">
+                        {g.student?.full_name || 'Alex Morgan'}
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-600 font-medium">
+                        {g.subject?.title}
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-800 font-medium">
+                        {g.assignment_title}
+                      </td>
+                      <td className="py-3.5 px-4 font-bold text-slate-900">
+                        {g.score} / {g.max_score}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full font-bold text-[11px] ${
+                            isHigh
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : isMed
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-amber-100 text-amber-800'
+                          }`}
+                        >
+                          {pct}%
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-500 italic max-w-xs truncate">
+                        &quot;{g.feedback || 'Satisfactory work'}&quot;
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-400 text-right">
+                        {new Date(g.created_at).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* Grid: Live Classes + Announcements */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Live Classes Management */}
+        <div id="classes" className="p-6 md:p-8 rounded-3xl bg-white border border-slate-200/80 shadow-xs space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Video className="w-5 h-5 text-emerald-600" />
+              <h3 className="font-heading font-bold text-slate-900 text-lg">
+                Scheduled Live Seminars
+              </h3>
+            </div>
+            <button
+              onClick={() => setActiveModal('class')}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-semibold text-xs border border-emerald-200 transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Schedule Session</span>
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            {classes.map((cls) => (
+              <div
+                key={cls.id}
+                className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2 hover:border-emerald-300 transition-colors"
+              >
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-slate-700">{cls.subject?.title}</span>
+                  <span className="text-slate-500 flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    {new Date(cls.scheduled_at).toLocaleString([], {
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </span>
                 </div>
-                <div style={{ padding: '12px' }}>
-                  <h4 style={{ color: '#1A1A2E', fontSize: '0.85rem', marginBottom: '4px' }}>{lesson.title}</h4>
-                  <p style={{ color: 'rgba(0,0,0,0.4)', fontSize: '0.75rem' }}>Lesson {i + 1}</p>
+                <h4 className="font-bold text-slate-900 text-sm">{cls.title}</h4>
+                <p className="text-xs text-slate-500 leading-relaxed">{cls.description}</p>
+                <div className="pt-2 flex items-center justify-between">
+                  <a
+                    href={cls.meeting_link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition-colors"
+                  >
+                    <Video className="w-3.5 h-3.5" />
+                    <span>Launch Video Classroom</span>
+                    <ExternalLink className="w-3 h-3 ml-0.5" />
+                  </a>
+                  <span className="text-[11px] text-slate-400">Google Meet link verified</span>
                 </div>
               </div>
             ))}
           </div>
+        </div>
 
-          <div id="gradebook">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-              <h3 style={{ color: '#1A1A2E', fontSize: '1rem', fontWeight: 600 }}>Gradebook</h3>
-              <button onClick={() => setActiveModal('add-grade')} className="btn-primary" style={{ padding: '6px 14px', fontSize: '0.8rem' }}>+ Add Grade</button>
+        {/* Announcements Publisher */}
+        <div id="announcements" className="p-6 md:p-8 rounded-3xl bg-white border border-slate-200/80 shadow-xs space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Bell className="w-5 h-5 text-amber-500" />
+              <h3 className="font-heading font-bold text-slate-900 text-lg">
+                Broadcast Academic Notices
+              </h3>
             </div>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-                    {['Student', 'Assignment', 'Score', 'Feedback', 'Date'].map(h => (
-                      <th key={h} style={{ textAlign: 'left', padding: '10px 14px', color: 'rgba(0,0,0,0.5)', fontSize: '0.75rem', fontWeight: 600 }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {grades.length === 0 ? (
-                    <tr><td colSpan={5} style={{ padding: '16px', color: 'rgba(0,0,0,0.4)', fontSize: '0.85rem' }}>No grades yet.</td></tr>
-                  ) : (
-                    grades.map((g) => (
-                      <tr key={g.id} style={{ borderBottom: '1px solid rgba(0,0,0,0.03)' }}>
-                        <td style={{ padding: '10px 14px', color: '#1A1A2E', fontSize: '0.85rem' }}>{g.student?.full_name}</td>
-                        <td style={{ padding: '10px 14px', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem' }}>{g.assignment_title}</td>
-                        <td style={{ padding: '10px 14px' }}>
-                          <span style={{ padding: '3px 8px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600,
-                            background: (g.score / g.max_score) >= 0.7 ? 'rgba(40,167,69,0.15)' : 'rgba(220,53,69,0.15)',
-                            color: (g.score / g.max_score) >= 0.7 ? '#28a745' : '#dc3545',
-                          }}>{g.score}/{g.max_score}</span>
-                        </td>
-                        <td style={{ padding: '10px 14px', color: 'rgba(0,0,0,0.5)', fontSize: '0.8rem' }}>{g.feedback || '—'}</td>
-                        <td style={{ padding: '10px 14px', color: 'rgba(0,0,0,0.3)', fontSize: '0.75rem' }}>{new Date(g.created_at).toLocaleDateString()}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+            <button
+              onClick={() => setActiveModal('announcement')}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 font-semibold text-xs border border-amber-200 transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Post Notice</span>
+            </button>
           </div>
-        </motion.div>
-      )}
 
-      {activeModal === 'create-subject' && (
-        <Modal title="Create Subject" onClose={() => setActiveModal(null)}>
-          <form onSubmit={handleCreateSubject}>
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Title</label>
-              <input value={subjectForm.title} onChange={e => setSubjectForm({...subjectForm, title: e.target.value})} required style={inputStyle} placeholder="e.g. Mathematics" />
-            </div>
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Description</label>
-              <textarea value={subjectForm.description} onChange={e => setSubjectForm({...subjectForm, description: e.target.value})} style={{...inputStyle, minHeight: '80px', resize: 'vertical'}} placeholder="Subject description..." />
-            </div>
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Icon</label>
-                <input value={subjectForm.icon} onChange={e => setSubjectForm({...subjectForm, icon: e.target.value})} style={inputStyle} placeholder="📚" />
+          <div className="space-y-4">
+            {announcements.map((ann) => (
+              <div key={ann.id} className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <h4 className="font-bold text-slate-900">{ann.title}</h4>
+                  <span className="text-slate-400 text-[11px]">
+                    {new Date(ann.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">{ann.body}</p>
+                <div className="text-[10px] text-slate-400 pt-1">
+                  Posted by {ann.author?.full_name || 'Faculty Office'}
+                </div>
               </div>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Color</label>
-                <input type="color" value={subjectForm.color} onChange={e => setSubjectForm({...subjectForm, color: e.target.value})} style={{...inputStyle, height: '42px', padding: '4px'}} />
-              </div>
-            </div>
-            <button type="submit" disabled={formLoading} className="btn-gold" style={{ width: '100%', padding: '12px' }}>
-              {formLoading ? 'Creating...' : 'Create Subject'}
-            </button>
-          </form>
-        </Modal>
-      )}
+            ))}
+          </div>
+        </div>
+      </div>
 
-      {activeModal === 'add-lesson' && (
-        <Modal title="Add Lesson" onClose={() => setActiveModal(null)}>
-          <form onSubmit={handleAddLesson}>
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Title</label>
-              <input value={lessonForm.title} onChange={e => setLessonForm({...lessonForm, title: e.target.value})} required style={inputStyle} />
-            </div>
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Description</label>
-              <textarea value={lessonForm.description} onChange={e => setLessonForm({...lessonForm, description: e.target.value})} style={{...inputStyle, minHeight: '60px', resize: 'vertical'}} />
-            </div>
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>YouTube Link</label>
-              <input type="text" placeholder="https://youtube.com/watch?v=..." value={lessonForm.youtube_url} onChange={e => setLessonForm({...lessonForm, youtube_url: e.target.value})} required
-                style={{...inputStyle, padding: '8px'}} />
-            </div>
-            <button type="submit" disabled={uploading} className="btn-gold" style={{ width: '100%', padding: '12px' }}>
-              {uploading ? 'Parsing...' : 'Add Lesson'}
+      {/* MODAL 1: Create Subject */}
+      <ModernModal
+        isOpen={activeModal === 'subject'}
+        title="Create New Subject Curriculum"
+        subtitle="Introduce a course offering for BridgeToBrilliance students"
+        onClose={() => setActiveModal(null)}
+      >
+        <form onSubmit={handleCreateSubject} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Subject Title</label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. AP Physics C: Mechanics"
+              value={subjectForm.title}
+              onChange={(e) => setSubjectForm({ ...subjectForm, title: e.target.value })}
+              className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Course Icon Emoji</label>
+            <input
+              type="text"
+              placeholder="e.g. ⚡, 🧬, 🚀"
+              value={subjectForm.icon}
+              onChange={(e) => setSubjectForm({ ...subjectForm, icon: e.target.value })}
+              className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Description & Syllabus</label>
+            <textarea
+              rows={3}
+              placeholder="Brief course objectives and syllabus..."
+              value={subjectForm.description}
+              onChange={(e) => setSubjectForm({ ...subjectForm, description: e.target.value })}
+              className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500"
+            />
+          </div>
+          <div className="pt-4 flex justify-end gap-2 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => setActiveModal(null)}
+              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
+            >
+              Cancel
             </button>
-          </form>
-        </Modal>
-      )}
-
-      {activeModal === 'schedule-class' && (
-        <Modal title="Schedule Class" onClose={() => setActiveModal(null)}>
-          <form onSubmit={handleScheduleClass}>
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Title</label>
-              <input value={classForm.title} onChange={e => setClassForm({...classForm, title: e.target.value})} required style={inputStyle} />
-            </div>
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Date &amp; Time</label>
-              <input type="datetime-local" value={classForm.scheduled_at} onChange={e => setClassForm({...classForm, scheduled_at: e.target.value})} required style={inputStyle} />
-            </div>
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Meeting Link</label>
-              <input value={classForm.meeting_link} onChange={e => setClassForm({...classForm, meeting_link: e.target.value})} style={inputStyle} placeholder="https://meet.google.com/..." />
-            </div>
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Description</label>
-              <textarea value={classForm.description} onChange={e => setClassForm({...classForm, description: e.target.value})} style={{...inputStyle, minHeight: '60px', resize: 'vertical'}} />
-            </div>
-            <button type="submit" disabled={formLoading} className="btn-gold" style={{ width: '100%', padding: '12px' }}>
-              {formLoading ? 'Scheduling...' : 'Schedule Class'}
+            <button
+              type="submit"
+              className="px-5 py-2 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-xs"
+            >
+              Publish Subject
             </button>
-          </form>
-        </Modal>
-      )}
+          </div>
+        </form>
+      </ModernModal>
 
-      {activeModal === 'post-announcement' && (
-        <Modal title="Post Announcement" onClose={() => setActiveModal(null)}>
-          <form onSubmit={handlePostAnnouncement}>
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Title</label>
-              <input value={announcementForm.title} onChange={e => setAnnouncementForm({...announcementForm, title: e.target.value})} required style={inputStyle} />
-            </div>
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Body</label>
-              <textarea value={announcementForm.body} onChange={e => setAnnouncementForm({...announcementForm, body: e.target.value})} required style={{...inputStyle, minHeight: '100px', resize: 'vertical'}} />
-            </div>
-            <button type="submit" disabled={formLoading} className="btn-gold" style={{ width: '100%', padding: '12px' }}>
-              {formLoading ? 'Posting...' : 'Post Announcement'}
+      {/* MODAL 2: Add Lesson */}
+      <ModernModal
+        isOpen={activeModal === 'lesson'}
+        title="Add Curriculum Lesson"
+        subtitle="Upload or link a video lecture with descriptions"
+        onClose={() => setActiveModal(null)}
+      >
+        <form onSubmit={handleCreateLesson} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Subject</label>
+            <select
+              value={lessonForm.subject_id}
+              onChange={(e) => setLessonForm({ ...lessonForm, subject_id: e.target.value })}
+              className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500"
+            >
+              {subjects.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.title}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Lesson Title</label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. Fundamental Theorem of Calculus Part 1"
+              value={lessonForm.title}
+              onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })}
+              className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Video Lecture URL (YouTube / MP4)</label>
+            <input
+              type="url"
+              placeholder="https://www.youtube.com/watch?v=..."
+              value={lessonForm.video_url}
+              onChange={(e) => setLessonForm({ ...lessonForm, video_url: e.target.value })}
+              className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Lesson Overview</label>
+            <textarea
+              rows={2}
+              placeholder="Key concepts covered in this lecture..."
+              value={lessonForm.description}
+              onChange={(e) => setLessonForm({ ...lessonForm, description: e.target.value })}
+              className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500"
+            />
+          </div>
+          <div className="pt-4 flex justify-end gap-2 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => setActiveModal(null)}
+              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
+            >
+              Cancel
             </button>
-          </form>
-        </Modal>
-      )}
+            <button
+              type="submit"
+              className="px-5 py-2 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-xs"
+            >
+              Upload Lesson
+            </button>
+          </div>
+        </form>
+      </ModernModal>
 
-      {activeModal === 'add-grade' && (
-        <Modal title="Add Grade" onClose={() => setActiveModal(null)}>
-          <form onSubmit={handleAddGrade}>
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Student</label>
-              <select value={gradeForm.student_id} onChange={e => setGradeForm({...gradeForm, student_id: e.target.value})} required style={inputStyle}>
-                <option value="">Select student...</option>
-                {enrolledStudents.map((e) => (
-                  <option key={e.student_id} value={e.student_id}>{e.student?.full_name}</option>
+      {/* MODAL 3: Schedule Live Class */}
+      <ModernModal
+        isOpen={activeModal === 'class'}
+        title="Schedule Live Virtual Seminar"
+        subtitle="Host a live Q&A or lecture session via Google Meet / Zoom"
+        onClose={() => setActiveModal(null)}
+      >
+        <form onSubmit={handleScheduleClass} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Subject</label>
+            <select
+              value={classForm.subject_id}
+              onChange={(e) => setClassForm({ ...classForm, subject_id: e.target.value })}
+              className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500"
+            >
+              {subjects.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.title}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Session Topic</label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. Final Review: Multi-variable Calculus"
+              value={classForm.title}
+              onChange={(e) => setClassForm({ ...classForm, title: e.target.value })}
+              className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Meeting Link</label>
+            <input
+              type="url"
+              placeholder="https://meet.google.com/..."
+              value={classForm.meeting_link}
+              onChange={(e) => setClassForm({ ...classForm, meeting_link: e.target.value })}
+              className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Session Notes / Instructions</label>
+            <textarea
+              rows={2}
+              placeholder="Bring past exam questions and graphing calculators..."
+              value={classForm.description}
+              onChange={(e) => setClassForm({ ...classForm, description: e.target.value })}
+              className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500"
+            />
+          </div>
+          <div className="pt-4 flex justify-end gap-2 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => setActiveModal(null)}
+              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-5 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-xs"
+            >
+              Confirm Schedule
+            </button>
+          </div>
+        </form>
+      </ModernModal>
+
+      {/* MODAL 4: Record Grade */}
+      <ModernModal
+        isOpen={activeModal === 'grade'}
+        title="Record Student Grade & Feedback"
+        subtitle="Provide individual evaluation and constructive guidance"
+        onClose={() => setActiveModal(null)}
+      >
+        <form onSubmit={handleRecordGrade} className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Student</label>
+              <select
+                value={gradeForm.student_id}
+                onChange={(e) => setGradeForm({ ...gradeForm, student_id: e.target.value })}
+                className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500"
+              >
+                {students.map((st) => (
+                  <option key={st.id} value={st.id}>
+                    {st.full_name}
+                  </option>
                 ))}
               </select>
             </div>
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Assignment Title</label>
-              <input value={gradeForm.assignment_title} onChange={e => setGradeForm({...gradeForm, assignment_title: e.target.value})} required style={inputStyle} />
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Subject</label>
+              <select
+                value={gradeForm.subject_id}
+                onChange={(e) => setGradeForm({ ...gradeForm, subject_id: e.target.value })}
+                className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500"
+              >
+                {subjects.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.title}
+                  </option>
+                ))}
+              </select>
             </div>
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Score</label>
-                <input type="number" value={gradeForm.score} onChange={e => setGradeForm({...gradeForm, score: e.target.value})} required style={inputStyle} />
-              </div>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Max Score</label>
-                <input type="number" value={gradeForm.max_score} onChange={e => setGradeForm({...gradeForm, max_score: e.target.value})} required style={inputStyle} />
-              </div>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Assignment / Exam Name</label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. Unit 5 Differential Equations Mastery"
+              value={gradeForm.assignment_title}
+              onChange={(e) => setGradeForm({ ...gradeForm, assignment_title: e.target.value })}
+              className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Score Awarded</label>
+              <input
+                type="number"
+                required
+                min={0}
+                max={100}
+                value={gradeForm.score}
+                onChange={(e) => setGradeForm({ ...gradeForm, score: Number(e.target.value) })}
+                className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500"
+              />
             </div>
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'rgba(0,0,0,0.6)', fontSize: '0.85rem', marginBottom: '6px' }}>Feedback</label>
-              <textarea value={gradeForm.feedback} onChange={e => setGradeForm({...gradeForm, feedback: e.target.value})} style={{...inputStyle, minHeight: '60px', resize: 'vertical'}} />
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Max Score</label>
+              <input
+                type="number"
+                required
+                min={1}
+                value={gradeForm.max_score}
+                onChange={(e) => setGradeForm({ ...gradeForm, max_score: Number(e.target.value) })}
+                className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500"
+              />
             </div>
-            <button type="submit" disabled={formLoading} className="btn-gold" style={{ width: '100%', padding: '12px' }}>
-              {formLoading ? 'Saving...' : 'Add Grade'}
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Instructor Feedback</label>
+            <textarea
+              rows={3}
+              placeholder="Detailed notes, commendations, areas for improvement..."
+              value={gradeForm.feedback}
+              onChange={(e) => setGradeForm({ ...gradeForm, feedback: e.target.value })}
+              className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500"
+            />
+          </div>
+          <div className="pt-4 flex justify-end gap-2 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => setActiveModal(null)}
+              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
+            >
+              Cancel
             </button>
-          </form>
-        </Modal>
-      )}
+            <button
+              type="submit"
+              className="px-5 py-2 text-xs font-bold bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl shadow-xs"
+            >
+              Save Grade
+            </button>
+          </div>
+        </form>
+      </ModernModal>
+
+      {/* MODAL 5: Post Announcement */}
+      <ModernModal
+        isOpen={activeModal === 'announcement'}
+        title="Broadcast Announcement"
+        subtitle="Notify your students about exams, schedule changes, or events"
+        onClose={() => setActiveModal(null)}
+      >
+        <form onSubmit={handleCreateAnnouncement} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Audience</label>
+            <select
+              value={announcementForm.subject_id}
+              onChange={(e) => setAnnouncementForm({ ...announcementForm, subject_id: e.target.value })}
+              className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500"
+            >
+              <option value="all">All Enrolled Students (Global)</option>
+              {subjects.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.title}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Announcement Title</label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. Midterm Preparation Guide & Study Group Hours"
+              value={announcementForm.title}
+              onChange={(e) => setAnnouncementForm({ ...announcementForm, title: e.target.value })}
+              className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Message Body</label>
+            <textarea
+              rows={4}
+              required
+              placeholder="Detailed message..."
+              value={announcementForm.body}
+              onChange={(e) => setAnnouncementForm({ ...announcementForm, body: e.target.value })}
+              className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500"
+            />
+          </div>
+          <div className="pt-4 flex justify-end gap-2 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => setActiveModal(null)}
+              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-5 py-2 text-xs font-bold bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl shadow-xs"
+            >
+              Broadcast Notice
+            </button>
+          </div>
+        </form>
+      </ModernModal>
     </div>
   )
 }

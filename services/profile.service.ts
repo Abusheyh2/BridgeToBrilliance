@@ -61,7 +61,8 @@ class ProfileService {
       .update({
         full_name: updates.fullName,
         bio: updates.bio,
-        avatar: updates.avatar,
+        // Was `avatar` — there is no such column, so every update errored out.
+        avatar_url: updates.avatar,
         updated_at: new Date().toISOString(),
       })
       .eq('user_id', userId)
@@ -85,7 +86,13 @@ class ProfileService {
       .eq('full_name', username)
       .single()
 
-    return !data && !error
+    // `.single()` reports PGRST116 (no rows) as an error, so the old
+    // `!data && !error` check returned false for every free name.
+    if (error && error.code !== 'PGRST116') {
+      throw error
+    }
+
+    return !data
   }
 
   /**

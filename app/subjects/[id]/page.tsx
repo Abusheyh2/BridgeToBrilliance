@@ -3,8 +3,18 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useParams, useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
+import {
+  MOCK_SUBJECTS,
+  MOCK_LESSONS,
+  MOCK_STUDENT_PROFILE,
+  MOCK_CLASSES,
+  MOCK_ANNOUNCEMENTS,
+  MOCK_GRADES,
+} from '@/lib/mockData'
 import type { Subject, Lesson, Announcement, Class as ClassType, Grade, Profile, Progress } from '@/types/database.types'
+
+export const dynamic = 'force-dynamic'
 
 export default function SubjectPage() {
   const params = useParams()
@@ -27,8 +37,29 @@ export default function SubjectPage() {
   useEffect(() => {
     let cancelled = false
     const run = async () => {
+      if (!isSupabaseConfigured()) {
+        const mockSub = MOCK_SUBJECTS.find(s => s.id === subjectId) || MOCK_SUBJECTS[0]
+        setProfile(MOCK_STUDENT_PROFILE)
+        setSubject(mockSub as unknown as Subject & { teacher: Profile })
+        setLessons(MOCK_LESSONS.filter(l => l.subject_id === mockSub.id || l.subject_id === 'sub-calc-001'))
+        setAnnouncements(MOCK_ANNOUNCEMENTS.filter(a => a.subject_id === mockSub.id || !a.subject_id))
+        setClasses(MOCK_CLASSES.filter(c => c.subject_id === mockSub.id || c.subject_id === 'sub-calc-001'))
+        setGrades(MOCK_GRADES.filter(g => g.subject_id === mockSub.id || g.subject_id === 'sub-calc-001'))
+        setEnrollmentCount(28)
+        setLoading(false)
+        return
+      }
+
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user || cancelled) { if (!cancelled) router.push('/login'); return }
+      if (!user || cancelled) {
+        // Fallback to demo mode
+        const mockSub = MOCK_SUBJECTS.find(s => s.id === subjectId) || MOCK_SUBJECTS[0]
+        setProfile(MOCK_STUDENT_PROFILE)
+        setSubject(mockSub as unknown as Subject & { teacher: Profile })
+        setLessons(MOCK_LESSONS)
+        setLoading(false)
+        return
+      }
 
       const { data: profileData } = await supabase
         .from('profiles')

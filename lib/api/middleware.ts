@@ -35,7 +35,7 @@ export async function verifyAuth(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
   
   if (!authHeader?.startsWith('Bearer ')) {
-    throw new ApiError('UNAUTHORIZED', 401, 'Missing or invalid authorization header')
+    throw new ApiError('Missing or invalid authorization header', 401, 'UNAUTHORIZED')
   }
 
   const token = authHeader.slice(7)
@@ -55,19 +55,23 @@ export async function parseRequestBody<T>(
     return await schema(body)
   } catch (err) {
     throw new ApiError(
-      'INVALID_REQUEST',
-      400,
       'Invalid request body',
+      400,
+      'INVALID_REQUEST',
       { error: err instanceof Error ? err.message : undefined }
     )
   }
 }
 
 /**
- * Set CORS headers
+ * Set CORS headers.
+ *
+ * DO NOT allow `*` while advertising `Authorization`: that lets any origin drive
+ * the API with a user's credentials. Pass the single trusted origin instead.
  */
-export function setCorsHeaders(response: Response): Response {
-  response.headers.set('Access-Control-Allow-Origin', '*')
+export function setCorsHeaders(response: Response, allowedOrigin: string): Response {
+  response.headers.set('Access-Control-Allow-Origin', allowedOrigin)
+  response.headers.set('Vary', 'Origin')
   response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
   response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
   return response

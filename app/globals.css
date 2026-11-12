@@ -1,5 +1,4 @@
-/* Fonts loaded via next/font/google in layout.tsx */
-
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap');
 @import "tailwindcss";
 
 :root {
@@ -39,10 +38,6 @@
   --glass-border: rgba(0, 0, 0, 0.08);
   --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
 
-  /* Fonts */
-  --font-heading: 'Playfair Display', serif;
-  --font-body: 'Inter', sans-serif;
-
   /* Borders */
   --radius-sm: 6px;
   --radius-md: 10px;
@@ -56,11 +51,18 @@
   --shadow-gold: 0 4px 20px rgba(255, 179, 0, 0.3);
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* Fonts must live in @theme so Tailwind emits the `font-heading` / `font-body`
+   utilities used by the dashboard. A plain :root declaration only defines the
+   variable; it does not register a utility. */
+@theme {
+  --font-heading: 'Playfair Display', serif;
+  --font-body: 'Inter', sans-serif;
 }
+
+/* NOTE: the legacy `* { margin: 0; padding: 0 }` reset was removed on purpose.
+   Unlayered rules beat every @layer, so it silently overrode all Tailwind
+   padding/margin utilities (p-8, mt-16, px-5...) in the dashboard.
+   Preflight already zeroes margin/padding and sets box-sizing: border-box. */
 
 html {
   scroll-behavior: smooth;

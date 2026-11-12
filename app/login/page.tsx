@@ -192,6 +192,57 @@ export default function LoginPage() {
           </button>
         </form>
 
+        <div style={{ margin: '24px 0 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ flex: 1, height: '1px', background: '#e2e8f0' }} />
+          <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>
+            Instant Demo Access
+          </span>
+          <div style={{ flex: 1, height: '1px', background: '#e2e8f0' }} />
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+          <button
+            type="button"
+            onClick={() => router.push('/dashboard/student')}
+            style={{
+              padding: '10px 12px',
+              borderRadius: '10px',
+              border: '1px solid #bfdbfe',
+              background: '#eff6ff',
+              color: '#1d4ed8',
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+            }}
+          >
+            🎓 Demo Student
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push('/dashboard/teacher')}
+            style={{
+              padding: '10px 12px',
+              borderRadius: '10px',
+              border: '1px solid #fde68a',
+              background: '#fffbeb',
+              color: '#92400e',
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+            }}
+          >
+            📚 Demo Teacher
+          </button>
+        </div>
+
         <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '0.85rem', color: 'var(--text-dark-muted)' }}>
           Don&apos;t have an account?{' '}
           <Link href="/register" style={{ color: '#4169E1', textDecoration: 'none', fontWeight: 600 }}>

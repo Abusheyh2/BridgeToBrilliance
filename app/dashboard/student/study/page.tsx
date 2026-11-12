@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { useProfile } from '@/app/dashboard/layout'
+import { useProfile } from '@/app/dashboard/DashboardContext'
 import * as timerService from '@/services/timer.service'
 import * as groupsService from '@/services/study-groups.service'
 

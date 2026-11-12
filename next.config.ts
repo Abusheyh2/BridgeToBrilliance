@@ -4,10 +4,16 @@ const nextConfig: NextConfig = {
   // Image optimization for production
   images: {
     formats: ["image/avif", "image/webp"],
+    // Was hostname: "**", which let anyone proxy any host through the image
+    // optimizer. Keep this to the hosts actually used.
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "**",
+        hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "*.supabase.co",
       },
     ],
   },
@@ -17,9 +23,6 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
   productionBrowserSourceMaps: false,
-
-  // Internationalization support (if needed)
-  i18n: undefined,
 
   // Security and caching headers
   async headers() {
@@ -41,9 +44,9 @@ const nextConfig: NextConfig = {
           },
         ],
       },
-      // Cache static assets for 1 year
+      // Cache hashed build assets for 1 year
       {
-        source: "/static/:path*",
+        source: "/_next/static/:path*",
         headers: [
           {
             key: "Cache-Control",
@@ -51,9 +54,10 @@ const nextConfig: NextConfig = {
           },
         ],
       },
-      // Cache public assets for 1 day
+      // Cache public assets for 1 day. `/public/:path*` never matched anything:
+      // files in /public are served from the site root.
       {
-        source: "/public/:path*",
+        source: "/pictures/:path*",
         headers: [
           {
             key: "Cache-Control",

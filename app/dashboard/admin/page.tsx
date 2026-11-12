@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
-import { useProfile } from '../layout'
+import { useProfile } from '../DashboardContext'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import type { Profile, Subject, Announcement } from '@/types/database.types'
 
@@ -44,7 +44,7 @@ export default function AdminDashboard() {
     }
     run()
     return () => { cancelled = true }
-  }, [profile])
+  }, [profile, supabase])
 
   const stats = useMemo(() => ({
     students: users.filter(u => u.role === 'student').length,

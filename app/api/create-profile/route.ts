@@ -1,5 +1,6 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { createClient as createServerClient } from '@/lib/supabase/server'
 
 function getAdminClient() {
   const url = process.env['NEXT_PUBLIC_SUPABASE_URL']
@@ -7,7 +8,7 @@ function getAdminClient() {
   if (!url || !key) {
     return null
   }
-  return createClient(url, key, {
+  return createAdminClient(url, key, {
     auth: { autoRefreshToken: false, persistSession: false },
   })
 }
@@ -22,17 +23,32 @@ export async function POST(req: Request) {
       )
     }
 
-    const { userId, fullName, email, role } = await req.json()
+    // The caller must be signed in. Without this, anyone could POST an arbitrary
+    // userId (and previously an arbitrary role) and get a profile written with the
+    // service-role key, which bypasses RLS entirely.
+    const supabase = await createServerClient()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
 
-    if (!userId || !fullName) {
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { fullName } = await req.json()
+
+    if (!fullName || typeof fullName !== 'string' || fullName.trim().length < 2) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
+    // userId and role from the request body are deliberately ignored: the id comes
+    // from the verified session, and every self-service signup is a student.
     const { error } = await supabaseAdmin.from('profiles').insert({
-      user_id: userId,
-      full_name: fullName,
-      email: email || '',
-      role: role || 'student',
+      user_id: user.id,
+      full_name: fullName.trim(),
+      email: user.email ?? '',
+      role: 'student',
     })
 
     if (error) {

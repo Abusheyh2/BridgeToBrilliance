@@ -13,16 +13,17 @@ export class ApiError extends Error {
   }
 }
 
+// NB: ApiError's signature is (message, statusCode, code, details).
 export class ValidationError extends ApiError {
   constructor(message: string, details?: Record<string, unknown>) {
-    super('VALIDATION_ERROR', 400, message, details)
+    super(message, 400, 'VALIDATION_ERROR', details)
     this.name = 'ValidationError'
   }
 }
 
 export class NotFoundError extends ApiError {
   constructor(resource: string) {
-    super('NOT_FOUND', 404, `${resource} not found`)
+    super(`${resource} not found`, 404, 'NOT_FOUND')
     this.name = 'NotFoundError'
   }
 }
@@ -43,14 +44,14 @@ export class ForbiddenError extends ApiError {
 
 export class ConflictError extends ApiError {
   constructor(message: string, details?: Record<string, unknown>) {
-    super('CONFLICT', 409, message, details)
+    super(message, 409, 'CONFLICT', details)
     this.name = 'ConflictError'
   }
 }
 
 export class InternalServerError extends ApiError {
   constructor(message = 'Internal server error', details?: Record<string, unknown>) {
-    super('INTERNAL_SERVER_ERROR', 500, message, details)
+    super(message, 500, 'INTERNAL_SERVER_ERROR', details)
     this.name = 'InternalServerError'
   }
 }

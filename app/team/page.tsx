@@ -104,12 +104,12 @@ export default function TeamPage() {
           {/* Team grid — 3 columns, last row centered */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
+            // Was a hard `repeat(3, 1fr)`, which kept three ~90px columns at
+            // 360px wide and overflowed the card padding.
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
             gap: '32px',
           }}>
             {teamMembers.map((member, i) => {
-              const isLastRowOdd = teamMembers.length % 3 === 1 && i >= teamMembers.length - 1
-              const isLastRowTwo = teamMembers.length % 3 === 2 && i >= teamMembers.length - 2
               return (
                 <motion.div
                   key={member.name}
@@ -122,7 +122,6 @@ export default function TeamPage() {
                     padding: '32px 24px',
                     textAlign: 'center',
                     border: '1px solid rgba(0,0,0,0.04)',
-                    gridColumn: isLastRowOdd ? '2 / 3' : isLastRowTwo ? undefined : undefined,
                   }}
                 >
                   <div style={{

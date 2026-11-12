@@ -46,17 +46,11 @@ export default function Navbar() {
     router.push('/dashboard/admin')
   }
 
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth > 768) setMobileOpen(false)
-    }
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
-
   const navLinks = [
     { href: '#about', label: 'About' },
     { href: '#features', label: 'Features' },
+    { href: '/dashboard/student', label: 'Student Hub' },
+    { href: '/dashboard/teacher', label: 'Teacher Console' },
     { href: '/team', label: 'Team' },
   ]
 
@@ -127,12 +121,12 @@ export default function Navbar() {
           className="desktop-nav">
           {navLinks.map(link => (
             link.href.startsWith('/') ? (
-              <Link key={link.href} href={link.href} style={{ color: scrolled ? 'rgba(0,0,0,0.75)' : 'rgba(0,0,0,0.75)', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600, transition: 'color 0.2s' }}>{link.label}</Link>
+              <Link key={link.href} href={link.href} style={{ color: 'rgba(0,0,0,0.75)', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600, transition: 'color 0.2s' }}>{link.label}</Link>
             ) : (
-              <a key={link.href} href={link.href} style={{ color: scrolled ? 'rgba(0,0,0,0.75)' : 'rgba(0,0,0,0.75)', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600, transition: 'color 0.2s' }}>{link.label}</a>
+              <a key={link.href} href={link.href} style={{ color: 'rgba(0,0,0,0.75)', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600, transition: 'color 0.2s' }}>{link.label}</a>
             )
           ))}
-          <Link href="/login" style={{ color: scrolled ? 'rgba(0,0,0,0.85)' : 'rgba(0,0,0,0.85)', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600 }}>Sign In</Link>
+          <Link href="/login" style={{ color: 'rgba(0,0,0,0.85)', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600 }}>Sign In</Link>
           <Link href="/register">
             <button className="btn-gold" style={{ padding: '8px 20px', fontSize: '0.85rem' }}>
               Get Started
